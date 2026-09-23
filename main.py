@@ -1,3 +1,6 @@
+#
+# Copyright by Lavrentios Servissoglou under LGPL license
+#
 import copy
 
 from PyQt6 import QtWidgets
