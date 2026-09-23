@@ -1,10 +1,7 @@
-#
-# Copyright by Lavrentios Servissoglou under LGPL license
-#
 import copy
 
-from PyQt6 import QtWidgets
-from PyQt6.QtWidgets import (
+from PySide6 import QtWidgets
+from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
     QGridLayout,
@@ -18,8 +15,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget
 )
-from PyQt6.QtGui import QDoubleValidator
-from PyQt6.QtCore import Qt
+from PySide6.QtGui import QDoubleValidator
+from PySide6.QtCore import Qt
 
 import FractalWidget
 import Logging

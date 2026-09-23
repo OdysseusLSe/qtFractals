@@ -1,15 +1,15 @@
 import copy
 
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QRect
-from PyQt6.QtGui import QPainter, QPen, QColor, QImage
-from PyQt6.QtWidgets import QWidget
+from PySide6.QtCore import Qt, QThread, Signal, QRect
+from PySide6.QtGui import QPainter, QPen, QColor, QImage
+from PySide6.QtWidgets import QWidget
 
 import FractalWorker
 import Logging
 
 class FractalWidget(QWidget):
     # Signal for progress
-    progress = pyqtSignal(int)
+    progress = Signal(int)
 
     #
     # Constructor

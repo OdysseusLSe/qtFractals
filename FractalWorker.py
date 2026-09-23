@@ -1,15 +1,15 @@
 import copy
 import math
 
-from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QImage, QColor, QPainter
-from PyQt6.QtWidgets import QWidget
+from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtGui import QImage, QColor, QPainter
+from PySide6.QtWidgets import QWidget
 
 import Logging
 
 class FractalWorker(QObject):
-    progress = pyqtSignal(int)
-    finished = pyqtSignal(QImage)
+    progress = Signal(int)
+    finished = Signal(QImage)
 
     def __init__(self, fractalArea, drawDimensions, iterationLimit, colorPalette):
         super().__init__()
@@ -23,7 +23,7 @@ class FractalWorker(QObject):
         self.colorPalette = copy.deepcopy(colorPalette)
         # self.log.write("self.colorPalette=" + str(self.colorPalette))
 
-    @pyqtSlot()
+    @Slot()
     def calculate(self):
 
         self.log.write("calculate")
