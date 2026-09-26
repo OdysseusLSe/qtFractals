@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QWidget
 import FractalWorker
 import Logging
 
+
 class FractalWidget(QWidget):
     # Signal for progress
     progress = Signal(int)
@@ -15,30 +16,30 @@ class FractalWidget(QWidget):
     # Constructor
     #
 
-    def __init__(self, fractalArea, drawDimensions, iterationLimit, colorPalette):
+    def __init__(self, frac_area, draw_dim, iter_lim, col_pal):
         super().__init__()
 
         self.log = Logging.Logging("FractalWidget", True)
         self.log.entry("init")
 
-        self.fractalArea = fractalArea
-        self.drawDimensions = copy.deepcopy(drawDimensions)
-        self.iterationLimit = iterationLimit
-        self.colorPalette = copy.deepcopy(colorPalette)
+        self.frac_area = frac_area
+        self.draw_dim = copy.deepcopy(draw_dim)
+        self.iter_lim = iter_lim
+        self.cp = copy.deepcopy(col_pal)
 
-        self.log.write("fractalArea=" + str(self.fractalArea))
-        self.log.write("drawDimensions=" + str(self.drawDimensions))
+        self.log.write("frac_area=" + str(self.frac_area))
+        self.log.write("draw_dim=" + str(self.draw_dim))
 
         self.image = QImage()
 
         # Mouse variables
 
         self.selecting = False
-        self.selectionStart = None
-        self.selectionEnd = None
+        self.sel_start = None
+        self.sel_end = None
         self.setMouseTracking(True)
 
-        self.startCalculation()
+        self.start_calculation()
 
         self.log.exit("init")
 
@@ -46,8 +47,8 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def calculationFinished(self, image):
-        self.log.entry("calculationFinished")
+    def calculation_finished(self, image):
+        self.log.entry("calculation_finished")
 
         self.image = image
         if self.image.isNull():
@@ -55,7 +56,7 @@ class FractalWidget(QWidget):
 
         self.update()
 
-        self.log.exit("calculationFinished")
+        self.log.exit("calculation_finished")
 
     #
     # -----------------------------------------------
@@ -63,8 +64,8 @@ class FractalWidget(QWidget):
 
     # Calculate selection on fractal base
 
-    def calculateSelectedArea(self, rect):
-        self.log.entry("calculateSelectedArea")
+    def calculate_selected_area(self, rect):
+        self.log.entry("calculate_selected_area")
 
         # Check if selected area is to small
         if rect.width() < 2 or rect.height() < 2:
@@ -72,11 +73,11 @@ class FractalWidget(QWidget):
 
         # Größe eines Pixels in der komplexen Ebene
 
-        xStep = self.fractalArea['realWidth'] / self.drawDimensions['width']
-        yStep = self.fractalArea['imagHeight'] / self.drawDimensions['height']
+        xStep = self.frac_area['realWidth'] / self.draw_dim['width']
+        yStep = self.frac_area['imagHeight'] / self.draw_dim['height']
 
-        realOrigin = self.fractalArea['realOrigin'] + rect.left() * xStep
-        imagOrigin = self.fractalArea['imagOrigin'] + rect.top() * yStep
+        realOrigin = self.frac_area['realOrigin'] + rect.left() * xStep
+        imagOrigin = self.frac_area['imagOrigin'] + rect.top() * yStep
 
         realWidth = rect.width() * xStep
         imagHeight = rect.height() * yStep
@@ -89,8 +90,10 @@ class FractalWidget(QWidget):
         }
         self.log.write("newArea=" + str(newArea))
 
-        self.setParameters(newArea, self.drawDimensions, self.iterationLimit, self.colorPalette)
-        self.startCalculation()
+        self.set_parameters(newArea, self.draw_dim, self.iter_lim, self.cp)
+        self.start_calculation()
+
+        self.log.exit("calculate_selected_area")
 
     #
     # -----------------------------------------------
@@ -98,24 +101,25 @@ class FractalWidget(QWidget):
 
     # Calculate selection on fractal base
 
-    def changeColorPalette(self, colorPalette):
-        self.log.entry("changeColorPalette")
+    def change_col_pal(self, col_pal):
+        self.log.entry("change_col_pal")
 
-        self.colorPalette = copy.deepcopy(colorPalette)
-        self.log.exit("changeColorPalette")
+        self.cp = copy.deepcopy(col_pal)
+
+        self.log.exit("change_col_pal")
 
     #
     # -----------------------------------------------
     #
 
-    def getImage(self):
-        self.log.entry("getImage")
+    def get_image(self):
+        self.log.entry("get_image")
 
         if self.image.isNull():
             self.log.error("Missing image!")
             return
 
-        self.log.exit("getImage")
+        self.log.exit("get_image")
 
         return self.image
 
@@ -123,11 +127,12 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def getParameters(self):
-        self.log.entry("getFractalArea")
+    def get_parameters(self):
+        self.log.entry("get_parameters")
 
-        self.log.exit("getFractalArea")
-        return self.fractalArea, self.drawDimensions, self.iterationLimit
+        self.log.exit("get_parameters")
+
+        return self.frac_area, self.draw_dim, self.iter_lim
 
     #
     # -----------------------------------------------
@@ -135,15 +140,15 @@ class FractalWidget(QWidget):
 
     # Auswahlquadrat erzeugen
 
-    def getSelectionRect(self):
-        self.log.entry("getSelectionRect")
+    def get_selection_rect(self):
+        self.log.entry("get_selection_rect")
 
-        x1 = self.selectionStart.x()
-        y1 = self.selectionStart.y()
+        x1 = self.sel_start.x()
+        y1 = self.sel_start.y()
         self.log.write("x1=" + str(x1) + " / y1=" + str(y1))
 
-        x2 = self.selectionEnd.x()
-        y2 = self.selectionEnd.y()
+        x2 = self.sel_end.x()
+        y2 = self.sel_end.y()
         self.log.write("x2=" + str(x2) + " / y2=" + str(y2))
 
         dx = x2 - x1
@@ -151,18 +156,18 @@ class FractalWidget(QWidget):
         self.log.write("dx=" + str(dx) + " / dy=" + str(dy))
 
         if dx != 0 and dy != 0:
-            deltaRatio = dx / dy
-            self.log.write("rectRatio     =" + str(deltaRatio))
+            delta_ratio = dx / dy
+            self.log.write("rectRatio     =" + str(delta_ratio))
 
-            drawingRatio = self.drawDimensions['width'] / self.drawDimensions['height']
-            self.log.write("drawingRatio  =" + str(drawingRatio))
+            draw_ratio = self.draw_dim['width'] / self.draw_dim['height']
+            self.log.write("draw_ratio  =" + str(draw_ratio))
 
             if dx < 0:
-                dx = -abs(int(dy * drawingRatio))
+                dx = -abs(int(dy * draw_ratio))
             else:
-                dx = abs(int(dy * drawingRatio))
-            deltaRatio = dx / dy
-            self.log.write("correctedRatio=" + str(deltaRatio))
+                dx = abs(int(dy * draw_ratio))
+            delta_ratio = dx / dy
+            self.log.write("correctedRatio=" + str(delta_ratio))
             self.log.write("corrected dx=" + str(dx) + " / corrected dy=" + str(dy))
 
         # Length/Width of the rectangle. Take the shorter one.
@@ -190,13 +195,13 @@ class FractalWidget(QWidget):
         if top < 0:
             top = 0
 
-        if left + abs(dx) > self.drawDimensions['width']:
-            left = self.drawDimensions['width'] - abs(dx)
+        if left + abs(dx) > self.draw_dim['width']:
+            left = self.draw_dim['width'] - abs(dx)
 
-        if top + abs(dy) > self.drawDimensions['height']:
-            top = self.drawDimensions['height'] - abs(dy)
+        if top + abs(dy) > self.draw_dim['height']:
+            top = self.draw_dim['height'] - abs(dy)
 
-        self.log.exit("getSelectionRect")
+        self.log.exit("get_selection_rect")
 
         return QRect(int(left), int(top), int(abs(dx)), int(abs(dy)))
 
@@ -207,15 +212,15 @@ class FractalWidget(QWidget):
     # Mouse moved
 
     def mouseMoveEvent(self, event):
-        self.log.entry("mouseMoveEvent")
+        #self.log.entry("mouseMoveEvent")
 
         if self.selecting:
-            self.selectionEnd = event.position().toPoint()
+            self.sel_end = event.position().toPoint()
             self.update()
 
         super().mouseMoveEvent(event)
 
-        self.log.exit("mouseMoveEvent")
+        #self.log.exit("mouseMoveEvent")
 
     #
     # -----------------------------------------------
@@ -226,14 +231,14 @@ class FractalWidget(QWidget):
     def mousePressEvent(self, event):
         self.log.entry("mousePressEvent")
 
-        if self.thread != None:
+        if self.thread is not None:
             self.log.write("Thread still working!")
             return
 
         if event.button() == Qt.MouseButton.LeftButton:
             self.selecting = True
-            self.selectionStart = (event.position().toPoint())
-            self.selectionEnd = self.selectionStart
+            self.sel_start = (event.position().toPoint())
+            self.sel_end = self.sel_start
             self.update()
 
         super().mousePressEvent(event)
@@ -251,12 +256,12 @@ class FractalWidget(QWidget):
 
         if event.button() == Qt.MouseButton.LeftButton:
             if self.selecting:
-                self.selectionEnd = event.position().toPoint()
-                rect = self.getSelectionRect()
+                self.sel_end = event.position().toPoint()
+                rect = self.get_selection_rect()
                 self.selecting = False
                 self.update()
                 # Neuen Fraktalbereich berechnen
-                self.calculateSelectedArea(rect)
+                self.calculate_selected_area(rect)
 
         super().mouseReleaseEvent(event)
 
@@ -277,8 +282,8 @@ class FractalWidget(QWidget):
 
         # Draw cursor of selection
 
-        if (self.selecting and self.selectionStart is not None and self.selectionEnd is not None):
-            rect = self.getSelectionRect()
+        if (self.selecting and self.sel_start is not None and self.sel_end is not None):
+            rect = self.get_selection_rect()
 
             pen = QPen(QColor(255, 255, 255))
             pen.setWidth(2)
@@ -294,64 +299,64 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def setParameters(self, fractalArea, drawDimensions, iterationLimit, colorPalette):
-        self.log.entry("setFractalArea")
+    def set_parameters(self, frac_area, draw_dim, iter_lim, col_pal):
+        self.log.entry("set_parameters")
 
-        self.fractalArea = fractalArea
-        self.drawDimensions = copy.deepcopy(drawDimensions)
-        self.iterationLimit = iterationLimit
-        self.colorPalette = copy.deepcopy(colorPalette)
+        self.frac_area = frac_area
+        self.draw_dim = copy.deepcopy(draw_dim)
+        self.iter_lim = iter_lim
+        self.cp = copy.deepcopy(col_pal)
 
-        self.log.write(str(self.fractalArea))
-        self.log.write(str(self.drawDimensions))
-        self.log.write(str(self.iterationLimit))
+        self.log.write(str(self.frac_area))
+        self.log.write(str(self.draw_dim))
+        self.log.write(str(self.iter_lim))
 
-        self.setFixedSize(self.drawDimensions['width'], self.drawDimensions['height'])
+        self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
 
-        self.log.exit("setFractalArea")
+        self.log.exit("set_parameters")
 
     #
     # -----------------------------------------------
     #
 
-    def startCalculation(self):
-        self.log.entry("startCalculation")
+    def start_calculation(self):
+        self.log.entry("start_calculation")
 
         # Thread/Worker
 
         self.thread = QThread()
         self.worker = FractalWorker.FractalWorker(
-            self.fractalArea,
-            self.drawDimensions,
-            self.iterationLimit,
-            self.colorPalette
+            self.frac_area,
+            self.draw_dim,
+            self.iter_lim,
+            self.cp
         )
 
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.calculate)
-        self.thread.finished.connect(self.threadFinished)
+        self.thread.finished.connect(self.thread_finished)
         self.thread.finished.connect(self.thread.deleteLater)
 
         self.worker.progress.connect(self.progress)
 
-        self.worker.finished.connect(self.calculationFinished)
+        self.worker.finished.connect(self.calculation_finished)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
 
         self.thread.start()
 
         self.log.write("self.thread.isRunning()=" + str(self.thread.isRunning()))
-        self.log.exit("startCalculation")
+        self.log.exit("start_calculation")
 
     #
     # -----------------------------------------------
     #
 
-    def threadFinished(self):
-        self.log.entry("threadFinished")
+    def thread_finished(self):
+        self.log.entry("thread_finished")
 
         self.worker = None
         self.thread = None
 
-        self.log.exit("threadFinished")
+        self.log.exit("thread_finished")

@@ -1,27 +1,27 @@
 import copy
 import math
 
-from PySide6.QtCore import QObject, QThread, Signal, Slot
-from PySide6.QtGui import QImage, QColor, QPainter
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtGui import QImage, QColor
 
 import Logging
+
 
 class FractalWorker(QObject):
     progress = Signal(int)
     finished = Signal(QImage)
 
-    def __init__(self, fractalArea, drawDimensions, iterationLimit, colorPalette):
+    def __init__(self, frac_area, draw_dim, iter_lim, col_pal):
         super().__init__()
 
         self.log = Logging.Logging("FractalWorker", True)
         self.log.entry("init")
 
-        self.fractalArea = fractalArea
-        self.drawDimensions = copy.deepcopy(drawDimensions)
-        self.iterationLimit = iterationLimit
-        self.colorPalette = copy.deepcopy(colorPalette)
-        # self.log.write("self.colorPalette=" + str(self.colorPalette))
+        self.frac_area = frac_area
+        self.draw_dim = copy.deepcopy(draw_dim)
+        self.iter_lim = iter_lim
+        self.cp = copy.deepcopy(col_pal)
+        # self.log.write("self.cp=" + str(self.cp))
 
     @Slot()
     def calculate(self):
@@ -29,8 +29,8 @@ class FractalWorker(QObject):
         self.log.write("calculate")
 
         image = QImage(
-            self.drawDimensions['width'],
-            self.drawDimensions['height'],
+            self.draw_dim['width'],
+            self.draw_dim['height'],
             QImage.Format.Format_RGB32
         )
         color = QColor()
@@ -39,25 +39,25 @@ class FractalWorker(QObject):
 
         image.fill(QColor(0, 0, 0))
 
-        xStep = self.fractalArea['realWidth'] / self.drawDimensions['width']
-        yStep = self.fractalArea['imagHeight'] / self.drawDimensions['height']
+        xStep = self.frac_area['realWidth'] / self.draw_dim['width']
+        yStep = self.frac_area['imagHeight'] / self.draw_dim['height']
 
-        realOrigin = self.fractalArea['realOrigin']
-        imagOrigin = self.fractalArea['imagOrigin']
+        #realOrigin = self.frac_area['realOrigin']
+        #imagOrigin = self.frac_area['imagOrigin']
 
         valueLimitSquared = 4.0
 
-        realPart = self.fractalArea['realOrigin']
-        imagPart = self.fractalArea['imagOrigin']
+        realPart = self.frac_area['realOrigin']
+        imagPart = self.frac_area['imagOrigin']
 
-        while y < self.drawDimensions['height']:
+        while y < self.draw_dim['height']:
 
-            while x < self.drawDimensions['width']:
+            while x < self.draw_dim['width']:
 
                 c = complex(realPart, imagPart)
                 z = 0 + 0j
                 loop = 0
-                while loop < self.iterationLimit:
+                while loop < self.iter_lim:
                     loop = loop + 1
                     z = z * z + c
                     valueSquared = z.real * z.real + z.imag * z.imag
@@ -67,7 +67,7 @@ class FractalWorker(QObject):
                 if valueSquared > valueLimitSquared:
 
                     # c is not part of the mandelbrot set
-                    r, g, b = self.getMandelbrotColor(loop, abs(math.sqrt(valueSquared)))
+                    r, g, b = self.get_mandelbrot_color(loop, abs(math.sqrt(valueSquared)))
                     color.setRgb(r, g, b)
                     image.setPixelColor(x, y, color)
 
@@ -79,7 +79,7 @@ class FractalWorker(QObject):
                 realPart = realPart + xStep
 
             x = 0
-            realPart = self.fractalArea['realOrigin']
+            realPart = self.frac_area['realOrigin']
 
             y = y + 1
             imagPart = imagPart + yStep
@@ -94,8 +94,8 @@ class FractalWorker(QObject):
     # -----------------------------------------------
     #
 
-    def getMandelbrotColor(self, loop, value):
-        self.log.entry("getMandelbrotColor")
+    def get_mandelbrot_color(self, loop, value):
+        self.log.entry("get_mandelbrot_color")
 
         # Calculate smoothed iteration value
         smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
@@ -110,24 +110,24 @@ class FractalWorker(QObject):
         # color(velocity) = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase))
         #
 
-        b = self.colorPalette['brightnessR']
-        c = self.colorPalette['contrastR']
-        f = self.colorPalette['frequencyR']
-        p = self.colorPalette['phaseR']
+        b = self.cp['brightnessR']
+        c = self.cp['contrastR']
+        f = self.cp['frequencyR']
+        p = self.cp['phaseR']
         red = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
 
-        b = self.colorPalette['brightnessG']
-        c = self.colorPalette['contrastG']
-        f = self.colorPalette['frequencyG']
-        p = self.colorPalette['phaseG']
+        b = self.cp['brightnessG']
+        c = self.cp['contrastG']
+        f = self.cp['frequencyG']
+        p = self.cp['phaseG']
         green = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
 
-        b = self.colorPalette['brightnessB']
-        c = self.colorPalette['contrastB']
-        f = self.colorPalette['frequencyB']
-        p = self.colorPalette['phaseB']
+        b = self.cp['brightnessB']
+        c = self.cp['contrastB']
+        f = self.cp['frequencyB']
+        p = self.cp['phaseB']
         blue = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
 
-        self.log.exit("getMandelbrotColor")
+        self.log.exit("get_mandelbrot_color")
 
         return red, green, blue
