@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(appName + " " + appVersion)
 
-        self.log = Logging.Logging(appName + " " + appVersion, True)
+        self.log = Logging.Logging(appName + " " + appVersion, False)
         self.log.write("--- " + appName + " " + appVersion + " ---")
         self.log.entry("init")
 
@@ -318,7 +318,7 @@ class MainWindow(QMainWindow):
                 self.cp = element
         self.log.write(str(self.cp))
 
-        self.fw.change_color_palette(self.cp)
+        self.fw.change_col_pal(self.cp)
 
         self.log.exit("cp_text_changed")
 
@@ -541,7 +541,7 @@ class MainWindow(QMainWindow):
     #
 
     def update_progress(self, value):
-        self.log.entry("update_progress")
+        self.log.entry("update_progress", True)
 
         #
         # 1st: adapt range of progress bar to current y-dimension of drawing
@@ -563,7 +563,7 @@ class MainWindow(QMainWindow):
 
             self.iter_lim_edit.setText(str(self.iter_lim))
 
-        # self.log.write("value: " + str(value) + "/" + str(self.fw.height()))
+        self.log.write("value: " + str(value) + "/" + str(self.fw.height()), False)
 
         self.progress_bar.setValue(value)
         if value >= self.progress_bar.maximum():
@@ -571,7 +571,7 @@ class MainWindow(QMainWindow):
         else:
             self.start_btn.setEnabled(False)
 
-        self.log.exit("update_progress")
+        self.log.exit("update_progress", True)
 
     #
     # -----------------------------------------------

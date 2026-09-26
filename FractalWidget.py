@@ -19,7 +19,7 @@ class FractalWidget(QWidget):
     def __init__(self, frac_area, draw_dim, iter_lim, col_pal):
         super().__init__()
 
-        self.log = Logging.Logging("FractalWidget", True)
+        self.log = Logging.Logging("FractalWidget", False)
         self.log.entry("init")
 
         self.frac_area = frac_area
@@ -76,17 +76,17 @@ class FractalWidget(QWidget):
         xStep = self.frac_area['realWidth'] / self.draw_dim['width']
         yStep = self.frac_area['imagHeight'] / self.draw_dim['height']
 
-        realOrigin = self.frac_area['realOrigin'] + rect.left() * xStep
-        imagOrigin = self.frac_area['imagOrigin'] + rect.top() * yStep
+        real_orig = self.frac_area['realOrigin'] + rect.left() * xStep
+        imag_orig = self.frac_area['imagOrigin'] + rect.top() * yStep
 
-        realWidth = rect.width() * xStep
-        imagHeight = rect.height() * yStep
+        real_width = rect.width() * xStep
+        imag_height = rect.height() * yStep
 
         newArea = {
-            'realOrigin': realOrigin,
-            'imagOrigin': imagOrigin,
-            'realWidth': realWidth,
-            'imagHeight': imagHeight
+            'realOrigin' : real_orig,
+            'imagOrigin' : imag_orig,
+            'realWidth'  : real_width,
+            'imagHeight' : imag_height
         }
         self.log.write("newArea=" + str(newArea))
 
@@ -157,18 +157,18 @@ class FractalWidget(QWidget):
 
         if dx != 0 and dy != 0:
             delta_ratio = dx / dy
-            self.log.write("rectRatio     =" + str(delta_ratio))
+            self.log.write("delta_ratio =" + str(delta_ratio))
 
             draw_ratio = self.draw_dim['width'] / self.draw_dim['height']
-            self.log.write("draw_ratio  =" + str(draw_ratio))
+            self.log.write("draw_ratio =" + str(draw_ratio))
 
             if dx < 0:
                 dx = -abs(int(dy * draw_ratio))
             else:
                 dx = abs(int(dy * draw_ratio))
             delta_ratio = dx / dy
-            self.log.write("correctedRatio=" + str(delta_ratio))
-            self.log.write("corrected dx=" + str(dx) + " / corrected dy=" + str(dy))
+            self.log.write("adapted delta_ratio=" + str(delta_ratio))
+            self.log.write("adapted dx=" + str(dx) + " / adapted dy=" + str(dy))
 
         # Length/Width of the rectangle. Take the shorter one.
         size = min(abs(dx), abs(dy))
@@ -212,7 +212,7 @@ class FractalWidget(QWidget):
     # Mouse moved
 
     def mouseMoveEvent(self, event):
-        #self.log.entry("mouseMoveEvent")
+        self.log.entry("mouseMoveEvent", False)
 
         if self.selecting:
             self.sel_end = event.position().toPoint()
@@ -220,7 +220,7 @@ class FractalWidget(QWidget):
 
         super().mouseMoveEvent(event)
 
-        #self.log.exit("mouseMoveEvent")
+        self.log.exit("mouseMoveEvent", False)
 
     #
     # -----------------------------------------------

@@ -14,14 +14,14 @@ class FractalWorker(QObject):
     def __init__(self, frac_area, draw_dim, iter_lim, col_pal):
         super().__init__()
 
-        self.log = Logging.Logging("FractalWorker", True)
+        self.log = Logging.Logging("FractalWorker", False)
         self.log.entry("init")
 
         self.frac_area = frac_area
         self.draw_dim = copy.deepcopy(draw_dim)
         self.iter_lim = iter_lim
         self.cp = copy.deepcopy(col_pal)
-        # self.log.write("self.cp=" + str(self.cp))
+        self.log.write("self.cp=" + str(self.cp), True)
 
     @Slot()
     def calculate(self):
@@ -95,7 +95,7 @@ class FractalWorker(QObject):
     #
 
     def get_mandelbrot_color(self, loop, value):
-        self.log.entry("get_mandelbrot_color")
+        self.log.entry("get_mandelbrot_color", False)
 
         # Calculate smoothed iteration value
         smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
@@ -103,7 +103,7 @@ class FractalWorker(QObject):
         # Normed value between 0.0 and 1.0 (higher value = higher frequence of color change)
         velocity = smoothed / 40.0
 
-        # self.log.write("smoothed=" + str(smoothed) + " / " + "velocity=" +str(velocity))
+        self.log.write("smoothed=" + str(smoothed) + " / " + "velocity=" +str(velocity), False)
 
         #
         # Define cosinus palette (phase value defines time shifted increase of r,g,b):
@@ -128,6 +128,6 @@ class FractalWorker(QObject):
         p = self.cp['phaseB']
         blue = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
 
-        self.log.exit("get_mandelbrot_color")
+        self.log.exit("get_mandelbrot_color", False)
 
         return red, green, blue
