@@ -32,9 +32,9 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(appName + " " + appVersion)
 
-        self.log = Logging.Logging(appName + " " + appVersion, False)
-        self.log.write("--- " + appName + " " + appVersion + " ---")
-        self.log.entry("init")
+        self.log = Logging.Logging(appName + " " + appVersion, True)
+        self.log.write("--- " + appName + " " + appVersion + " ---", False)
+        self.log.entry("init", False)
 
         # Default coordinates of the fractal (HD ratio)
         self.frac_area = {
@@ -64,12 +64,12 @@ class MainWindow(QMainWindow):
         }
 
         # Default fractal set to calculate
-        self.def_frac_set  = "Mandelbrot"
-        self.next_frac_set = "Mandelbrot"
+        self.default_frac_set = "Mandelbrot"
+        self.current_frac_set = "Mandelbrot"
 
         # Default color palette
         self.cp = copy.deepcopy(self.define_color_palettes())
-        self.log.write("self.cp=" + str(self.cp))
+        self.log.write("self.cp=" + str(self.cp), False)
 
         #
         # Build the main window with all the widgets
@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
         yOffset = 10
 
         # Title of the main window
-        self.setWindowTitle("qtFractals 0.2")
+        self.setWindowTitle(appName + " " + appVersion)
 
         # Build labels
         real_part_lbl  = QLabel("<b>Origin of real part</b>:", self)
@@ -150,7 +150,6 @@ class MainWindow(QMainWindow):
         self.rad_btn_mandel.setChecked(True)
         self.rad_btn_mandel.toggled.connect(self.toggled_radio_btn)
         self.rad_btn_julia = QRadioButton("Julia")
-        self.rad_btn_julia.setEnabled(False)
         self.rad_btn_julia.toggled.connect(self.toggled_radio_btn)
 
         # "Default" Button
@@ -302,34 +301,34 @@ class MainWindow(QMainWindow):
         self.adjustSize()
         self.setMinimumSize(self.sizeHint())
 
-        self.log.exit("init")
+        self.log.exit("init", False)
 
     #
     # -----------------------------------------------
     #
 
     def cp_text_changed(self, text):
-        self.log.entry("cp_text_changed")
+        self.log.entry("cp_text_changed", False)
 
         self.log.write(text)
 
         for element in self.cp_list:
             if text == element['name']:
                 self.cp = element
-        self.log.write(str(self.cp))
+        self.log.write(str(self.cp), False)
 
         self.fw.change_col_pal(self.cp)
 
-        self.log.exit("cp_text_changed")
+        self.log.exit("cp_text_changed", False)
 
     #
     # -----------------------------------------------
     #
 
     def dd_text_changed(self, text):
-        self.log.entry("dd_text_changed")
+        self.log.entry("dd_text_changed", False)
 
-        self.log.write(text)
+        self.log.write(text, False)
 
         if text == self.sel_draw_dim['HD']:
             self.x_dim_edit.setText("1280")
@@ -350,14 +349,14 @@ class MainWindow(QMainWindow):
             self.x_dim_edit.setText("7680")
             self.y_dim_edit.setText("4320")
 
-        self.log.exit("dd_text_changed")
+        self.log.exit("dd_text_changed", False)
 
     #
     # -----------------------------------------------
     #
 
     def define_color_palettes(self):
-        self.log.entry("define_color_palettes")
+        self.log.entry("define_color_palettes", False)
 
         #
         # Color palette:
@@ -414,7 +413,7 @@ class MainWindow(QMainWindow):
 
         self.cp_list = [self.cp_deep_forest, self.cp_fire_and_ice, self.cp_grayscale]
 
-        self.log.exit("define_color_palettes")
+        self.log.exit("define_color_palettes", False)
 
         # return default color palette
         return self.cp_fire_and_ice
@@ -424,16 +423,16 @@ class MainWindow(QMainWindow):
     #
 
     def save_image(self):
-        self.log.entry("save_image")
+        self.log.entry("save_image", False)
 
         image = self.fw.get_image()
 
         file_filters = ["bmp", "jpg", "jpeg", "png"]
         self.log.write("file_filters=" + str(file_filters))
         initial_filter = file_filters[3]
-        self.log.write("initial_filter=" + initial_filter)
+        self.log.write("initial_filter=" + initial_filter, False)
         filters = ";;".join(file_filters)
-        self.log.write("filters=" + filters)
+        self.log.write("filters=" + filters, False)
 
         filename, selectedFilter = QFileDialog.getSaveFileName(
             self,
@@ -444,26 +443,25 @@ class MainWindow(QMainWindow):
             ";;",
             ""
         )
-        self.log.write("filename=" + filename +
-                       " / selectedFilter=" + selectedFilter)
+        self.log.write("filename=" + filename +" / selectedFilter=" + selectedFilter, False)
         if filename == "":
-            self.log.exit("save_image")
+            self.log.exit("save_image", False)
             return
 
         result = image.save(filename, None, 100)
         if result:
-            self.log.write("Image successful saved")
+            self.log.write("Image successful saved", False)
         else:
-            self.log.error("Image not saved!")
+            self.log.error("Image not saved!", False)
 
-        self.log.exit("save_image")
+        self.log.exit("save_image", False)
 
     #
     # -----------------------------------------------
     #
 
     def set_default_values(self):
-        self.log.entry("set_default_values")
+        self.log.entry("set_default_values", False)
 
         self.real_part_edit.setText(str(self.const_frac_area['realOrigin']))
         self.imag_part_edit.setText(str(self.const_frac_area['imagOrigin']))
@@ -482,21 +480,22 @@ class MainWindow(QMainWindow):
     #
 
     def toggled_radio_btn(self):
-        self.log.entry("toggled_radio_btn")
+        self.log.entry("toggled_radio_btn", True)
 
         if self.sender().isChecked():
-            self.next_frac_set = self.sender().text()
-            self.log.write(str(self.sender().isChecked()))
-            self.log.write(self.sender().text())
+            self.current_frac_set = self.sender().text()
+            self.log.write("self.sender().isChecked()=" + str(self.sender().isChecked()), True)
+            self.log.write("self.sender().text()=" + self.sender().text(), True)
+            self.log.write("self.current_frac_set=" + self.current_frac_set, True)
 
-        self.log.exit("toggled_radio_btn")
+        self.log.exit("toggled_radio_btn", True)
 
     #
     # -----------------------------------------------
     #
 
     def trigger_calculation(self):
-        self.log.entry("trigger_calculation")
+        self.log.entry("trigger_calculation", False)
 
         if self.real_part_edit.text() != "" and self.imag_part_edit.text() != "" \
                 and self.width_edit.text() != "" \
@@ -511,13 +510,13 @@ class MainWindow(QMainWindow):
                 'realWidth': float(self.width_edit.text()),
                 'imagHeight': float(self.height_edit.text())
             }
-            self.log.write("self.frac_area=" + str(self.frac_area))
+            self.log.write("self.frac_area=" + str(self.frac_area), False)
 
             self.draw_dim = {
                 'width': int(self.x_dim_edit.text()),
                 'height': int(self.y_dim_edit.text())
             }
-            self.log.write("self.draw_dim=" + str(self.frac_area))
+            self.log.write("self.draw_dim=" + str(self.draw_dim), False)
 
             self.iter_lim = int(self.iter_lim_edit.text())
             self.log.write("self.iter_lim=" + str(self.iter_lim))
@@ -534,14 +533,14 @@ class MainWindow(QMainWindow):
         else:
             QMessageBox.about(self, "Error", "All fields need an input!")
 
-        self.log.exit("trigger_calculation")
+        self.log.exit("trigger_calculation", False)
 
     #
     # -----------------------------------------------
     #
 
     def update_progress(self, value):
-        self.log.entry("update_progress", True)
+        self.log.entry("update_progress", False)
 
         #
         # 1st: adapt range of progress bar to current y-dimension of drawing
@@ -571,14 +570,14 @@ class MainWindow(QMainWindow):
         else:
             self.start_btn.setEnabled(False)
 
-        self.log.exit("update_progress", True)
+        self.log.exit("update_progress", False)
 
     #
     # -----------------------------------------------
     #
 
     def end_app(self):
-        self.log.entry("end_app")
+        self.log.entry("end_app", False)
 
         app.quit()
 

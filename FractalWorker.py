@@ -14,19 +14,19 @@ class FractalWorker(QObject):
     def __init__(self, frac_area, draw_dim, iter_lim, col_pal):
         super().__init__()
 
-        self.log = Logging.Logging("FractalWorker", False)
-        self.log.entry("init")
+        self.log = Logging.Logging("FractalWorker", True)
+        self.log.entry("init", False)
 
         self.frac_area = frac_area
         self.draw_dim = copy.deepcopy(draw_dim)
         self.iter_lim = iter_lim
         self.cp = copy.deepcopy(col_pal)
-        self.log.write("self.cp=" + str(self.cp), True)
+        self.log.write("self.cp=" + str(self.cp), False)
 
     @Slot()
     def calculate(self):
 
-        self.log.write("calculate")
+        self.log.write("calculate", False)
 
         image = QImage(
             self.draw_dim['width'],
@@ -45,29 +45,29 @@ class FractalWorker(QObject):
         #realOrigin = self.frac_area['realOrigin']
         #imagOrigin = self.frac_area['imagOrigin']
 
-        valueLimitSquared = 4.0
+        val_lim_squared = 4.0
 
-        realPart = self.frac_area['realOrigin']
-        imagPart = self.frac_area['imagOrigin']
+        real_part = self.frac_area['realOrigin']
+        imag_part = self.frac_area['imagOrigin']
 
         while y < self.draw_dim['height']:
 
             while x < self.draw_dim['width']:
 
-                c = complex(realPart, imagPart)
+                c = complex(real_part, imag_part)
                 z = 0 + 0j
                 loop = 0
                 while loop < self.iter_lim:
                     loop = loop + 1
                     z = z * z + c
-                    valueSquared = z.real * z.real + z.imag * z.imag
-                    if valueSquared > valueLimitSquared:
+                    val_squared = z.real * z.real + z.imag * z.imag
+                    if val_squared > val_lim_squared:
                         break
 
-                if valueSquared > valueLimitSquared:
+                if val_squared > val_lim_squared:
 
                     # c is not part of the mandelbrot set
-                    r, g, b = self.get_mandelbrot_color(loop, abs(math.sqrt(valueSquared)))
+                    r, g, b = self.get_mandelbrot_color(loop, abs(math.sqrt(val_squared)))
                     color.setRgb(r, g, b)
                     image.setPixelColor(x, y, color)
 
@@ -76,17 +76,17 @@ class FractalWorker(QObject):
                     image.setPixelColor(x, y, QColor(0, 0, 0))
 
                 x = x + 1
-                realPart = realPart + xStep
+                real_part = real_part + xStep
 
             x = 0
-            realPart = self.frac_area['realOrigin']
+            real_part = self.frac_area['realOrigin']
 
             y = y + 1
-            imagPart = imagPart + yStep
+            imag_part = imag_part + yStep
 
             self.progress.emit(y)
 
-        self.log.exit("init")
+        self.log.exit("init", False)
 
         self.finished.emit(image)
 
