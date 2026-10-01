@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class Logging():
 
     def __init__(self, appName, debug):
