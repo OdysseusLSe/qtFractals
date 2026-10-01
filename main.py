@@ -11,16 +11,32 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
-    QRadioButton,
     QVBoxLayout,
     QWidget
 )
-from PySide6.QtGui import QDoubleValidator, QPixmap
-from PySide6.QtCore import Qt
+from PySide6.QtGui import QDoubleValidator, QIcon
+from PySide6.QtCore import Qt, QSize
 
 import FractalWidget
 import Logging
 
+
+#
+# Function to load the stylesheet from a file
+#
+
+def load_stylesheet(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        print("Warning: Stylesheet " + file_path + " not found.")
+        return ""
+
+
+#
+#
+#
 
 class MainWindow(QMainWindow):
 
@@ -113,9 +129,21 @@ class MainWindow(QMainWindow):
             self.dd_combo.addItem(value)
         self.dd_combo.currentTextChanged.connect(self.dd_text_changed)
 
+        #
         # Indicator if Mandelbrot set or Julia set is active (default: Mandelbrot set)
-        self.mandel_lbl = QLabel('<img src="ui/LED_small_green.png"> - Mandelbrot', self)
-        self.julia_lbl  = QLabel('<img src="ui/LED_small_red.png"> - Julia', self)
+        #
+
+        self.mandel_btn = QPushButton("Mandelbrot")
+        self.mandel_btn.setIcon(QIcon("ui/LED_small_green.png"))
+        self.mandel_btn.setIconSize(QSize(16, 16))
+        self.mandel_btn.setObjectName("mandelJuliaButton")
+        self.mandel_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
+
+        self.julia_btn = QPushButton("Julia")
+        self.julia_btn.setIcon(QIcon("ui/LED_small_red.png"))
+        self.julia_btn.setIconSize(QSize(16, 16))
+        self.julia_btn.setObjectName("mandelJuliaButton")
+        self.julia_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
 
         # "Reset" Button
         self.reset_btn = QPushButton('Reset', self)
@@ -189,7 +217,7 @@ class MainWindow(QMainWindow):
         layout_grid.addWidget(iter_lim_lbl, 0, 9)
         layout_grid.addWidget(self.iter_lim_edit, 0, 10)
 
-        layout_grid.addWidget(self.mandel_lbl, 0, 12)
+        layout_grid.addWidget(self.mandel_btn, 0, 12)
 
         layout_grid.addWidget(self.reset_btn, 0, 14)
 
@@ -209,7 +237,7 @@ class MainWindow(QMainWindow):
             Qt.AlignmentFlag.AlignHCenter
         )
 
-        layout_grid.addWidget(self.julia_lbl, 1, 12)
+        layout_grid.addWidget(self.julia_btn, 1, 12)
 
         layout_grid.addWidget(self.start_btn, 1, 14)
 
@@ -569,11 +597,11 @@ class MainWindow(QMainWindow):
     #
 
     def update_progress(self, value):
-        self.log.entry("update_progress", True)
+        self.log.entry("update_progress", False)
 
         if value == 1:
 
-            self.log.write("Calculation just started.", True)
+            self.log.write("Calculation just started.", False)
 
             frac_area, draw_dim, iter_lim, frac_set, julia_c = self.fw.get_parameters()
 
@@ -582,7 +610,7 @@ class MainWindow(QMainWindow):
             self.iter_lim         = iter_lim
             self.current_frac_set = frac_set
             self.julia_c          = julia_c
-            self.log.write("self.current_frac_set=" + self.current_frac_set, True)
+            self.log.write("self.current_frac_set=" + self.current_frac_set, False)
 
             # Adapt text fields to current values
 
@@ -600,11 +628,13 @@ class MainWindow(QMainWindow):
             self.iter_lim_edit.setText(str(self.iter_lim))
 
             if self.current_frac_set == "Mandelbrot":
-                self.mandel_lbl.setText('<img src="ui/LED_small_green.png"> - Mandelbrot')
-                self.julia_lbl.setText('<img src="ui/LED_small_red.png"> - Julia')
+                self.mandel_btn.setIcon(QIcon("ui/LED_small_green.png"))
+                self.julia_btn.setIcon(QIcon("ui/LED_small_red.png"))
             else:
-                self.mandel_lbl.setText('<img src="ui/LED_small_red.png"> - Mandelbrot')
-                self.julia_lbl.setText('<img src="ui/LED_small_green.png"> - Julia')
+                self.mandel_btn.setIcon(QIcon("ui/LED_small_red.png"))
+                self.julia_btn.setIcon(QIcon("ui/LED_small_green.png"))
+            self.mandel_btn.update()
+            self.julia_btn.update() 
 
         self.log.write("value=" + str(value) + " / " + str(self.fw.height()), False)
 
@@ -616,7 +646,7 @@ class MainWindow(QMainWindow):
             self.reset_btn.setEnabled(False)
             self.start_btn.setEnabled(False)
 
-        self.log.exit("update_progress", True)
+        self.log.exit("update_progress", False)
 
     #
     # -----------------------------------------------
@@ -635,6 +665,9 @@ class MainWindow(QMainWindow):
 # The application runs until the window will be closed
 
 app = QtWidgets.QApplication([])
+
+stylesheet = load_stylesheet("ui/style.css")
+app.setStyleSheet(stylesheet)
 
 win = MainWindow()
 win.show()
