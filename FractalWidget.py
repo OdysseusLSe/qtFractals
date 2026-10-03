@@ -34,7 +34,7 @@ class FractalWidget(QWidget):
         self.log.write("self.iter_lim=" + str(self.iter_lim), False)
         self.log.write("self.cp=" + str(self.cp), False)
         self.log.write("self.julia_c=" + str(self.julia_c), False)
-        self.log.write("self.current_frac_set=" + str(self.current_frac_set), True)
+        self.log.write("self.current_frac_set=" + str(self.current_frac_set), False)
 
         self.image = QImage()
 
@@ -47,6 +47,10 @@ class FractalWidget(QWidget):
 
         # Mouse variables for mandelbrot selection
         self.sel_point = None
+
+        # Set start parameter for future thread check
+        self.thread = None
+        self.worker = None
 
         self.start_calculation()
 
@@ -74,10 +78,10 @@ class FractalWidget(QWidget):
     # Calculate selection on fractal base
 
     def calculate_selected_area(self, rect):
-        self.log.entry("calculate_selected_area", False)
+        self.log.entry("calculate_selected_area", True)
 
         # Check if selected area is to small
-        if rect.width() < 2 or rect.height() < 2:
+        if rect.width() < 5 or rect.height() < 5:
             return
 
         # Size of the pixel in the complex plane
@@ -87,7 +91,7 @@ class FractalWidget(QWidget):
         real_orig = self.frac_area['realOrigin'] + rect.left() * xStep
         imag_orig = self.frac_area['imagOrigin'] + rect.top() * yStep
 
-        real_width = rect.width() * xStep
+        real_width  = rect.width()  * xStep
         imag_height = rect.height() * yStep
 
         newArea = {
@@ -96,7 +100,7 @@ class FractalWidget(QWidget):
             'realWidth'  : real_width,
             'imagHeight' : imag_height
         }
-        self.log.write("newArea=" + str(newArea), False)
+        self.log.write("newArea=" + str(newArea), True)
 
         self.set_parameters(
             newArea,
@@ -108,7 +112,7 @@ class FractalWidget(QWidget):
         )
         self.start_calculation()
 
-        self.log.exit("calculate_selected_area", False)
+        self.log.exit("calculate_selected_area", True)
 
     #
     # -----------------------------------------------
@@ -120,6 +124,7 @@ class FractalWidget(QWidget):
         self.log.entry("change_col_pal", False)
 
         self.cp = copy.deepcopy(col_pal)
+        self.start_calculation()
 
         self.log.exit("change_col_pal", False)
 
@@ -127,20 +132,19 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def define_julia_parameters(self):
-        self.log.entry("define_julia_parameters", True)
+    def define_julia_parameter(self):
+        self.log.entry("define_julia_parameter", True)
 
         x = self.sel_point.x()
         y = self.sel_point.y()
+        self.log.write("x=" + str(x) + " / y=" + str(y), True)
 
         x = self.frac_area['realOrigin'] + x * self.frac_area['realWidth'] / self.draw_dim['width']
         y = self.frac_area['imagOrigin'] + y * self.frac_area['imagHeight'] / self.draw_dim['height']
         self.julia_c = complex(x, y)
+        self.log.write("self.julia_c=(" + str(x) + "," + str(y) + ")", True)
 
-        self.log.write("x=" + str(x) + " / y=" + str(y), True)
-        self.log.write(str("self.julia_c=") + str(self.julia_c), True)
-
-        self.log.exit("define_julia_parameters", True)
+        self.log.exit("define_julia_parameter", True)
 
     #
     # -----------------------------------------------
@@ -175,69 +179,70 @@ class FractalWidget(QWidget):
     # Auswahlquadrat erzeugen
 
     def get_selection_rect(self):
-        self.log.entry("get_selection_rect", False)
+        self.log.entry("get_selection_rect", True)
 
-        x1 = self.sel_start.x()
-        y1 = self.sel_start.y()
-        self.log.write("x1=" + str(x1) + " / y1=" + str(y1), False)
-
-        x2 = self.sel_end.x()
-        y2 = self.sel_end.y()
-        self.log.write("x2=" + str(x2) + " / y2=" + str(y2), False)
+        x1, y1 = self.sel_start.x(), self.sel_start.y()
+        x2, y2 = self.sel_end.x(), self.sel_end.y()
+        self.log.write("x1,y1=" + str(x1) + "," + str(y1) + " / x2,y2=" + str(x2) + "," + str(y2), True)
 
         dx = x2 - x1
         dy = y2 - y1
-        self.log.write("dx=" + str(dx) + " / dy=" + str(dy), False)
 
         if dx != 0 and dy != 0:
             delta_ratio = dx / dy
-            self.log.write("delta_ratio =" + str(delta_ratio), False)
+            self.log.write("delta_ratio=" + str(delta_ratio), True)
 
             draw_ratio = self.draw_dim['width'] / self.draw_dim['height']
-            self.log.write("draw_ratio =" + str(draw_ratio), False)
+            self.log.write("draw_ratio=" + str(draw_ratio), True)
 
             if dx < 0:
                 dx = -abs(int(dy * draw_ratio))
             else:
                 dx = abs(int(dy * draw_ratio))
+            self.log.write("adapted dx=" + str(dx) + " / adapted dy=" + str(dy), True)
+
             delta_ratio = dx / dy
-            self.log.write("adapted delta_ratio=" + str(delta_ratio), False)
-            self.log.write("adapted dx=" + str(dx) + " / adapted dy=" + str(dy), False)
+            self.log.write("adapted delta_ratio=" + str(delta_ratio), True)
 
         # Length/Width of the rectangle. Take the shorter one.
         size = min(abs(dx), abs(dy))
         if size <= 0:
+            self.log.write("Selection area too small!", True)
+            self.log.exit("get_selection_rect", True)
             return QRect(x1, y1, 0, 0)
 
-        # Richtung bestimmen
+        #
+        # Determine the top-left corner of the rectangle based on the direction of the drag
+        #
 
         if dx >= 0:
-            left = x1
+            x = x1
         else:
-            left = x1 - abs(dx)
+            x = x1 - abs(dx)
 
         if dy >= 0:
-            top = y1
+            y = y1
         else:
-            top = y1 - abs(dy)
+            y = y1 - abs(dy)
 
         # Rectangle should stay within drawing area
 
-        if left < 0:
-            left = 0
+        if x < 0:
+            x = 0
 
-        if top < 0:
-            top = 0
+        if y < 0:
+            y = 0
 
-        if left + abs(dx) > self.draw_dim['width']:
-            left = self.draw_dim['width'] - abs(dx)
+        if x + abs(dx) > self.draw_dim['width']:
+            x = self.draw_dim['width'] - abs(dx)
 
-        if top + abs(dy) > self.draw_dim['height']:
-            top = self.draw_dim['height'] - abs(dy)
+        if y + abs(dy) > self.draw_dim['height']:
+            y = self.draw_dim['height'] - abs(dy)
 
-        self.log.exit("get_selection_rect", False)
+        self.log.write("x,y,dx,dy=" + str(x) + "," + str(y) + "," + str(abs(dx)) + "," + str(abs(dy)), True)
 
-        return QRect(int(left), int(top), int(abs(dx)), int(abs(dy)))
+        self.log.exit("get_selection_rect", True)
+        return QRect(int(x), int(y), int(abs(dx)), int(abs(dy)))
 
     #
     # -----------------------------------------------
@@ -263,24 +268,25 @@ class FractalWidget(QWidget):
     # Mouse pressed
 
     def mousePressEvent(self, event):
-        self.log.entry("mousePressEvent", False)
+        self.log.entry("mousePressEvent", True)
 
-        if self.thread is not None:
-            self.log.write("Thread still working!", False)
+        if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
+            self.log.write("Thread still working!", True)
+            self.log.exit("mousePressEvent", True)
             return
 
         if event.button() == Qt.MouseButton.LeftButton:
             if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 # Calculate Julia set at selected coordinations
-                self.log.write("LMB and [CMD]/[Control] pressed.", True)
+                self.log.write("LMB and [CMD]/[Control] pressed.", False)
                 self.current_frac_set = "Julia"
                 self.sel_point = (event.position().toPoint())
                 self.update()
-                self.define_julia_parameters()
+                self.define_julia_parameter()
                 self.start_calculation()
             else:
                 # Start selection area to zoom in
-                self.log.write("LMB pressed.", True)
+                self.log.write("LMB pressed.", False)
                 self.selecting = True
                 self.sel_start = (event.position().toPoint())
                 self.sel_end = self.sel_start
@@ -288,7 +294,7 @@ class FractalWidget(QWidget):
 
         super().mousePressEvent(event)
 
-        self.log.exit("mousePressEvent", False)
+        self.log.exit("mousePressEvent", True)
 
     #
     # -----------------------------------------------
@@ -320,6 +326,8 @@ class FractalWidget(QWidget):
         self.log.entry("paintEvent", False)
 
         if self.image.isNull():
+            self.log.error("Missing image!", False)
+            self.log.exit("paintEvent", False)
             return
 
         painter = QPainter(self)
@@ -347,12 +355,12 @@ class FractalWidget(QWidget):
     def set_parameters(self, frac_area, draw_dim, iter_lim, col_pal, current_frac_set, julia_c):
         self.log.entry("set_parameters", False)
 
-        self.frac_area = frac_area
-        self.draw_dim = copy.deepcopy(draw_dim)
-        self.iter_lim = iter_lim
-        self.cp = copy.deepcopy(col_pal)
+        self.frac_area        = copy.deepcopy(frac_area)
+        self.draw_dim         = copy.deepcopy(draw_dim)
+        self.iter_lim         = iter_lim
+        self.cp               = copy.deepcopy(col_pal)
         self.current_frac_set = current_frac_set
-        self.julia_c = julia_c
+        self.julia_c          = julia_c
 
         self.log.write(str(self.frac_area), False)
         self.log.write(str(self.draw_dim), False)
@@ -369,31 +377,38 @@ class FractalWidget(QWidget):
     #
 
     def start_calculation(self):
-        self.log.entry("start_calculation", False)
+        self.log.entry("start_calculation", True)
+        
+        # Falls bereits eine Berechnung läuft, abbrechen
+        if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
+            self.log.write("Thread still working!", True)
+            self.log.exit("mousePressEvent", True)
+            return
 
-        # Thread/Worker
-
+        # Create thread and worker
         self.thread = QThread()
         self.worker = FractalWorker.FractalWorker(
             self.frac_area,
             self.draw_dim,
             self.iter_lim,
             self.cp,
+            self.current_frac_set,
             self.julia_c
         )
-
         self.worker.moveToThread(self.thread)
+
+        #
+        # Connect signals and slots
+        #
 
         if self.current_frac_set == "Mandelbrot":
             self.thread.started.connect(self.worker.calculate_mandelbrot)
-        elif self.current_frac_set == "Julia":
+        else:
             self.thread.started.connect(self.worker.calculate_julia)
 
         self.thread.finished.connect(self.thread_finished)
         self.thread.finished.connect(self.thread.deleteLater)
-
-        self.worker.progress.connect(self.progress)
-
+        self.worker.progress.connect(self.progress.emit)
         self.worker.finished.connect(self.calculation_finished)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
@@ -401,7 +416,7 @@ class FractalWidget(QWidget):
         self.thread.start()
 
         self.log.write("self.thread.isRunning()=" + str(self.thread.isRunning()), False)
-        self.log.exit("start_calculation", False)
+        self.log.exit("start_calculation", True)
 
     #
     # -----------------------------------------------

@@ -599,7 +599,7 @@ class MainWindow(QMainWindow):
     def update_progress(self, value):
         self.log.entry("update_progress", False)
 
-        if value == 1:
+        if value == 0:
 
             self.log.write("Calculation just started.", False)
 
@@ -639,7 +639,7 @@ class MainWindow(QMainWindow):
         self.log.write("value=" + str(value) + " / " + str(self.fw.height()), False)
 
         self.progress_bar.setValue(value)
-        if value >= self.progress_bar.maximum():
+        if value >= self.progress_bar.maximum() - 1:
             self.reset_btn.setEnabled(True)
             self.start_btn.setEnabled(True)
         else:
