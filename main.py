@@ -473,7 +473,7 @@ class MainWindow(QMainWindow):
         filters = ";;".join(file_filters)
         self.log.write("filters=" + filters, False)
 
-        filename, selectedFilter = QFileDialog.getSaveFileName(
+        filename, selected_filter = QFileDialog.getSaveFileName(
             self,
             "",
             "",
@@ -482,7 +482,7 @@ class MainWindow(QMainWindow):
             ";;",
             ""
         )
-        self.log.write("filename=" + filename + " / selectedFilter=" + selectedFilter, False)
+        self.log.write("filename=" + filename + " / selected_filter=" + selected_filter, False)
         if filename == "":
             self.log.exit("save_image", False)
             return

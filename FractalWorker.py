@@ -62,9 +62,6 @@ class FractalWorker(QObject):
 
         val_lim_squared = 4.0
 
-        #real_part = self.frac_area['realOrigin']
-        #imag_part = self.frac_area['imagOrigin']
-
         for y in range(self.draw_dim['height']):
 
             imag_part = self.frac_area['imagOrigin'] + y * y_step
@@ -93,14 +90,6 @@ class FractalWorker(QObject):
                 else:
                     image.setPixelColor(x, y, QColor(0, 0, 0))
 
-                loop = 0
-                while loop < self.iter_lim:
-                    loop = loop + 1
-                    z = z * z + self.julia_c
-                    val_squared = z.real * z.real + z.imag * z.imag
-                    if val_squared > val_lim_squared:
-                        break
-
             self.progress.emit(y)
 
         self.log.exit("calculate_julia", False)
@@ -128,9 +117,6 @@ class FractalWorker(QObject):
         y_step = self.frac_area['imagHeight'] / self.draw_dim['height']
 
         val_lim_squared = 4.0
-
-        #real_part = self.frac_area['realOrigin']
-        #imag_part = self.frac_area['imagOrigin']
 
         for y in range(self.draw_dim['height']):
             
@@ -181,11 +167,11 @@ class FractalWorker(QObject):
         try:
             smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
         except ValueError:
+            self.log.error("ValueError: loop=" + str(loop) + " / value=" + str(value), False) 
             smoothed = loop
 
         # Normed value between 0.0 and 1.0 (higher value = higher frequence of color change)
         velocity = smoothed / 40.0
-
         self.log.write("smoothed=" + str(smoothed) + " / " + "velocity=" + str(velocity), False)
 
         #
@@ -194,24 +180,22 @@ class FractalWorker(QObject):
         # color(velocity) = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase))
         #
 
-        b = self.cp['brightnessR']
-        c = self.cp['contrastR']
-        f = self.cp['frequencyR']
-        p = self.cp['phaseR']
-        red = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
+        rgb = {}
+        for channel in ['R', 'G', 'B']:
+            b = self.cp[f'brightness{channel}']
+            c = self.cp[f'contrast{channel}']
+            f = self.cp[f'frequency{channel}']
+            p = self.cp[f'phase{channel}']
+            
+            # Mathematische Berechnung
+            raw_val = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
+            
+            # WICHTIG: Absicherung gegen Unter-/Überlauf (Clipping)
+            clipped_val = max(0, min(255, raw_val))
+            rgb[channel] = clipped_val
 
-        b = self.cp['brightnessG']
-        c = self.cp['contrastG']
-        f = self.cp['frequencyG']
-        p = self.cp['phaseG']
-        green = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
-
-        b = self.cp['brightnessB']
-        c = self.cp['contrastB']
-        f = self.cp['frequencyB']
-        p = self.cp['phaseB']
-        blue = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
+        self.log.write(f"red={rgb['R']} / green={rgb['G']} / blue={rgb['B']}", False)
 
         self.log.exit("get_color", False)
 
-        return red, green, blue
+        return rgb['R'], rgb['G'], rgb['B']
