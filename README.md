@@ -30,23 +30,24 @@ In this section I describe the main window and its controls:
 1.  **Origin coordinates of the complex area** separated by the real part
     and complex part.
 2.  **Width and height of the complex area**
-3.  **Width and height of the drawing area**. Take care that the ratio of
-    the complex area and the drawing  area are the same! (Tip: defining
-    areas to zoom in with the cursor take into account the ratio by default.)
+3.  **Width and height of the drawing area (resolution)**. Additionally to the
+    manual input you may select a few predefined resolutions. Take care that
+    the ratio of the complex area and the drawing area have the same value!
+    (Tip: defining areas to zoom in with the cursor takes into account the
+    ratio by default.)
 4.  **Itration limit** for the fractal formula. Good values are from 100 to
     1000. The bigger the value, the time consuming the calculation (more
     detailled results).
-5.  **Drawing dimensions** provided by a list of predefined values.
-6.  **Fractal indicator** that shows what kind of set (Mandelbrot or Julia)
+5.  **Fractal indicator** that shows what kind of set (Mandelbrot or Julia)
     currently is active.
-7.  **"Reset" and "Start" button**: The "Reset" button resets all values to
+6.  **"Reset" and "Start" button**: The "Reset" button resets all values to
     the values at the initial phase of the app. The "Start" button starts a
     new calculation with the values in (1), (2), (3), (4), and (5).
-8.  **The drawing area**
-9.  **The progress bar** indicates how much of the fractal has been calculated.
+7.  **The drawing area**
+8.  **The progress bar** indicates how much of the fractal has been calculated.
     The fractal set will be shown at the end of the progrss bar.
-10. **Color palettes** provides a few predefined color palettes. As soon as
-    you change the current color palette the current fractal set will be
-    recalculated with the new selected colours.
-11. **"Save" button** to save the current fractal set in a file.
-12. **"Quit" button** to exit the application.
+9. **Color palettes** provides a few predefined color palettes. As soon as
+   you change the current color palette the current fractal set will be
+   recalculated with the new selected colours.
+10. **"Save" button** to save the current fractal set in a file.
+11. **"Quit" button** to exit the application.

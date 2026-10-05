@@ -84,6 +84,8 @@ class FractalWidget(QWidget):
         if self.image.isNull():
             self.log.error("Missing image!", False)
 
+        self.setFixedSize(self.image.width(), self.image.height())
+
         self.update()
 
         self.log.exit("calculation_finished", False)
@@ -385,7 +387,7 @@ class FractalWidget(QWidget):
         self.log.write(str(self.current_frac_set), False)
         self.log.write(str(self.julia_c), False)
 
-        self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
+        #self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
 
         self.log.exit("set_parameters", False)
 

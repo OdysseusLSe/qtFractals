@@ -28,6 +28,8 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QScrollArea,
+    QStyle,
     QVBoxLayout,
     QWidget
 )
@@ -83,7 +85,7 @@ class MainWindow(QMainWindow):
 
     def build_main_window(self, appName, appVersion):
 
-        self.log.entry("build_main_window", False)
+        self.log.entry("build_main_window", True)
 
         # Offset of the widgets from the main window frame
         xOffset = 10
@@ -92,13 +94,15 @@ class MainWindow(QMainWindow):
         # Title of the main window
         self.setWindowTitle(appName + " " + appVersion)
 
+        self.setMinimumHeight(800)
+
         # Build labels
         real_part_lbl = QLabel("<b>Origin of real part</b>:", self)
         imag_part_lbl = QLabel("<b>Origin of imag. part</b>:", self)
         width_lbl     = QLabel("<b>Width</b>:", self)
         height_lbl    = QLabel("<b>Height</b>:", self)
-        xDim_lbl      = QLabel("<b>x-Dimension</b>:", self)
-        yDim_lbl      = QLabel("<b>y-Dimension</b>:", self)
+        xDim_lbl      = QLabel("<b>x-Dim</b>:", self)
+        yDim_lbl      = QLabel("<b>y-Dim</b>:", self)
         iter_lim_lbl  = QLabel("<b>Iteration limit</b>:", self)
 
         #
@@ -106,37 +110,37 @@ class MainWindow(QMainWindow):
         #
 
         self.real_part_edit = QLineEdit(self)
-        self.real_part_edit.setPlaceholderText(str(self.frac_area['realOrigin']))
+        self.real_part_edit.setText(str(self.const_frac_area['realOrigin']))
         self.real_part_edit.setValidator(QDoubleValidator(-2.0, 2.0, 4))
         self.real_part_edit.setFixedWidth(160)
 
         self.imag_part_edit = QLineEdit(self)
-        self.imag_part_edit.setPlaceholderText(str(self.frac_area['imagOrigin']))
+        self.imag_part_edit.setText(str(self.const_frac_area['imagOrigin']))
         self.imag_part_edit.setValidator(QDoubleValidator(-2.0, 2.0, 4))
         self.imag_part_edit.setFixedWidth(160)
 
         self.width_edit = QLineEdit(self)
-        self.width_edit.setPlaceholderText(str(self.frac_area['realWidth']))
+        self.width_edit.setText(str(self.const_frac_area['realWidth']))
         self.width_edit.setValidator(QDoubleValidator(0.0001, 7.1, 4))
         self.width_edit.setFixedWidth(160)
 
         self.height_edit = QLineEdit(self)
-        self.height_edit.setPlaceholderText(str(self.frac_area['imagHeight']))
+        self.height_edit.setText(str(self.const_frac_area['imagHeight']))
         self.height_edit.setValidator(QDoubleValidator(0.0001, 4.0, 4))
         self.height_edit.setFixedWidth(160)
 
         self.x_dim_edit = QLineEdit(self)
-        self.x_dim_edit.setPlaceholderText(str(self.draw_dim['width']))
+        self.x_dim_edit.setText(str(self.const_draw_dim['width']))
         self.x_dim_edit.setValidator(QDoubleValidator(0.0001, 4.0, 4))
         self.x_dim_edit.setFixedWidth(50)
 
         self.y_dim_edit = QLineEdit(self)
-        self.y_dim_edit.setPlaceholderText(str(self.draw_dim['height']))
+        self.y_dim_edit.setText(str(self.const_draw_dim['height']))
         self.y_dim_edit.setValidator(QDoubleValidator(0.0001, 4.0, 4))
         self.y_dim_edit.setFixedWidth(50)
 
         self.iter_lim_edit = QLineEdit(self)
-        self.iter_lim_edit.setPlaceholderText(str(self.iter_lim))
+        self.iter_lim_edit.setText(str(self.const_iter_lim))
         self.iter_lim_edit.setValidator(QDoubleValidator(0.0001, 4.0, 4))
         self.iter_lim_edit.setFixedWidth(50)
 
@@ -211,7 +215,7 @@ class MainWindow(QMainWindow):
 
         # Progress bar
         self.progress_bar = QtWidgets.QProgressBar(self)
-        self.progress_bar.setRange(0, self.draw_dim['height'])
+        self.progress_bar.setRange(0, self.const_draw_dim['height'])
         self.progress_bar.setValue(0)
 
         #
@@ -231,12 +235,15 @@ class MainWindow(QMainWindow):
         layout_grid.addWidget(xDim_lbl, 0, 6)
         layout_grid.addWidget(self.x_dim_edit, 0, 7)
 
-        layout_grid.addWidget(iter_lim_lbl, 0, 9)
-        layout_grid.addWidget(self.iter_lim_edit, 0, 10)
+        layout_grid.addWidget(yDim_lbl, 0, 9)
+        layout_grid.addWidget(self.y_dim_edit, 0, 10)
 
-        layout_grid.addWidget(self.mandel_btn, 0, 12)
+        layout_grid.addWidget(iter_lim_lbl, 0, 12)
+        layout_grid.addWidget(self.iter_lim_edit, 0, 13)
 
-        layout_grid.addWidget(self.reset_btn, 0, 14)
+        layout_grid.addWidget(self.mandel_btn, 0, 15)
+
+        layout_grid.addWidget(self.reset_btn, 0, 17)
 
         # Second row
 
@@ -246,44 +253,59 @@ class MainWindow(QMainWindow):
         layout_grid.addWidget(height_lbl, 1, 3)
         layout_grid.addWidget(self.height_edit, 1, 4)
 
-        layout_grid.addWidget(yDim_lbl, 1, 6)
-        layout_grid.addWidget(self.y_dim_edit, 1, 7)
-
         layout_grid.addWidget(
-            self.dd_combo, 1, 9, 1, 2,
+            self.dd_combo, 1, 6, 1, 5,
             Qt.AlignmentFlag.AlignHCenter
         )
 
-        layout_grid.addWidget(self.julia_btn, 1, 12)
+        layout_grid.addWidget(self.julia_btn, 1, 15)
 
-        layout_grid.addWidget(self.start_btn, 1, 14)
+        layout_grid.addWidget(self.start_btn, 1, 17)
 
         # Space within the grid layout
 
         layout_grid.setHorizontalSpacing(10)
         layout_grid.setVerticalSpacing(10)
 
-        layout_grid.setColumnStretch(13, 1)
+        layout_grid.setColumnStretch(16, 1)
         layout_grid.setColumnMinimumWidth(2, 30)
         layout_grid.setColumnMinimumWidth(5, 30)
-        layout_grid.setColumnMinimumWidth(8, 30)
+        layout_grid.setColumnMinimumWidth(8, 1)
         layout_grid.setColumnMinimumWidth(11, 30)
+        layout_grid.setColumnMinimumWidth(14, 30)
+        layout_grid.setColumnMinimumWidth(16, 30)
 
-        # Create widget fractal ("third row") and connect it to the progress bar
+        # Create widget fractal ("third row") within a scrollable area
+
         self.fw = FractalWidget.FractalWidget(
-            self.frac_area,
-            self.draw_dim,
-            self.iter_lim,
+            self.const_frac_area,
+            self.const_draw_dim,
+            self.const_iter_lim,
             self.cp,
             self.current_frac_set,
             self.julia_c
         )
-        self.fw.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
+
+        self.scroll_area = QScrollArea()
+
+        sb_thickness = self.scroll_area.style().pixelMetric(QStyle.PM_ScrollBarExtent)
+        frame_margin = self.scroll_area.frameWidth() * 2
+        min_width    = self.const_draw_dim['width'] + sb_thickness + frame_margin
+        min_height   = self.const_draw_dim['height'] + sb_thickness + frame_margin
+        self.scroll_area.setMinimumSize(min_width, min_height)
+
+        self.log.write("sb_thickness=" + str(sb_thickness) + " / frame_margin=" + str(frame_margin) , True)
+        self.log.write("min_width=" + str(min_width) + " / min_height=" + str(min_height), True)
+        
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setWidget(self.fw)
+        self.scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Connect the progress signal from the FractalWidget to the update_progress method
         self.fw.progress.connect(self.update_progress)
 
         # Buttons in the last row have their own layout
         last_row_layout = QHBoxLayout()
-        # last_row_layout.setContentsMargins(0, 0, 0, 0)
         last_row_layout.addWidget(cp_lbl)
         last_row_layout.addWidget(self.cp_combo)
         last_row_layout.addStretch()
@@ -300,7 +322,8 @@ class MainWindow(QMainWindow):
         main_layout.setSpacing(10)
 
         main_layout.addLayout(layout_grid)
-        main_layout.addWidget(self.fw, 0, Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(self.scroll_area)
+        #main_layout.addWidget(self.fw, 0, Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(self.progress_bar)
         main_layout.addLayout(last_row_layout)
 
@@ -311,7 +334,7 @@ class MainWindow(QMainWindow):
         self.adjustSize()
         self.setMinimumSize(self.sizeHint())
 
-        self.log.exit("build_main_window", False)
+        self.log.exit("build_main_window", True)
 
     #
     # -----------------------------------------------
@@ -349,7 +372,7 @@ class MainWindow(QMainWindow):
         elif text == self.sel_draw_dim['Full QHD']:
             self.x_dim_edit.setText("2560")
             self.y_dim_edit.setText("1440")
-        elif text == self.sel_draw_dim['Ulra-Wide WQHD']:
+        elif text == self.sel_draw_dim['Ultra-Wide WQHD']:
             self.x_dim_edit.setText("3440")
             self.y_dim_edit.setText("1440")
         elif text == self.sel_draw_dim['4K Ultra HD']:
@@ -659,9 +682,13 @@ class MainWindow(QMainWindow):
         if value >= self.progress_bar.maximum() - 1:
             self.reset_btn.setEnabled(True)
             self.start_btn.setEnabled(True)
+            self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+            self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         else:
             self.reset_btn.setEnabled(False)
             self.start_btn.setEnabled(False)
+            self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.log.exit("update_progress", False)
 
