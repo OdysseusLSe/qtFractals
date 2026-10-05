@@ -92,7 +92,7 @@ class FractalWorker(QObject):
                 z = complex(real_part, imag_part)
                 loop = 0
                 val_squared = 0.0
-                
+
                 while loop < self.iter_lim:
                     z = z * z + self.julia_c
                     val_squared = z.real * z.real + z.imag * z.imag
@@ -136,11 +136,11 @@ class FractalWorker(QObject):
         val_lim_squared = 4.0
 
         for y in range(self.draw_dim['height']):
-            
+
             imag_part = self.frac_area['imagOrigin'] + y * y_step
 
             for x in range(self.draw_dim['width']):
-                
+
                 real_part = self.frac_area['realOrigin'] + x * x_step
 
                 c = complex(real_part, imag_part)
@@ -184,7 +184,7 @@ class FractalWorker(QObject):
         try:
             smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
         except ValueError:
-            self.log.error("ValueError: loop=" + str(loop) + " / value=" + str(value), False) 
+            self.log.error("ValueError: loop=" + str(loop) + " / value=" + str(value), False)
             smoothed = loop
 
         # Normed value between 0.0 and 1.0 (higher value = higher frequence of color change)
@@ -194,7 +194,7 @@ class FractalWorker(QObject):
         #
         # Cosine Palette-Method
         # (based on Inigo Quilez, phase value defines time shifted increase of r,g,b):
-        # color(velocity) = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase))
+        # color = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase))
         #
 
         rgb = {}
@@ -203,11 +203,11 @@ class FractalWorker(QObject):
             c = self.cp[f'contrast{channel}']
             f = self.cp[f'frequency{channel}']
             p = self.cp[f'phase{channel}']
-            
-            # Mathematische Berechnung
+
+            # Calculate raw color value based on cosine palette method
             raw_val = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
-            
-            # WICHTIG: Absicherung gegen Unter-/Überlauf (Clipping)
+
+            # Implement safeguard to ensure that the color value is within the valid range of 0-255
             clipped_val = max(0, min(255, raw_val))
             rgb[channel] = clipped_val
 

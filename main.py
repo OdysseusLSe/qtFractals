@@ -275,7 +275,9 @@ class MainWindow(QMainWindow):
         layout_grid.setColumnMinimumWidth(14, 30)
         layout_grid.setColumnMinimumWidth(16, 30)
 
+        #
         # Create widget fractal ("third row") within a scrollable area
+        #
 
         self.fw = FractalWidget.FractalWidget(
             self.const_frac_area,
@@ -294,9 +296,11 @@ class MainWindow(QMainWindow):
         min_height   = self.const_draw_dim['height'] + sb_thickness + frame_margin
         self.scroll_area.setMinimumSize(min_width, min_height)
 
-        self.log.write("sb_thickness=" + str(sb_thickness) + " / frame_margin=" + str(frame_margin) , True)
-        self.log.write("min_width=" + str(min_width) + " / min_height=" + str(min_height), True)
-        
+        log_string = "sb_thickness,frame_margin=" + str(sb_thickness) + "," + str(frame_margin)
+        self.log.write(log_string, True)
+        log_string = "min_width,min_height=" + str(min_width) + "," + str(min_height)
+        self.log.write(log_string, True)
+
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setWidget(self.fw)
         self.scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -594,7 +598,9 @@ class MainWindow(QMainWindow):
             and self.imag_part_edit.text() != "" \
             and self.width_edit.text() != "" \
             and self.height_edit.text() != "" \
-            and self.iter_lim_edit.text() != "":
+            and self.iter_lim_edit.text() != "" \
+            and self.x_dim_edit.text() != "" \
+            and self.y_dim_edit.text() != "":
 
             self.progress_bar.setValue(0)
             self.reset_btn.setEnabled(False)
@@ -674,7 +680,7 @@ class MainWindow(QMainWindow):
                 self.mandel_btn.setIcon(QIcon("ui/LED_small_red.png"))
                 self.julia_btn.setIcon(QIcon("ui/LED_small_green.png"))
             self.mandel_btn.update()
-            self.julia_btn.update() 
+            self.julia_btn.update()
 
         self.log.write("value=" + str(value) + " / " + str(self.fw.height()), False)
 
@@ -682,13 +688,9 @@ class MainWindow(QMainWindow):
         if value >= self.progress_bar.maximum() - 1:
             self.reset_btn.setEnabled(True)
             self.start_btn.setEnabled(True)
-            self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-            self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         else:
             self.reset_btn.setEnabled(False)
             self.start_btn.setEnabled(False)
-            self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.log.exit("update_progress", False)
 

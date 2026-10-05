@@ -258,7 +258,8 @@ class FractalWidget(QWidget):
         if y + abs(dy) > self.draw_dim['height']:
             y = self.draw_dim['height'] - abs(dy)
 
-        self.log.write("x,y,dx,dy=" + str(x) + "," + str(y) + "," + str(abs(dx)) + "," + str(abs(dy)), False)
+        log_string = "x,y,dx,dy=" + str(x) + "," + str(y) + "," + str(abs(dx)) + "," + str(abs(dy))
+        self.log.write(log_string, False)
 
         self.log.exit("get_selection_rect", False)
         return QRect(int(x), int(y), int(abs(dx)), int(abs(dy)))
@@ -387,8 +388,6 @@ class FractalWidget(QWidget):
         self.log.write(str(self.current_frac_set), False)
         self.log.write(str(self.julia_c), False)
 
-        #self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
-
         self.log.exit("set_parameters", False)
 
     #
@@ -397,8 +396,8 @@ class FractalWidget(QWidget):
 
     def start_calculation(self):
         self.log.entry("start_calculation", False)
-        
-        # Falls bereits eine Berechnung läuft, abbrechen
+
+        # Check if a thread is already running
         if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
             self.log.write("Thread still working!", False)
             self.log.exit("start_calculation", False)
