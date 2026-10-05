@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
 
     def build_main_window(self, appName, appVersion):
 
-        self.log.entry("build_main_window", True)
+        self.log.entry("build_main_window", False)
 
         # Offset of the widgets from the main window frame
         xOffset = 10
@@ -297,9 +297,9 @@ class MainWindow(QMainWindow):
         self.scroll_area.setMinimumSize(min_width, min_height)
 
         log_string = "sb_thickness,frame_margin=" + str(sb_thickness) + "," + str(frame_margin)
-        self.log.write(log_string, True)
+        self.log.write(log_string, False)
         log_string = "min_width,min_height=" + str(min_width) + "," + str(min_height)
-        self.log.write(log_string, True)
+        self.log.write(log_string, False)
 
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setWidget(self.fw)
@@ -338,7 +338,7 @@ class MainWindow(QMainWindow):
         self.adjustSize()
         self.setMinimumSize(self.sizeHint())
 
-        self.log.exit("build_main_window", True)
+        self.log.exit("build_main_window", False)
 
     #
     # -----------------------------------------------
