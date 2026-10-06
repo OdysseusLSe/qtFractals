@@ -31,7 +31,8 @@ In this section I describe the main window and its controls:
     and complex part.
 2.  **Width and height of the complex area**
 3.  **Width and height of the drawing area (resolution)**. Additionally to the
-    manual input you may select a few predefined resolutions. Take care that
+    manual input you may select a few predefined resolutions. Relevant for the
+    next calculation are the values in the input/edit fields. Take care that
     the ratio of the complex area and the drawing area have the same value!
     (Tip: defining areas to zoom in with the cursor takes into account the
     ratio by default.)
@@ -51,3 +52,13 @@ In this section I describe the main window and its controls:
    recalculated with the new selected colours.
 10. **"Save" button** to save the current fractal set in a file.
 11. **"Quit" button** to exit the application.
+
+## Mouse actions
+
+### Julia set
+
+You may switch from the Mandelbrot set to the Julia set by pressing [CTRL]+LMB
+(Windows/Linux) or [CMD]+LMB (Apple) on any point of the calculated set.
+Immediatly the calculation starts for the Julia set at this point. Of course
+you may zoom-in in the Julia set, too. The fractal indicator (see item 5 above)
+switches accordingly.
