@@ -62,3 +62,10 @@ You may switch from the Mandelbrot set to the Julia set by pressing [CTRL]+LMB
 Immediatly the calculation starts for the Julia set at this point. Of course
 you may zoom-in in the Julia set, too. The fractal indicator (see item 5 above)
 switches accordingly.
+
+### Zoom-in
+
+By pressing the LMB only you may draw an rectangle with the cursor (based on the
+current ratio, see item 3) which defines the area you want to zoom in. As soon
+as the calculation starts (immediately after release of the LMB), the new values
+(see item 1 and 2 above) will be adapted accordingly.
