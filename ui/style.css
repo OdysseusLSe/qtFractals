@@ -1,13 +1,6 @@
 /* style.css */
 
-/* Styling für das gesamte Hauptfenster (optional) */
-/*
-QWidget {
-    background-color: #f5f5f5;
-}
-*/
-
-/* Unser spezieller Button, der sich wie ein Label verhält */
+/* Our special button, which behaves like a label */
 QPushButton#mandelJuliaButton {
     border: none;
     background-color: transparent;
@@ -15,7 +8,7 @@ QPushButton#mandelJuliaButton {
     padding: 0px;
 }
 
-/* Optional: Ein cooler Effekt, falls man doch drüberhovert */
+/* Optional: a cool effect, if you hover over it */
 QPushButton#mandelJuliaButton:hover {
     color: #0078d7;
 }

@@ -34,25 +34,35 @@ from PySide6.QtWidgets import (
     QWidget
 )
 from PySide6.QtGui import QDoubleValidator, QIcon
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QFile, QSize, QTextStream
 
 import FractalWidget
 import Logging
+
+import ressourcen_rc
 
 
 #
 # Function to load the stylesheet from a file
 #
-
+"""
 def load_stylesheet(file_path):
+    file = QFile(file_path)
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
-        print("Warning: Stylesheet " + file_path + " not found.")
+        print("Warning: Stylesheet " + file + " not found.")
         return ""
 
-
+def load_stylesheet(file_path):
+    file = QFile(file_path)
+    if file.open(QFile.ReadOnly | QFile.Text):
+        stream = QTextStream(file)
+        setStyleSheet(stream.readAll())
+    else:
+        print("Warning: Stylesheet " + file_path + " not found.")
+"""
 #
 #
 #
@@ -70,6 +80,13 @@ class MainWindow(QMainWindow):
         self.log = Logging.Logging(appName + " " + appVersion, True)
         self.log.write("--- " + appName + " " + appVersion + " ---", False)
         self.log.entry("__init__", False)
+
+        style_file = QFile(":/ui/style.css")
+        if style_file.open(QFile.ReadOnly | QFile.Text):
+            stream = QTextStream(style_file)
+            self.setStyleSheet(stream.readAll())
+        else:
+            self.log.error("Warning: Stylesheet " + ":/ui/style.css" + " not found.")
 
         # Set default values for fractal area, drawing dimensions, iteration limit, and color palette
         self.set_default_values()
@@ -155,13 +172,13 @@ class MainWindow(QMainWindow):
         #
 
         self.mandel_btn = QPushButton("Mandelbrot")
-        self.mandel_btn.setIcon(QIcon("ui/LED_small_green.png"))
+        self.mandel_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
         self.mandel_btn.setIconSize(QSize(16, 16))
         self.mandel_btn.setObjectName("mandelJuliaButton")
         self.mandel_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
 
         self.julia_btn = QPushButton("Julia")
-        self.julia_btn.setIcon(QIcon("ui/LED_small_red.png"))
+        self.julia_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
         self.julia_btn.setIconSize(QSize(16, 16))
         self.julia_btn.setObjectName("mandelJuliaButton")
         self.julia_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
@@ -674,11 +691,11 @@ class MainWindow(QMainWindow):
             self.iter_lim_edit.setText(str(self.iter_lim))
 
             if self.current_frac_set == "Mandelbrot":
-                self.mandel_btn.setIcon(QIcon("ui/LED_small_green.png"))
-                self.julia_btn.setIcon(QIcon("ui/LED_small_red.png"))
+                self.mandel_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
+                self.julia_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
             else:
-                self.mandel_btn.setIcon(QIcon("ui/LED_small_red.png"))
-                self.julia_btn.setIcon(QIcon("ui/LED_small_green.png"))
+                self.mandel_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
+                self.julia_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
             self.mandel_btn.update()
             self.julia_btn.update()
 
@@ -712,8 +729,7 @@ class MainWindow(QMainWindow):
 
 app = QtWidgets.QApplication([])
 
-stylesheet = load_stylesheet("ui/style.css")
-app.setStyleSheet(stylesheet)
+#load_stylesheet(":/ui/style.css")
 
 win = MainWindow()
 win.show()

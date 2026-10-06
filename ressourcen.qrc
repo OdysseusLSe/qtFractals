@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+    <!-- Styles -->
+    <file>ui/style.css</file>
+    <!-- Icons -->
+    <file>ui/LED_small_green.png</file>
+    <file>ui/LED_small_red.png</file>
+</qresource>
+</RCC>
