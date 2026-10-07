@@ -91,3 +91,16 @@ In the next step you have to change in the directory where "main.py" is and
 execute the following line in a terminal:
 
 `pyinstaller --noconsole --onefile --icon=ui/Mandelbrot.icns main.py`
+
+## Forthcoming features
+
+These are the addional features for the future (arbitrary order):
+
+- Create an animation (sequence of images) by defining start point and end point
+  via zoom-in.
+- Implement event(s) to stop long running calculations.
+- Switch the calculation to NumPy.
+- Provide the ability to change the current default theme.
+- Build your own color palette
+- Transfer the above entry fields in a menu(bar).
+- ...
