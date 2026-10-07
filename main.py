@@ -39,7 +39,7 @@ from PySide6.QtCore import Qt, QFile, QSize, QTextStream
 import FractalWidget
 import Logging
 
-import ressources_rc
+import resources_rc
 
 
 #

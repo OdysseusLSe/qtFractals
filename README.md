@@ -70,16 +70,24 @@ current ratio, see item 3) which defines the area you want to zoom in. As soon
 as the calculation starts (immediately after release of the LMB), the new values
 (see item 1 and 2 above) will be adapted accordingly.
 
-## Recommendet instructions
+## Development recommendations
 
-### Ressources
+### Resources
 
-To iclude all necessary resources you need "pyside6-rcc":
+To iclude all necessary resources you need the Qt resource system (`.qrc`)provided
+by PySide6 from Qt: "pyside6-rcc" (included already in the "pyside6" package):
 
 `pyside6-rcc resources.qrc -o resources_rc.py`
 
+This file contains all "styles" as text and the images as binary code.
+
 ### Build
 
-To build a standalone app you need "pyinstaller":
+To build a standalone app you need "pyinstaller". You have to install it first:
 
-`yinstaller --noconsole --onefile --icon=ui/Mandelbrot.icns main.py`
+`pip install pyinstaller`
+
+In the next step you have to change in the directory where "main.py" is and
+execute the following line in a terminal:
+
+`pyinstaller --noconsole --onefile --icon=ui/Mandelbrot.icns main.py`
