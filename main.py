@@ -39,30 +39,9 @@ from PySide6.QtCore import Qt, QFile, QSize, QTextStream
 import FractalWidget
 import Logging
 
-import ressourcen_rc
+import ressources_rc
 
 
-#
-# Function to load the stylesheet from a file
-#
-"""
-def load_stylesheet(file_path):
-    file = QFile(file_path)
-    try:
-        with open(file, "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        print("Warning: Stylesheet " + file + " not found.")
-        return ""
-
-def load_stylesheet(file_path):
-    file = QFile(file_path)
-    if file.open(QFile.ReadOnly | QFile.Text):
-        stream = QTextStream(file)
-        setStyleSheet(stream.readAll())
-    else:
-        print("Warning: Stylesheet " + file_path + " not found.")
-"""
 #
 #
 #
@@ -81,6 +60,7 @@ class MainWindow(QMainWindow):
         self.log.write("--- " + appName + " " + appVersion + " ---", False)
         self.log.entry("__init__", False)
 
+        # Load the stylesheet from a file
         style_file = QFile(":/ui/style.css")
         if style_file.open(QFile.ReadOnly | QFile.Text):
             stream = QTextStream(style_file)

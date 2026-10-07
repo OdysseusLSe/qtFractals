@@ -1,5 +1,5 @@
 # qtFractals
-App to calculate fractals with Python &amp; Qt
+App to calculate fractals with Python &amp; Qt (PySide6)
 
 ## Introduction
 This app calculates fractal sets. It provides a few features like
@@ -69,3 +69,17 @@ By pressing the LMB only you may draw an rectangle with the cursor (based on the
 current ratio, see item 3) which defines the area you want to zoom in. As soon
 as the calculation starts (immediately after release of the LMB), the new values
 (see item 1 and 2 above) will be adapted accordingly.
+
+## Recommendet instructions
+
+### Ressources
+
+To iclude all necessary resources you need "pyside6-rcc":
+
+`pyside6-rcc resources.qrc -o resources_rc.py`
+
+### Build
+
+To build a standalone app you need "pyinstaller":
+
+`yinstaller --noconsole --onefile --icon=ui/Mandelbrot.icns main.py`
