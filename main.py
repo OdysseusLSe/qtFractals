@@ -503,38 +503,37 @@ class MainWindow(QMainWindow):
     #
 
     def save_image(self):
-        self.log.entry("save_image", False)
+        self.log.entry("save_image", True)
 
         image = self.fw.get_image()
 
-        file_filters = ["bmp", "jpg", "jpeg", "png"]
-        self.log.write("file_filters=" + str(file_filters))
+        file_filters   = ["*.bmp", "*.jpg", "*.jpeg", "*.png"]
         initial_filter = file_filters[3]
-        self.log.write("initial_filter=" + initial_filter, False)
-        filters = ";;".join(file_filters)
-        self.log.write("filters=" + filters, False)
+        filters        = ";;".join(file_filters)
 
-        filename, selected_filter = QFileDialog.getSaveFileName(
+        self.log.write("file_filters=" + str(file_filters), True)
+        self.log.write("initial_filter=" + initial_filter, True)
+        self.log.write("filters=" + filters, True)
+
+        file_name, selected_filter = QFileDialog.getSaveFileName(
             self,
-            "",
-            "",
-            # filters,
-            # initial_filter,
-            ";;",
-            ""
+            "Save fractal image as...",
+            "./qtFractals_image.png",
+            filters,
+            initial_filter
         )
-        self.log.write("filename=" + filename + " / selected_filter=" + selected_filter, False)
-        if filename == "":
-            self.log.exit("save_image", False)
+        self.log.write("file_name,selected_filter=" + file_name + "," + selected_filter, True)
+        if file_name == "":
+            self.log.exit("save_image", True)
             return
 
-        result = image.save(filename, None, 100)
+        result = image.save(file_name, None, 100)
         if result:
-            self.log.write("Image successful saved", False)
+            self.log.write("Image successful saved.", True)
         else:
-            self.log.error("Image not saved!", False)
+            self.log.error("Image not saved!", True)
 
-        self.log.exit("save_image", False)
+        self.log.exit("save_image", True)
 
     #
     # -----------------------------------------------
