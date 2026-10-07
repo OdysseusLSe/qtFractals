@@ -53,7 +53,7 @@ In this section I describe the main window and its controls:
 10. **"Save" button** to save the current fractal set in a file.
 11. **"Quit" button** to exit the application.
 
-## Mouse actions
+## Mouse and keyboard actions
 
 ### Julia set
 
@@ -62,6 +62,10 @@ You may switch from the Mandelbrot set to the Julia set by pressing [CTRL]+LMB
 Immediatly the calculation starts for the Julia set at this point. Of course
 you may zoom-in in the Julia set, too. The fractal indicator (see item 5 above)
 switches accordingly.
+
+### Stop running calculation
+
+To stop a (long) running calculation you may press the key [ESC] or the RMB.
 
 ### Zoom-in
 

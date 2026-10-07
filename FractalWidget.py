@@ -18,7 +18,7 @@
 import copy
 
 from PySide6.QtCore import Qt, QThread, Signal, QRect
-from PySide6.QtGui import QPainter, QPen, QColor, QImage
+from PySide6.QtGui import QPainter, QPen, QColor, QImage, QKeySequence, QShortcut
 from PySide6.QtWidgets import QWidget
 
 import FractalWorker
@@ -56,14 +56,18 @@ class FractalWidget(QWidget):
         self.image = QImage()
 
         # Mouse variables for mandelbrot selection
-
         self.selecting = False
         self.sel_start = None
-        self.sel_end = None
+        self.sel_end   = None
         self.setMouseTracking(True)
 
         # Mouse variables for mandelbrot selection
         self.sel_point = None
+
+        # Create shortcut for ESC key (to stop calculation)
+        self.esc_shortcut = QShortcut(QKeySequence("Escape"), self)
+        self.esc_shortcut.setContext(Qt.ShortcutContext.ApplicationShortcut)
+        self.esc_shortcut.activated.connect(self.stop_calculation)
 
         # Set start parameter for future thread check
         self.thread = None
@@ -84,7 +88,8 @@ class FractalWidget(QWidget):
         if self.image.isNull():
             self.log.error("Missing image!", False)
 
-        self.setFixedSize(self.image.width(), self.image.height())
+        self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
+        #self.setFixedSize(self.image.width(), self.image.height())
 
         self.update()
 
@@ -289,17 +294,30 @@ class FractalWidget(QWidget):
     # Mouse pressed
 
     def mousePressEvent(self, event):
-        self.log.entry("mousePressEvent", False)
+        self.log.entry("mousePressEvent", True)
+
+        if event.button() == Qt.MouseButton.RightButton:
+            self.log.write("RMB pressed.", True)
+            if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
+                self.log.write("Trying to stop running thread.", True)
+                self.worker.stop()
+                self.log.exit("mousePressEvent", True)
+                return
+            else:
+                self.log.write("No running thread to stop.", True)
+                self.log.exit("mousePressEvent", True)
+                return
+
 
         if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
-            self.log.write("Thread still working!", False)
-            self.log.exit("mousePressEvent", False)
+            self.log.write("Thread still working!", True)
+            self.log.exit("mousePressEvent", True)
             return
 
         if event.button() == Qt.MouseButton.LeftButton:
             if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 # Calculate Julia set at selected coordinations
-                self.log.write("LMB and [CMD]/[Control] pressed.", False)
+                self.log.write("LMB and [CMD]/[Control] pressed.", True)
                 self.current_frac_set = "Julia"
                 self.sel_point = (event.position().toPoint())
                 self.update()
@@ -307,7 +325,7 @@ class FractalWidget(QWidget):
                 self.start_calculation()
             else:
                 # Start selection area to zoom in
-                self.log.write("LMB pressed.", False)
+                self.log.write("LMB pressed.", True)
                 self.selecting = True
                 self.sel_start = (event.position().toPoint())
                 self.sel_end = self.sel_start
@@ -315,7 +333,7 @@ class FractalWidget(QWidget):
 
         super().mousePressEvent(event)
 
-        self.log.exit("mousePressEvent", False)
+        self.log.exit("mousePressEvent", True)
 
     #
     # -----------------------------------------------
@@ -436,6 +454,21 @@ class FractalWidget(QWidget):
 
         self.log.write("self.thread.isRunning()=" + str(self.thread.isRunning()), False)
         self.log.exit("start_calculation", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def stop_calculation(self):
+        self.log.entry("stop_calculation", True)
+
+        if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
+            self.log.write("Trying to stop running thread.", True)
+            self.worker.stop()
+        else:
+            self.log.write("No running thread to stop.", True)
+
+        self.log.exit("stop_calculation", True)
 
     #
     # -----------------------------------------------
