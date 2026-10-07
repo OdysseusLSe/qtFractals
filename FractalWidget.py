@@ -170,14 +170,14 @@ class FractalWidget(QWidget):
     #
 
     def get_image(self):
-        self.log.entry("get_image", True)
+        self.log.entry("get_image", False)
 
         if self.image.isNull():
-            self.log.error("Missing image!", True)
-            self.log.exit("get_image", True)
+            self.log.error("Missing image!", False)
+            self.log.exit("get_image", False)
             return
 
-        self.log.exit("get_image", True)
+        self.log.exit("get_image", False)
 
         return self.image
 

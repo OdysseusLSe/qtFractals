@@ -503,7 +503,7 @@ class MainWindow(QMainWindow):
     #
 
     def save_image(self):
-        self.log.entry("save_image", True)
+        self.log.entry("save_image", False)
 
         image = self.fw.get_image()
 
@@ -511,9 +511,9 @@ class MainWindow(QMainWindow):
         initial_filter = file_filters[3]
         filters        = ";;".join(file_filters)
 
-        self.log.write("file_filters=" + str(file_filters), True)
-        self.log.write("initial_filter=" + initial_filter, True)
-        self.log.write("filters=" + filters, True)
+        self.log.write("file_filters=" + str(file_filters), False)
+        self.log.write("initial_filter=" + initial_filter, False)
+        self.log.write("filters=" + filters, False)
 
         file_name, selected_filter = QFileDialog.getSaveFileName(
             self,
@@ -522,18 +522,18 @@ class MainWindow(QMainWindow):
             filters,
             initial_filter
         )
-        self.log.write("file_name,selected_filter=" + file_name + "," + selected_filter, True)
+        self.log.write("file_name,selected_filter=" + file_name + "," + selected_filter, False)
         if file_name == "":
-            self.log.exit("save_image", True)
+            self.log.exit("save_image", False)
             return
 
         result = image.save(file_name, None, 100)
         if result:
-            self.log.write("Image successful saved.", True)
+            self.log.write("Image successful saved.", False)
         else:
-            self.log.error("Image not saved!", True)
+            self.log.error("Image not saved!", False)
 
-        self.log.exit("save_image", True)
+        self.log.exit("save_image", False)
 
     #
     # -----------------------------------------------
