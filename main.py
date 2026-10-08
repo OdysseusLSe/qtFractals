@@ -639,11 +639,11 @@ class MainWindow(QMainWindow):
     #
 
     def update_progress(self, value):
-        self.log.entry("update_progress", True)
+        self.log.entry("update_progress", False)
 
         if value == 1:
 
-            self.log.write("Calculation started (value=" + str(value) + ")", True)
+            self.log.write("Calculation started (value=" + str(value) + ")", False)
 
             self.reset_btn.setEnabled(False)
             self.start_btn.setEnabled(False)
@@ -655,7 +655,7 @@ class MainWindow(QMainWindow):
             self.iter_lim         = iter_lim
             self.current_frac_set = frac_set
             self.julia_c          = julia_c
-            self.log.write("self.current_frac_set=" + self.current_frac_set, True)
+            self.log.write("self.current_frac_set=" + self.current_frac_set, False)
 
             # Adapt text fields to current values
 
@@ -682,22 +682,16 @@ class MainWindow(QMainWindow):
             self.mandel_btn.update()
             self.julia_btn.update()
 
-        self.log.write("value=" + str(value) + " / " + str(self.draw_dim['height']), True)
+        self.log.write("value=" + str(value) + " / " + str(self.draw_dim['height']), False)
 
         self.progress_bar.setValue(value)
 
         if value >= self.progress_bar.maximum():
             self.reset_btn.setEnabled(True)
             self.start_btn.setEnabled(True)
-            self.log.write("Calculation finished (value=" + str(value) + ")", True)
-        """
-        else:
-            self.reset_btn.setEnabled(False)
-            self.start_btn.setEnabled(False)
-            self.log.write("Calculation ongoing. value=" + str(value), True)
-        """
+            self.log.write("Calculation finished (value=" + str(value) + ")", False)
 
-        self.log.exit("update_progress", True)
+        self.log.exit("update_progress", False)
 
     #
     # -----------------------------------------------
