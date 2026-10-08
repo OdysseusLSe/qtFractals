@@ -1,0 +1,1 @@
+pyinstaller --noconsole --onedir --icon=ui/Mandelbrot.icns --name qtFractals main.py
