@@ -118,6 +118,7 @@ class FractalWorker(QObject):
                     image.setPixelColor(x, y, QColor(0, 0, 0))
 
             self.progress.emit(y+1)
+            self.drawing.emit(image)
 
         self.log.exit("calculate_julia", False)
 
