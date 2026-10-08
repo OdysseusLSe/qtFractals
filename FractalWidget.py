@@ -294,30 +294,30 @@ class FractalWidget(QWidget):
     # Mouse pressed
 
     def mousePressEvent(self, event):
-        self.log.entry("mousePressEvent", True)
+        self.log.entry("mousePressEvent", False)
 
         if event.button() == Qt.MouseButton.RightButton:
-            self.log.write("RMB pressed.", True)
+            self.log.write("RMB pressed.", False)
             if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
-                self.log.write("Trying to stop running thread.", True)
+                self.log.write("Trying to stop running thread.", False)
                 self.worker.stop()
-                self.log.exit("mousePressEvent", True)
+                self.log.exit("mousePressEvent", False)
                 return
             else:
-                self.log.write("No running thread to stop.", True)
-                self.log.exit("mousePressEvent", True)
+                self.log.write("No running thread to stop.", False)
+                self.log.exit("mousePressEvent", False)
                 return
 
 
         if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
-            self.log.write("Thread still working!", True)
-            self.log.exit("mousePressEvent", True)
+            self.log.write("Thread still working!", False)
+            self.log.exit("mousePressEvent", False)
             return
 
         if event.button() == Qt.MouseButton.LeftButton:
             if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 # Calculate Julia set at selected coordinations
-                self.log.write("LMB and [CMD]/[Control] pressed.", True)
+                self.log.write("LMB and [CMD]/[Control] pressed.", False)
                 self.current_frac_set = "Julia"
                 self.sel_point = (event.position().toPoint())
                 self.update()
@@ -325,7 +325,7 @@ class FractalWidget(QWidget):
                 self.start_calculation()
             else:
                 # Start selection area to zoom in
-                self.log.write("LMB pressed.", True)
+                self.log.write("LMB pressed.", False)
                 self.selecting = True
                 self.sel_start = (event.position().toPoint())
                 self.sel_end = self.sel_start
@@ -333,7 +333,7 @@ class FractalWidget(QWidget):
 
         super().mousePressEvent(event)
 
-        self.log.exit("mousePressEvent", True)
+        self.log.exit("mousePressEvent", False)
 
     #
     # -----------------------------------------------
@@ -460,15 +460,15 @@ class FractalWidget(QWidget):
     #
 
     def stop_calculation(self):
-        self.log.entry("stop_calculation", True)
+        self.log.entry("stop_calculation", False)
 
         if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
-            self.log.write("Trying to stop running thread.", True)
+            self.log.write("Trying to stop running thread.", False)
             self.worker.stop()
         else:
-            self.log.write("No running thread to stop.", True)
+            self.log.write("No running thread to stop.", False)
 
-        self.log.exit("stop_calculation", True)
+        self.log.exit("stop_calculation", False)
 
     #
     # -----------------------------------------------

@@ -85,9 +85,9 @@ class FractalWorker(QObject):
 
             if not self.is_running:
                 # Boolean flag to stop the thread if requested by the user
-                self.log.write("Thread stopped by user.", True)
+                self.log.write("Thread stopped by user.", False)
                 self.progress.emit(self.draw_dim['height'])
-                self.log.exit("calculate_mandelbrot", True)
+                self.log.exit("calculate_julia", False)
                 break
 
             imag_part = self.frac_area['imagOrigin'] + y * y_step
@@ -148,9 +148,9 @@ class FractalWorker(QObject):
 
             if not self.is_running:
                 # Boolean flag to stop the thread if requested by the user
-                self.log.write("Thread stopped by user.", True)
+                self.log.write("Thread stopped by user.", False)
                 self.progress.emit(self.draw_dim['height'])
-                self.log.exit("calculate_mandelbrot", True)
+                self.log.exit("calculate_mandelbrot", False)
                 break
 
             imag_part = self.frac_area['imagOrigin'] + y * y_step
@@ -238,6 +238,6 @@ class FractalWorker(QObject):
     #
 
     def stop(self):
-        self.log.entry("stop", True)
+        self.log.entry("stop", False)
         self.is_running = False
-        self.log.exit("stop", True)
+        self.log.exit("stop", False)

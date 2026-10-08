@@ -102,7 +102,6 @@ These are the addional features for the future (arbitrary order):
 
 - Create an animation (sequence of images) by defining start point and end point
   via zoom-in.
-- Implement event(s) to stop long running calculations.
 - Switch the calculation to NumPy.
 - Provide the ability to change the current default theme.
 - Build your own color palette
