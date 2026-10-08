@@ -192,7 +192,6 @@ class MainWindow(QMainWindow):
         # Build combo box for color palettes
         #
 
-        #cp_lbl = QLabel("<b>Color palettes: </b>:", self)
         self.cp_combo = QComboBox()
         for element in self.cp_list:
             self.cp_combo.addItem(element['name'])
@@ -200,33 +199,10 @@ class MainWindow(QMainWindow):
                 self.cp_combo.setCurrentText(element['name'])
         self.cp_combo.currentTextChanged.connect(self.cp_text_changed)
 
-        """
-        # "Save" Button
-        save_btn = QPushButton('Save', self)
-        save_btn.setStyleSheet(
-            # "background-color: red; "
-            # "color: white; "
-            "font-style: bold; "
-            "font-size: 18px"
-        )
-        save_btn.clicked.connect(self.save_image)
-
-        # "Quit" Button
-        quit_btn = QPushButton('Quit', self)
-        quit_btn.setStyleSheet(
-            "background-color : red; "
-            "color            : white; "
-            "font-style       : bold; "
-            "font-size        : 18px"
-        )
-        quit_btn.clicked.connect(self.end_app)
-        """
-
-        # All three buttons have the same width
+        # Both buttons have the same width
         btn_width = self.reset_btn.sizeHint().width()
         self.reset_btn.setFixedWidth(btn_width)
         self.start_btn.setFixedWidth(btn_width)
-        #quit_btn.setFixedWidth(btn_width)
 
         # Progress bar
         self.progress_bar = QtWidgets.QProgressBar(self)
@@ -328,18 +304,6 @@ class MainWindow(QMainWindow):
         # Connect the progress signal from the FractalWidget to the update_progress method
         self.fw.progress.connect(self.update_progress)
 
-        """
-        # Buttons in the last row have their own layout
-        last_row_layout = QHBoxLayout()
-        last_row_layout.addWidget(cp_lbl)
-        last_row_layout.addWidget(self.cp_combo)
-        last_row_layout.addStretch()
-        last_row_layout.addStretch()
-        last_row_layout.addWidget(save_btn)
-        last_row_layout.addStretch()
-        last_row_layout.addWidget(quit_btn)
-        """
-
         # Build the overall layout of the main window
 
         main_layout = QVBoxLayout()
@@ -352,7 +316,6 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.scroll_area)
         #main_layout.addWidget(self.fw, 0, Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(self.progress_bar)
-        #main_layout.addLayout(last_row_layout)
 
         container = QWidget()
         container.setLayout(main_layout)
@@ -721,11 +684,9 @@ class MainWindow(QMainWindow):
     def update_progress(self, value):
         self.log.entry("update_progress", False)
 
-        start_time = 0.0
-
         if value == 1:
 
-            start_time = time.process_time()
+            self.start_time = time.process_time()
             self.log.write("Calculation started (value=" + str(value) + ")", False)
 
             self.reset_btn.setEnabled(False)
@@ -775,7 +736,7 @@ class MainWindow(QMainWindow):
         if value >= self.progress_bar.maximum():
 
             end_time = time.process_time()
-            delta_time = end_time - start_time
+            delta_time = end_time - self.start_time
             status = "--- Progress: " + str(percent) + "% --- Process time: "
             status = status + str(delta_time) + " seconds ---"
             self.statusBar().showMessage(status)
