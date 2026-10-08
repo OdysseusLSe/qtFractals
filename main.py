@@ -16,6 +16,8 @@
 #
 
 import copy
+import math
+import time
 
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import (
@@ -26,6 +28,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QPushButton,
     QScrollArea,
@@ -33,8 +36,18 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget
 )
-from PySide6.QtGui import QDoubleValidator, QIcon
-from PySide6.QtCore import Qt, QFile, QSize, QTextStream
+from PySide6.QtGui import (
+    QAction,
+    QDoubleValidator,
+    QKeySequence,
+    QIcon
+)
+from PySide6.QtCore import (
+    Qt,
+    QFile,
+    QSize,
+    QTextStream
+)
 
 import FractalWidget
 import Logging
@@ -52,7 +65,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         appName = "qtFractals"
-        appVersion = "0.3.1"
+        appVersion = "0.3.2"
 
         self.setWindowTitle(appName + " " + appVersion)
 
@@ -67,6 +80,9 @@ class MainWindow(QMainWindow):
             self.setStyleSheet(stream.readAll())
         else:
             self.log.error("Warning: Stylesheet " + ":/ui/style.css" + " not found.")
+
+        # Build the menu bar with all the menus and actions
+        self.build_menu_bar()
 
         # Set default values for fractal area, drawing dimensions, iteration limit, and color palette
         self.set_default_values()
@@ -176,7 +192,7 @@ class MainWindow(QMainWindow):
         # Build combo box for color palettes
         #
 
-        cp_lbl = QLabel("<b>Color palettes: </b>:", self)
+        #cp_lbl = QLabel("<b>Color palettes: </b>:", self)
         self.cp_combo = QComboBox()
         for element in self.cp_list:
             self.cp_combo.addItem(element['name'])
@@ -184,6 +200,7 @@ class MainWindow(QMainWindow):
                 self.cp_combo.setCurrentText(element['name'])
         self.cp_combo.currentTextChanged.connect(self.cp_text_changed)
 
+        """
         # "Save" Button
         save_btn = QPushButton('Save', self)
         save_btn.setStyleSheet(
@@ -203,12 +220,13 @@ class MainWindow(QMainWindow):
             "font-size        : 18px"
         )
         quit_btn.clicked.connect(self.end_app)
+        """
 
         # All three buttons have the same width
         btn_width = self.reset_btn.sizeHint().width()
         self.reset_btn.setFixedWidth(btn_width)
         self.start_btn.setFixedWidth(btn_width)
-        quit_btn.setFixedWidth(btn_width)
+        #quit_btn.setFixedWidth(btn_width)
 
         # Progress bar
         self.progress_bar = QtWidgets.QProgressBar(self)
@@ -252,6 +270,11 @@ class MainWindow(QMainWindow):
 
         layout_grid.addWidget(
             self.dd_combo, 1, 6, 1, 5,
+            Qt.AlignmentFlag.AlignHCenter
+        )
+
+        layout_grid.addWidget(
+            self.cp_combo, 1, 12, 1, 2,
             Qt.AlignmentFlag.AlignHCenter
         )
 
@@ -305,14 +328,17 @@ class MainWindow(QMainWindow):
         # Connect the progress signal from the FractalWidget to the update_progress method
         self.fw.progress.connect(self.update_progress)
 
+        """
         # Buttons in the last row have their own layout
         last_row_layout = QHBoxLayout()
         last_row_layout.addWidget(cp_lbl)
         last_row_layout.addWidget(self.cp_combo)
         last_row_layout.addStretch()
+        last_row_layout.addStretch()
         last_row_layout.addWidget(save_btn)
         last_row_layout.addStretch()
         last_row_layout.addWidget(quit_btn)
+        """
 
         # Build the overall layout of the main window
 
@@ -326,7 +352,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.scroll_area)
         #main_layout.addWidget(self.fw, 0, Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(self.progress_bar)
-        main_layout.addLayout(last_row_layout)
+        #main_layout.addLayout(last_row_layout)
 
         container = QWidget()
         container.setLayout(main_layout)
@@ -336,6 +362,45 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(self.sizeHint())
 
         self.log.exit("build_main_window", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def build_menu_bar(self):
+        self.log.entry("build_menu_bar", False)
+
+        self.statusBar().showMessage("Ready")
+
+        # Create the menu bar
+        menu_bar = self.menuBar()
+
+        # Create the "File" menu
+        file_menu = QMenu("&File", self)
+        menu_bar.addMenu(file_menu)
+
+        # Create the "Save" action
+        self.save_action = QAction("&Save", self)
+        self.save_action.setShortcut(QKeySequence("Ctrl+S"))
+        self.save_action.setStatusTip("Save image")
+        self.save_action.triggered.connect(self.save_image)
+        file_menu.addAction(self.save_action)
+
+        # Create the "Quit" action
+        self.quit_action = QAction("&Quit", self)
+        self.quit_action.setShortcut(QKeySequence("Ctrl+Q"))
+        self.quit_action.setStatusTip("Quit qtFractals")
+        self.quit_action.triggered.connect(self.end_app)
+        file_menu.addAction(self.quit_action)
+
+        # Create the "Configuration" menu
+        config_menu = QMenu("&Config", self)
+        menu_bar.addMenu(config_menu)
+
+        # MAC FIX: Connect the menu's hovered signal to a custom slots pipeline
+        file_menu.hovered.connect(self.update_mac_status_bar)
+
+        self.log.exit("build_menu_bar", False)
 
     #
     # -----------------------------------------------
@@ -638,11 +703,29 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def update_mac_status_bar(self, action):
+        self.log.entry("update_mac_status_bar", True)
+
+        if action and action.statusTip():
+            self.log.write("action.statusTip()=" + str(action.statusTip()), True)
+            self.statusBar().showMessage(action.statusTip())
+        else:
+            self.statusBar().clearMessage()
+
+        self.log.exit("update_mac_status_bar", True)
+
+    #
+    # -----------------------------------------------
+    #
+
     def update_progress(self, value):
         self.log.entry("update_progress", False)
 
+        start_time = 0.0
+
         if value == 1:
 
+            start_time = time.process_time()
             self.log.write("Calculation started (value=" + str(value) + ")", False)
 
             self.reset_btn.setEnabled(False)
@@ -684,9 +767,19 @@ class MainWindow(QMainWindow):
 
         self.log.write("value=" + str(value) + " / " + str(self.draw_dim['height']), False)
 
+        percent = int((value / self.progress_bar.maximum()) * 100)
+        self.statusBar().showMessage("--- Progress: " + str(percent) + "%")
+
         self.progress_bar.setValue(value)
 
         if value >= self.progress_bar.maximum():
+
+            end_time = time.process_time()
+            delta_time = end_time - start_time
+            status = "--- Progress: " + str(percent) + "% --- Process time: "
+            status = status + str(delta_time) + " seconds ---"
+            self.statusBar().showMessage(status)
+
             self.reset_btn.setEnabled(True)
             self.start_btn.setEnabled(True)
             self.log.write("Calculation finished (value=" + str(value) + ")", False)
