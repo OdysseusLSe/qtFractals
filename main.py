@@ -639,11 +639,14 @@ class MainWindow(QMainWindow):
     #
 
     def update_progress(self, value):
-        self.log.entry("update_progress", False)
+        self.log.entry("update_progress", True)
 
-        if value == 0:
+        if value == 1:
 
-            self.log.write("Calculation just started.", False)
+            self.log.write("Calculation started (value=" + str(value) + ")", True)
+
+            self.reset_btn.setEnabled(False)
+            self.start_btn.setEnabled(False)
 
             frac_area, draw_dim, iter_lim, frac_set, julia_c = self.fw.get_parameters()
 
@@ -652,7 +655,7 @@ class MainWindow(QMainWindow):
             self.iter_lim         = iter_lim
             self.current_frac_set = frac_set
             self.julia_c          = julia_c
-            self.log.write("self.current_frac_set=" + self.current_frac_set, False)
+            self.log.write("self.current_frac_set=" + self.current_frac_set, True)
 
             # Adapt text fields to current values
 
@@ -675,20 +678,26 @@ class MainWindow(QMainWindow):
             else:
                 self.mandel_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
                 self.julia_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
+
             self.mandel_btn.update()
             self.julia_btn.update()
 
-        self.log.write("value=" + str(value) + " / " + str(self.fw.height()), False)
+        self.log.write("value=" + str(value) + " / " + str(self.draw_dim['height']), True)
 
         self.progress_bar.setValue(value)
-        if value >= self.progress_bar.maximum() - 1:
+
+        if value >= self.progress_bar.maximum():
             self.reset_btn.setEnabled(True)
             self.start_btn.setEnabled(True)
+            self.log.write("Calculation finished (value=" + str(value) + ")", True)
+        """
         else:
             self.reset_btn.setEnabled(False)
             self.start_btn.setEnabled(False)
+            self.log.write("Calculation ongoing. value=" + str(value), True)
+        """
 
-        self.log.exit("update_progress", False)
+        self.log.exit("update_progress", True)
 
     #
     # -----------------------------------------------

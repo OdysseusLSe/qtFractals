@@ -116,7 +116,7 @@ class FractalWorker(QObject):
                 else:
                     image.setPixelColor(x, y, QColor(0, 0, 0))
 
-            self.progress.emit(y)
+            self.progress.emit(y+1)
 
         self.log.exit("calculate_julia", False)
 
@@ -179,7 +179,7 @@ class FractalWorker(QObject):
                 else:
                     image.setPixelColor(x, y, QColor(0, 0, 0))
 
-            self.progress.emit(y)
+            self.progress.emit(y+1)
 
         self.log.exit("calculate_mandelbrot", False)
 
