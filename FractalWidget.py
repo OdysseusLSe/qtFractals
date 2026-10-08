@@ -81,6 +81,20 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
+    def realtime_update(self, image):
+        self.log.entry("realtime_update", True)
+
+        self.image = image
+        if self.image.isNull():
+            self.log.error("Missing image!", True)
+
+        self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
+
+        self.update()
+
+        self.log.exit("realtime_update", True)
+
+
     def calculation_finished(self, image):
         self.log.entry("calculation_finished", False)
 
@@ -89,7 +103,6 @@ class FractalWidget(QWidget):
             self.log.error("Missing image!", False)
 
         self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
-        #self.setFixedSize(self.image.width(), self.image.height())
 
         self.update()
 
@@ -446,6 +459,7 @@ class FractalWidget(QWidget):
         self.thread.finished.connect(self.thread_finished)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.progress.connect(self.progress.emit)
+        self.worker.drawing.connect(self.realtime_update)
         self.worker.finished.connect(self.calculation_finished)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)

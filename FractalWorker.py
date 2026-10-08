@@ -26,6 +26,7 @@ import Logging
 
 class FractalWorker(QObject):
     progress = Signal(int)
+    drawing  = Signal(QImage)
     finished = Signal(QImage)
 
     def __init__(
@@ -180,6 +181,7 @@ class FractalWorker(QObject):
                     image.setPixelColor(x, y, QColor(0, 0, 0))
 
             self.progress.emit(y+1)
+            self.drawing.emit(image)
 
         self.log.exit("calculate_mandelbrot", False)
 
