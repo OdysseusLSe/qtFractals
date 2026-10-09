@@ -39,19 +39,19 @@ In this section I describe the main window and its controls:
 4.  **Itration limit** for the fractal formula. Good values are from 100 to
     1000. The bigger the value, the time consuming the calculation (more
     detailled results).
-5.  **Fractal indicator** that shows what kind of set (Mandelbrot or Julia)
-    currently is active.
-6.  **"Reset" and "Start" button**: The "Reset" button resets all values to
-    the values at the initial phase of the app. The "Start" button starts a
-    new calculation with the values in (1), (2), (3), (4), and (5).
-7.  **The drawing area**
-8.  **The progress bar** indicates how much of the fractal has been calculated.
-    The fractal set will be shown at the end of the progrss bar.
-9. **Color palettes** provides a few predefined color palettes. As soon as
+5. **Color palettes** provides a few predefined color palettes. As soon as
    you change the current color palette the current fractal set will be
    recalculated with the new selected colours.
-10. **"Save" button** to save the current fractal set in a file.
-11. **"Quit" button** to exit the application.
+6.  **Fractal indicator** that shows what kind of set (Mandelbrot or Julia)
+    currently is active.
+7.  **"Reset" and "Start" button**: The "Reset" button resets all values to
+    the values at the initial phase of the app. The "Start" button starts a
+    new calculation with the values in (1), (2), (3), (4), and (5).
+8.  **The drawing area**
+9.  **The progress bar** indicates how much of the fractal has been calculated.
+    The fractal set will be shown at the end of the progrss bar.
+10. **Status bar**, which show progress in percentage and consumed process time
+    to calculate the fractal set.
 
 ## Mouse and keyboard actions
 
@@ -62,6 +62,11 @@ You may switch from the Mandelbrot set to the Julia set by pressing [CTRL]+LMB
 Immediatly the calculation starts for the Julia set at this point. Of course
 you may zoom-in in the Julia set, too. The fractal indicator (see item 5 above)
 switches accordingly.
+
+### Menu actions
+
+- [CTRL]+[S] (Windows/Linux) or [CMD]+[S] (Apple): Save the current image
+- [CTRL]+[Q] (Windows/Linux) or [CMD]+[Q] (Apple): Quit the application
 
 ### Stop running calculation
 
