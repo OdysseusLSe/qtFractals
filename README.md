@@ -83,8 +83,9 @@ as the calculation starts (immediately after release of the LMB), the new values
 
 ### Resources
 
-To iclude all necessary resources you need the Qt resource system (`.qrc`)provided
-by PySide6 from Qt: "pyside6-rcc" (included already in the "pyside6" package):
+To iclude all necessary resources you need the Qt resource system (`.qrc`)
+provided by PySide6 from Qt: "pyside6-rcc" (included already in the "pyside6"
+package):
 
 `pyside6-rcc resources.qrc -o resources_rc.py`
 
@@ -99,7 +100,11 @@ To build a standalone app you need "pyinstaller". You have to install it first:
 In the next step you have to change in the directory where "main.py" is and
 execute the following line in a terminal:
 
+macOS:\
 `pyinstaller --noconsole --onefile --icon=ui/Mandelbrot.icns main.py`
+
+Windows 11:\
+`pyinstaller --noconsole --onefile --icon=ui/Mandelbrot.ico main.py`
 
 ## Forthcoming features
 
