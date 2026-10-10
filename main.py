@@ -16,7 +16,6 @@
 #
 
 import copy
-import math
 import time
 
 from PySide6 import QtWidgets
@@ -24,7 +23,6 @@ from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
     QGridLayout,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
@@ -32,6 +30,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QScrollArea,
+    QStatusBar,
     QStyle,
     QVBoxLayout,
     QWidget
@@ -39,6 +38,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import (
     QAction,
     QDoubleValidator,
+    QFont,
+    QIntValidator,
     QKeySequence,
     QIcon
 )
@@ -65,7 +66,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         appName = "qtFractals"
-        appVersion = "0.3.2"
+        appVersion = "0.4.0"
 
         self.setWindowTitle(appName + " " + appVersion)
 
@@ -81,6 +82,12 @@ class MainWindow(QMainWindow):
         else:
             self.log.error("Warning: Stylesheet " + ":/ui/style.css" + " not found.")
 
+        # Initiate status bar
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        self.status_bar.setFont(QFont("Arial", 11))
+        self.status_bar.showMessage("--- Ready ---")
+
         # Build the menu bar with all the menus and actions
         self.build_menu_bar()
 
@@ -89,6 +96,8 @@ class MainWindow(QMainWindow):
 
         # Build the main window with all the widgets
         self.build_main_window(appName, appVersion)
+
+        self.start_time = time.process_time()
 
         self.log.exit("__init__", False)
 
@@ -122,39 +131,47 @@ class MainWindow(QMainWindow):
         # Build line edits
         #
 
+        bottom = self.frac_area['realOrigin']
+        top    = self.frac_area['realOrigin'] + self.frac_area['realWidth']
         self.real_part_edit = QLineEdit(self)
         self.real_part_edit.setText(str(self.const_frac_area['realOrigin']))
-        self.real_part_edit.setValidator(QDoubleValidator(-2.0, 2.0, 4))
+        self.real_part_edit.setValidator(QDoubleValidator(bottom, top, 15))
         self.real_part_edit.setFixedWidth(160)
 
+        bottom = self.frac_area['imagOrigin']
+        top    = self.frac_area['imagOrigin'] + self.frac_area['imagHeight']
         self.imag_part_edit = QLineEdit(self)
         self.imag_part_edit.setText(str(self.const_frac_area['imagOrigin']))
-        self.imag_part_edit.setValidator(QDoubleValidator(-2.0, 2.0, 4))
+        self.imag_part_edit.setValidator(QDoubleValidator(bottom, top, 15))
         self.imag_part_edit.setFixedWidth(160)
 
+        bottom = 0.00000000001
+        top    = self.frac_area['realWidth']
         self.width_edit = QLineEdit(self)
         self.width_edit.setText(str(self.const_frac_area['realWidth']))
-        self.width_edit.setValidator(QDoubleValidator(0.0001, 7.1, 4))
+        self.width_edit.setValidator(QDoubleValidator(bottom, top, 15))
         self.width_edit.setFixedWidth(160)
 
+        bottom = 0.00000000001
+        top    = self.frac_area['imagHeight']
         self.height_edit = QLineEdit(self)
         self.height_edit.setText(str(self.const_frac_area['imagHeight']))
-        self.height_edit.setValidator(QDoubleValidator(0.0001, 4.0, 4))
+        self.height_edit.setValidator(QDoubleValidator(bottom, top, 15))
         self.height_edit.setFixedWidth(160)
 
         self.x_dim_edit = QLineEdit(self)
         self.x_dim_edit.setText(str(self.const_draw_dim['width']))
-        self.x_dim_edit.setValidator(QDoubleValidator(0.0001, 4.0, 4))
+        self.x_dim_edit.setValidator(QIntValidator(500, 10000))
         self.x_dim_edit.setFixedWidth(50)
 
         self.y_dim_edit = QLineEdit(self)
         self.y_dim_edit.setText(str(self.const_draw_dim['height']))
-        self.y_dim_edit.setValidator(QDoubleValidator(0.0001, 4.0, 4))
+        self.y_dim_edit.setValidator(QIntValidator(500, 10000))
         self.y_dim_edit.setFixedWidth(50)
 
         self.iter_lim_edit = QLineEdit(self)
         self.iter_lim_edit.setText(str(self.const_iter_lim))
-        self.iter_lim_edit.setValidator(QDoubleValidator(0.0001, 4.0, 4))
+        self.iter_lim_edit.setValidator(QIntValidator(100, 10000))
         self.iter_lim_edit.setFixedWidth(50)
 
         # Build combo box for drawing dimensions
@@ -283,6 +300,7 @@ class MainWindow(QMainWindow):
             self.current_frac_set,
             self.julia_c
         )
+        self.fw.cur_rect.connect(self.status_bar_update_area)
 
         self.scroll_area = QScrollArea()
 
@@ -333,7 +351,7 @@ class MainWindow(QMainWindow):
     def build_menu_bar(self):
         self.log.entry("build_menu_bar", False)
 
-        self.statusBar().showMessage("Ready")
+        self.status_bar.showMessage("--- Ready ---")
 
         # Create the menu bar
         menu_bar = self.menuBar()
@@ -379,7 +397,16 @@ class MainWindow(QMainWindow):
                 self.cp = element
         self.log.write(str(self.cp), False)
 
-        self.fw.change_col_pal(self.cp)
+        self.fw.set_parameters(
+            self.frac_area,
+            self.draw_dim,
+            self.iter_lim,
+            self.cp,
+            self.current_frac_set,
+            self.julia_c
+        )
+
+        self.trigger_calculation()
 
         self.log.exit("cp_text_changed", False)
 
@@ -390,7 +417,7 @@ class MainWindow(QMainWindow):
     def dd_text_changed(self, text):
         self.log.entry("dd_text_changed", False)
 
-        self.log.write(text, False)
+        self.log.write("text=" + text, False)
 
         if text == self.sel_draw_dim['HD']:
             self.x_dim_edit.setText("1280")
@@ -410,6 +437,8 @@ class MainWindow(QMainWindow):
         elif text == self.sel_draw_dim['8K Ultra HD']:
             self.x_dim_edit.setText("7680")
             self.y_dim_edit.setText("4320")
+
+        self.trigger_calculation()
 
         self.log.exit("dd_text_changed", False)
 
@@ -667,15 +696,15 @@ class MainWindow(QMainWindow):
     #
 
     def update_mac_status_bar(self, action):
-        self.log.entry("update_mac_status_bar", True)
+        self.log.entry("update_mac_status_bar", False)
 
         if action and action.statusTip():
-            self.log.write("action.statusTip()=" + str(action.statusTip()), True)
-            self.statusBar().showMessage(action.statusTip())
+            self.log.write("action.statusTip()=" + str(action.statusTip()), False)
+            self.status_bar.showMessage(action.statusTip())
         else:
-            self.statusBar().clearMessage()
+            self.status_bar.clearMessage()
 
-        self.log.exit("update_mac_status_bar", True)
+        self.log.exit("update_mac_status_bar", False)
 
     #
     # -----------------------------------------------
@@ -729,7 +758,7 @@ class MainWindow(QMainWindow):
         self.log.write("value=" + str(value) + " / " + str(self.draw_dim['height']), False)
 
         percent = int((value / self.progress_bar.maximum()) * 100)
-        self.statusBar().showMessage("--- Progress: " + str(percent) + "%")
+        self.status_bar.showMessage("--- Progress: " + str(percent) + "%")
 
         self.progress_bar.setValue(value)
 
@@ -739,7 +768,7 @@ class MainWindow(QMainWindow):
             delta_time = end_time - self.start_time
             status = "--- Progress: " + str(percent) + "% --- Process time: "
             status = status + str(delta_time) + " seconds ---"
-            self.statusBar().showMessage(status)
+            self.status_bar.showMessage(status)
 
             self.reset_btn.setEnabled(True)
             self.start_btn.setEnabled(True)
@@ -751,8 +780,37 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def status_bar_update_area(self, area):
+        self.log.entry("status_bar_update_area", False)
+        self.log.write("area=" + str(area), False)
+
+        ro = area['realOrigin']
+        io = area['imagOrigin']
+        rw = area['realWidth']
+        ih = area['imagHeight']
+        status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
+        status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
+        self.status_bar.showMessage(status)
+
+        self.log.exit("status_bar_update_area", False)
+
+    #
+    # -----------------------------------------------
+    #
+
     def end_app(self):
         self.log.entry("end_app", False)
+
+        end_app_dlg = QMessageBox(self)
+        end_app_dlg.setWindowTitle("Quit the application")
+        end_app_dlg.setText("Quit the application?")
+        end_app_dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        end_app_dlg.setIcon(QMessageBox.Question)
+        button = end_app_dlg.exec()
+
+        if button == QMessageBox.No:
+            self.log.exit("end_app", False)
+            return
 
         app.quit()
 

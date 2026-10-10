@@ -26,8 +26,12 @@ import Logging
 
 
 class FractalWidget(QWidget):
-    # Signal for progress
+
+    # Signal for progress of frac calculation
     progress = Signal(int)
+
+    # Signal for rectangle of next fractal area
+    cur_rect = Signal(dict)
 
     #
     # Constructor
@@ -39,6 +43,7 @@ class FractalWidget(QWidget):
         self.log = Logging.Logging("FractalWidget", True)
         self.log.entry("__init__", False)
 
+        self.calc_area        = copy.deepcopy(frac_area)
         self.frac_area        = copy.deepcopy(frac_area)
         self.draw_dim         = copy.deepcopy(draw_dim)
         self.iter_lim         = iter_lim
@@ -104,10 +109,12 @@ class FractalWidget(QWidget):
 
     def calculate_selected_area(self, rect):
         self.log.entry("calculate_selected_area", False)
+        self.log.write("frac_area=" + str(self.frac_area), False)
+
 
         # Check if selected area is to small
         if rect.width() < 5 or rect.height() < 5:
-            return
+            return False
 
         # Size of the pixel in the complex plane
         xStep = self.frac_area['realWidth'] / self.draw_dim['width']
@@ -119,31 +126,33 @@ class FractalWidget(QWidget):
         real_width  = rect.width()  * xStep
         imag_height = rect.height() * yStep
 
-        newArea = {
+        self.calc_area = {
             'realOrigin' : real_orig,
             'imagOrigin' : imag_orig,
             'realWidth'  : real_width,
             'imagHeight' : imag_height
         }
-        self.log.write("newArea=" + str(newArea), False)
-
+        self.log.write("calc_area=" + str(self.calc_area), False)
+        """
         self.set_parameters(
-            newArea,
+            self.calc_area,
             self.draw_dim,
             self.iter_lim,
             self.cp,
             self.current_frac_set,
             self.julia_c
         )
-        self.start_calculation()
+        """
+        #self.start_calculation()
 
         self.log.exit("calculate_selected_area", False)
 
+        return True
+
+    """
     #
     # -----------------------------------------------
     #
-
-    # Calculate selection on fractal base
 
     def change_col_pal(self, col_pal):
         self.log.entry("change_col_pal", False)
@@ -152,6 +161,7 @@ class FractalWidget(QWidget):
         self.start_calculation()
 
         self.log.exit("change_col_pal", False)
+    """
 
     #
     # -----------------------------------------------
@@ -268,6 +278,11 @@ class FractalWidget(QWidget):
         log_string = "x,y,dx,dy=" + str(x) + "," + str(y) + "," + str(abs(dx)) + "," + str(abs(dy))
         self.log.write(log_string, False)
 
+        self.calculate_selected_area(QRect(int(x), int(y), int(abs(dx)), int(abs(dy))))
+        self.log.write("frac_area=" + str(self.frac_area), False)
+        self.log.write("calc_area=" + str(self.calc_area), False)
+        self.cur_rect.emit(self.calc_area)
+
         self.log.exit("get_selection_rect", False)
         return QRect(int(x), int(y), int(abs(dx)), int(abs(dy)))
 
@@ -352,7 +367,10 @@ class FractalWidget(QWidget):
                 self.selecting = False
                 self.update()
                 # Neuen Fraktalbereich berechnen
-                self.calculate_selected_area(rect)
+                if self.calculate_selected_area(rect):
+                    self.log.write("frac_area=" + str(self.frac_area), False)
+                    self.frac_area = copy.deepcopy(self.calc_area)
+                    self.start_calculation()
 
         super().mouseReleaseEvent(event)
 
@@ -435,6 +453,7 @@ class FractalWidget(QWidget):
 
     def start_calculation(self):
         self.log.entry("start_calculation", False)
+        self.log.write(str(self.frac_area)+","+str(self.draw_dim), False)
 
         # Check if a thread is already running
         if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():

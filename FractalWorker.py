@@ -25,8 +25,14 @@ import Logging
 
 
 class FractalWorker(QObject):
+
+    # Signal for progress of frac calculation
     progress = Signal(int)
+
+    #
     drawing  = Signal(QImage)
+
+    #
     finished = Signal(QImage)
 
     def __init__(
