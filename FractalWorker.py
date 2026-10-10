@@ -29,10 +29,10 @@ class FractalWorker(QObject):
     # Signal for progress of frac calculation
     progress = Signal(int)
 
-    #
+    # Signal to show calculation result until now
     drawing  = Signal(QImage)
 
-    #
+    # Signal to show finished calculation result
     finished = Signal(QImage)
 
     def __init__(
@@ -67,6 +67,8 @@ class FractalWorker(QObject):
         self.log.exit("__init__", False)
 
     #
+    # -----------------------------------------------
+    # Calculate Julia set
     # -----------------------------------------------
     #
 
@@ -132,6 +134,8 @@ class FractalWorker(QObject):
 
     #
     # -----------------------------------------------
+    # Calculate Mandelbrot set
+    # -----------------------------------------------
     #
 
     @Slot()
@@ -196,6 +200,9 @@ class FractalWorker(QObject):
 
     #
     # -----------------------------------------------
+    # Calculate color and smoothed color transfers. Called by
+    # calculate_mandelbrot and calculate_julia
+    # -----------------------------------------------
     #
 
     def get_color(self, loop, value):
@@ -243,6 +250,8 @@ class FractalWorker(QObject):
         return rgb['R'], rgb['G'], rgb['B']
 
     #
+    # -----------------------------------------------
+    # Super widget informs the worker that calculation has to be stopped
     # -----------------------------------------------
     #
 

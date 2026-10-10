@@ -332,7 +332,6 @@ class MainWindow(QMainWindow):
 
         main_layout.addLayout(layout_grid)
         main_layout.addWidget(self.scroll_area)
-        #main_layout.addWidget(self.fw, 0, Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(self.progress_bar)
 
         container = QWidget()

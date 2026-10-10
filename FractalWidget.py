@@ -133,35 +133,10 @@ class FractalWidget(QWidget):
             'imagHeight' : imag_height
         }
         self.log.write("calc_area=" + str(self.calc_area), False)
-        """
-        self.set_parameters(
-            self.calc_area,
-            self.draw_dim,
-            self.iter_lim,
-            self.cp,
-            self.current_frac_set,
-            self.julia_c
-        )
-        """
-        #self.start_calculation()
 
         self.log.exit("calculate_selected_area", False)
 
         return True
-
-    """
-    #
-    # -----------------------------------------------
-    #
-
-    def change_col_pal(self, col_pal):
-        self.log.entry("change_col_pal", False)
-
-        self.cp = copy.deepcopy(col_pal)
-        self.start_calculation()
-
-        self.log.exit("change_col_pal", False)
-    """
 
     #
     # -----------------------------------------------
@@ -366,7 +341,7 @@ class FractalWidget(QWidget):
                 rect = self.get_selection_rect()
                 self.selecting = False
                 self.update()
-                # Neuen Fraktalbereich berechnen
+                # Calculate new fractal area
                 if self.calculate_selected_area(rect):
                     self.log.write("frac_area=" + str(self.frac_area), False)
                     self.frac_area = copy.deepcopy(self.calc_area)
