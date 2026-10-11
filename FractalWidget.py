@@ -99,6 +99,9 @@ class FractalWidget(QWidget):
 
         self.update()
 
+        # Create thumbnail of the image for history
+        thumbnail = self.image.scaledToWidth(100, Qt.TransformationMode.SmoothTransformation)
+
         self.log.exit("calculation_finished", False)
 
     #

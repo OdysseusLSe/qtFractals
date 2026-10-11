@@ -686,7 +686,12 @@ class MainWindow(QMainWindow):
             self.fw.start_calculation()
 
         else:
-            QMessageBox.about(self, "Error", "All fields need an input!")
+            all_fld_dlg = QMessageBox(self)
+            all_fld_dlg.setWindowTitle("Empty input field(s)")
+            all_fld_dlg.setText("All input fields need an input!")
+            all_fld_dlg.setStandardButtons(QMessageBox.Ok)
+            all_fld_dlg.setIcon(QMessageBox.Warning)
+            all_fld_dlg.exec()
 
         self.log.exit("trigger_calculation", False)
 
