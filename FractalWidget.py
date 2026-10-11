@@ -33,6 +33,9 @@ class FractalWidget(QWidget):
     # Signal for rectangle of next fractal area
     cur_rect = Signal(dict)
 
+    # Signal finished calculation
+    closing = Signal(QImage)
+
     #
     # Constructor
     #
@@ -100,11 +103,51 @@ class FractalWidget(QWidget):
         self.update()
 
         # Create thumbnail of the image for history
-        thumbnail = self.image.scaledToWidth(100, Qt.TransformationMode.SmoothTransformation)
+        self.thumbnail = self.image.scaledToWidth(100, Qt.TransformationMode.SmoothTransformation)
+        self.closing.emit(self.thumbnail)
 
         self.log.exit("calculation_finished", False)
 
     #
+    # -----------------------------------------------
+    #
+
+    def build_history_element(self, thumbnail_name, calc_time):
+        self.log.entry("build_history_element", True)
+
+        history_element = {
+            'frac_area'    : self.frac_area,
+            'draw_dim'     : self.draw_dim,
+            'iter_lim'     : self.iter_lim,
+            'real_julia_c' : self.julia_c.real,
+            'imag_julia_c' : self.julia_c.imag,
+            'frac_set'     : self.current_frac_set,
+            'calc_time'    : calc_time,
+            'thumbnail'    : thumbnail_name
+        }
+
+        """
+        history_element = {
+            'realOrigin'   : self.frac_area['realOrigin'],
+            'imagOrigin'   : self.frac_area['imagOrigin'],
+            'realWidth'    : self.frac_area['realWidth'],
+            'imagHeight'   : self.frac_area['imagHeight'],
+            'iter_lim'     : self.iter_lim,
+            'real_julia_c' : self.julia_c.real,
+            'imag_julia_c' : self.julia_c.imag,
+            'frac_set'     : self.current_frac_set,
+            'calc_time'    : 0.00,
+            'thumbnail'    : thumbnail_name
+        }
+        """
+
+        self.log.exit("build_history_element", True)
+
+        return history_element
+
+    #
+    # -----------------------------------------------
+    # Calculate selection on fractal base
     # -----------------------------------------------
     #
 

@@ -50,6 +50,7 @@ from PySide6.QtCore import (
     QTextStream
 )
 
+import FractalHistory
 import FractalWidget
 import Logging
 
@@ -98,6 +99,9 @@ class MainWindow(QMainWindow):
         self.build_main_window(appName, appVersion)
 
         self.start_time = time.process_time()
+
+        self.history_list = []
+        self.fh = FractalHistory.FractalHistory(appName, "history.json")
 
         self.log.exit("__init__", False)
 
@@ -301,6 +305,7 @@ class MainWindow(QMainWindow):
             self.julia_c
         )
         self.fw.cur_rect.connect(self.status_bar_update_area)
+        self.fw.closing.connect(self.calculation_closing)
 
         self.scroll_area = QScrollArea()
 
@@ -381,6 +386,32 @@ class MainWindow(QMainWindow):
         file_menu.hovered.connect(self.update_mac_status_bar)
 
         self.log.exit("build_menu_bar", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def calculation_closing(self, thumbnail):
+        self.log.entry("calculation_closing", True)
+
+        end_time = time.process_time()
+        calc_time = end_time - self.start_time
+        status = f" --- Process time: {calc_time} seconds ---"
+        self.status_bar.showMessage(status)
+
+        self.reset_btn.setEnabled(True)
+        self.start_btn.setEnabled(True)
+
+        thumbnail_name = f"{end_time}-{calc_time}.png"
+
+        new_history_element = self.fw.build_history_element(thumbnail_name, calc_time)
+        self.log.write(f"new_history_element={new_history_element}", True)
+
+        self.history_list.append(new_history_element)
+        self.log.write(f"history_list={self.history_list}", True)
+        self.fh.save_history(self.history_list, thumbnail, thumbnail_name)
+
+        self.log.exit("calculation_closing", True)
 
     #
     # -----------------------------------------------
@@ -765,18 +796,6 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage("--- Progress: " + str(percent) + "%")
 
         self.progress_bar.setValue(value)
-
-        if value >= self.progress_bar.maximum():
-
-            end_time = time.process_time()
-            delta_time = end_time - self.start_time
-            status = "--- Progress: " + str(percent) + "% --- Process time: "
-            status = status + str(delta_time) + " seconds ---"
-            self.status_bar.showMessage(status)
-
-            self.reset_btn.setEnabled(True)
-            self.start_btn.setEnabled(True)
-            self.log.write("Calculation finished (value=" + str(value) + ")", False)
 
         self.log.exit("update_progress", False)
 
