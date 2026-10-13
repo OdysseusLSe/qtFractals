@@ -5,6 +5,8 @@
     <!-- Icons -->
     <file>ui/LED_small_green.png</file>
     <file>ui/LED_small_red.png</file>
+    <!-- Color palettes -->
+    <file>ui/color_palettes.json</file>
     <!-- Documentation -->
     <file>README.md</file>
     <file>docs/main_window_legend.png</file>

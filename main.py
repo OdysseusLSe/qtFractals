@@ -16,11 +16,16 @@
 #
 
 import copy
+import json
 import time
+
+from pathlib import Path
 
 from PySide6.QtCore import (
     Qt,
     QFile,
+    QIODevice,
+    QJsonDocument,
     QSize,
     QTextStream
 )
@@ -485,92 +490,33 @@ class MainWindow(QMainWindow):
 
     #
     # -----------------------------------------------
+    # Load color palettes (for more details see FractalWorker.py)
+    # -----------------------------------------------
     #
 
-    def define_color_palettes(self):
-        self.log.entry("define_color_palettes", False)
+    def load_color_palettes(self):
+        self.log.entry("load_color_palettes", False)
 
-        #
-        # Color palette (for more details see method "get_color" in FractalWorker.py):
-        # (color = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase)))
-        #
+        self.cp_list = []
+        file = QFile(":/ui/color_palettes.json")
 
-        self.cp_barrier_free = {
-            'name'        : "Barrier-Free",
-            'brightnessR' : 0.6,  'brightnessG' : 0.5,  'brightnessB' : 0.4,
-            'contrastR'   : 0.4,  'contrastG'   : 0.5,  'contrastB'   : 0.6,
-            'frequencyR'  : 1.0,  'frequencyG'  : 1.0,  'frequencyB'  : 1.0,
-            'phaseR'      : 0.00, 'phaseG'      : 0.00, 'phaseB'      : 0.5
-        }
-        self.cp_list = [self.cp_barrier_free]
+        if file.open(QIODevice.ReadOnly | QIODevice.Text):
+            cp_file_data = file.readAll()
+            file.close()
+            json_doc = QJsonDocument.fromJson(cp_file_data)
+            self.cp_list = json_doc.toVariant()
+        else:
+            self.log.error(f"Loading color palettes:{file.errorString()}!", False)
+            self.log.exit("load_color_palettes", False)
+            return None
 
-        self.cp_classic_rainbow = {
-            'name'        : "Classic Rainbow",
-            'brightnessR' : 0.5,  'brightnessG' : 0.5,  'brightnessB' : 0.5,
-            'contrastR'   : 0.5,  'contrastG'   : 0.5,  'contrastB'   : 0.5,
-            'frequencyR'  : 1.0,  'frequencyG'  : 1.0,  'frequencyB'  : 1.0,
-            'phaseR'      : 0.00, 'phaseG'      : 0.33, 'phaseB'      : 0.67
-        }
-        self.cp_list.append(self.cp_classic_rainbow)
+        # Filter default color palette
+        for self.cp in self.cp_list:
+            if self.cp['name'] == "Fire & Ice":
+                break
 
-        self.cp_deep_forest = {
-            'name'        : "Deep Forest",
-            'brightnessR' : 0.3,  'brightnessG' : 0.6,  'brightnessB' : 0.2,
-            'contrastR'   : 0.3,  'contrastG'   : 0.4,  'contrastB'   : 0.2,
-            'frequencyR'  : 1.0,  'frequencyG'  : 1.0,  'frequencyB'  : 1.0,
-            'phaseR'      : 0.00, 'phaseG'      : 0.05, 'phaseB'      : 0.33
-        }
-        self.cp_list.append(self.cp_deep_forest)
-
-        self.cp_fire_and_ice = {
-            'name'      : "Fire & Ice",
-            'brightnessR' : 0.5,  'brightnessG' : 0.5,  'brightnessB' : 0.5,
-            'contrastR'   : 0.5,  'contrastG'   : 0.5,  'contrastB'   : 0.5,
-            'frequencyR'  : 1.0,  'frequencyG'  : 1.0,  'frequencyB'  : 1.0,
-            'phaseR'      : 0.00, 'phaseG'      : 0.15, 'phaseB'      : 0.33
-        }
-        self.cp_list.append(self.cp_fire_and_ice)
-
-        self.cp_grayscale = {
-            'name'        : "Grayscale",
-            'brightnessR' : 0.5,  'brightnessG' : 0.5,  'brightnessB' : 0.5,
-            'contrastR'   : 0.5,  'contrastG'   : 0.5,  'contrastB'   : 0.5,
-            'frequencyR'  : 1.0,  'frequencyG'  : 1.0,  'frequencyB'  : 1.0,
-            'phaseR'      : 0.00, 'phaseG'      : 0.00, 'phaseB'      : 0.00
-        }
-        self.cp_list.append(self.cp_grayscale)
-
-        self.cp_maximum_contrast = {
-            'name'        : "Maximum Contrast",
-            'brightnessR' : 0.5,  'brightnessG' : 0.5,  'brightnessB' : 0.5,
-            'contrastR'   : 0.5,  'contrastG'   : 0.5,  'contrastB'   : 0.5,
-            'frequencyR'  : 1.0,  'frequencyG'  : 1.0,  'frequencyB'  : 1.0,
-            'phaseR'      : 0.00, 'phaseG'      : 0.00, 'phaseB'      : 0.00
-        }
-        self.cp_list.append(self.cp_maximum_contrast)
-
-        self.cp_neon_electric = {
-            'name'        : "Neon Electric",
-            'brightnessR' : 0.8,  'brightnessG' : 0.5,  'brightnessB' : 0.4,
-            'contrastR'   : 0.5,  'contrastG'   : 0.5,  'contrastB'   : 0.5,
-            'frequencyR'  : 1.0,  'frequencyG'  : 1.0,  'frequencyB'  : 1.0,
-            'phaseR'      : 0.00, 'phaseG'      : 0.33, 'phaseB'      : 0.67
-        }
-        self.cp_list.append(self.cp_neon_electric)
-
-        self.cp_vintage_pastel = {
-            'name'        : "Vintage Pastel",
-            'brightnessR' : 0.5,  'brightnessG' : 0.5,  'brightnessB' : 0.5,
-            'contrastR'   : 0.5,  'contrastG'   : 0.5,  'contrastB'   : 0.5,
-            'frequencyR'  : 1.0,  'frequencyG'  : 1.0,  'frequencyB'  : 1.0,
-            'phaseR'      : 0.30, 'phaseG'      : 0.20, 'phaseB'      : 0.20
-        }
-        self.cp_list.append(self.cp_vintage_pastel)
-
-        self.log.exit("define_color_palettes", False)
-
-        # return default color palette
-        return self.cp_fire_and_ice
+        self.log.exit("load_color_palettes", False)
+        return self.cp
 
     #
     # -----------------------------------------------
@@ -698,7 +644,7 @@ class MainWindow(QMainWindow):
         self.current_frac_set = self.default_frac_set
 
         # Default color palette
-        self.cp = copy.deepcopy(self.define_color_palettes())
+        self.cp = copy.deepcopy(self.load_color_palettes())
         self.log.write("self.cp=" + str(self.cp), False)
 
         self.log.exit("set_default_values", False)

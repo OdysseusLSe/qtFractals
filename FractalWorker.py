@@ -100,7 +100,7 @@ class FractalWorker(QObject):
         for y in range(self.draw_dim['height']):
 
             if not self.is_running:
-                # Boolean flag to stop the thread if requested by the user
+                # Boolean flag to stop the thread (initiated by the user)
                 self.log.write("Thread stopped by user.", False)
                 self.progress.emit(self.draw_dim['height'])
                 self.log.exit("calculate_julia", False)
@@ -166,7 +166,7 @@ class FractalWorker(QObject):
         for y in range(self.draw_dim['height']):
 
             if not self.is_running:
-                # Boolean flag to stop the thread if requested by the user
+                # Boolean flag to stop the thread (initiated by the user)
                 self.log.write("Thread stopped by user.", False)
                 self.progress.emit(self.draw_dim['height'])
                 self.log.exit("calculate_mandelbrot", False)
