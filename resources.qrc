@@ -5,5 +5,9 @@
     <!-- Icons -->
     <file>ui/LED_small_green.png</file>
     <file>ui/LED_small_red.png</file>
+    <!-- Documentation -->
+    <file>README.md</file>
+    <file>docs/main_window_legend.png</file>
+    <file>docs/app_screenshot_history.png</file>
 </qresource>
 </RCC>
