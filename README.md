@@ -8,6 +8,7 @@ This app calculates fractal sets. It provides a few features like
 - "zoom-in" / "zoom-out" via specific input coordinates,
 - define the area of the calculated set,
 - define the value of iteration for the fractal formula,
+- history: every fractal calculation will be stored
 - providing pre-defined drawing dimensions,
 - switching from Mandelbrot set to Julia set,
 - saving the calculated result in a file,
@@ -53,20 +54,30 @@ In this section I describe the main window and its controls:
 10. **Status bar**, which show progress in percentage and consumed process time
     to calculate the fractal set.
 
+## History window
+
+![History window](docs/app_screenshot_history.png)
+
+The history window shows all past calculations since starting the app the first
+time. The entries are sorted by time. You can delete single entries (at the moment
+one by one only) or repeat a specific calculation. The repeated one generates a
+new history entry!
+
 ## Mouse and keyboard actions
 
 ### Julia set
 
 You may switch from the Mandelbrot set to the Julia set by pressing [CTRL]+LMB
-(Windows/Linux) or [CMD]+LMB (Apple) on any point of the calculated set.
+(Windows/Linux) or [Cmd(⌘)]+LMB (Apple) on any point of the calculated set.
 Immediatly the calculation starts for the Julia set at this point. Of course
 you may zoom-in in the Julia set, too. The fractal indicator (see item 5 above)
 switches accordingly.
 
 ### Menu actions
 
-- [CTRL]+[S] (Windows/Linux) or [CMD]+[S] (Apple): Save the current image
-- [CTRL]+[Q] (Windows/Linux) or [CMD]+[Q] (Apple): Quit the application
+- [CTRL]+[Q] (Windows/Linux) or [Cmd(⌘)]+[Q] (Apple): Quit the application
+- [CTRL]+[S] (Windows/Linux) or [Cmd(⌘)]+[S] (Apple): Save the current image
+- [CTRL]+[T] (Windows/Linux) or [Cmd(⌘)]+[T] (Apple): Show the history window
 
 ### Stop running calculation
 

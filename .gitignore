@@ -263,7 +263,7 @@ compile_commands.json
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
+!vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
@@ -281,10 +281,11 @@ compile_commands.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,visualstudiocode,qt
-.vscode/settings.json
-test.jpg
-temp.py
-test.txt
+
+log.txt
+qtFractals/*
 qtFractals_image.png
 temp/*
-log.txt
+temp*.py
+test.jpg
+test.txt

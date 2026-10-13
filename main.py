@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         app_name = "qtFractals"
-        app_version = "0.4.0"
+        app_version = "0.5.0"
 
         self.setWindowTitle(f"{app_name} {app_version}")
 
@@ -386,8 +386,8 @@ class MainWindow(QMainWindow):
         menu_bar.addMenu(misc_menu)
 
         # Create the "Show history" action
-        self.show_history_action = QAction("&Show history", self)
-        self.show_history_action.setShortcut(QKeySequence("Ctrl+S"))
+        self.show_history_action = QAction("Show his&tory", self)
+        self.show_history_action.setShortcut(QKeySequence("Ctrl+T"))
         self.show_history_action.setStatusTip("Show history")
         self.show_history_action.triggered.connect(self.show_history)
         misc_menu.addAction(self.show_history_action)
