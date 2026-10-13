@@ -18,8 +18,15 @@
 import copy
 import math
 
-from PySide6.QtCore import QObject, Signal, Slot
-from PySide6.QtGui import QImage, QColor
+from PySide6.QtCore import (
+    QObject,
+    Signal,
+    Slot
+)
+from PySide6.QtGui import (
+    QImage,
+    QColor
+)
 
 import Logging
 

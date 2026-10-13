@@ -18,6 +18,20 @@
 import copy
 import time
 
+from PySide6.QtCore import (
+    Qt,
+    QFile,
+    QSize,
+    QTextStream
+)
+from PySide6.QtGui import (
+    QAction,
+    QDoubleValidator,
+    QFont,
+    QIntValidator,
+    QKeySequence,
+    QIcon
+)
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import (
     QComboBox,
@@ -34,20 +48,6 @@ from PySide6.QtWidgets import (
     QStyle,
     QVBoxLayout,
     QWidget
-)
-from PySide6.QtGui import (
-    QAction,
-    QDoubleValidator,
-    QFont,
-    QIntValidator,
-    QKeySequence,
-    QIcon
-)
-from PySide6.QtCore import (
-    Qt,
-    QFile,
-    QSize,
-    QTextStream
 )
 
 import FractalHistory
@@ -66,13 +66,13 @@ class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
-        appName = "qtFractals"
-        appVersion = "0.4.0"
+        app_name = "qtFractals"
+        app_version = "0.4.0"
 
-        self.setWindowTitle(appName + " " + appVersion)
+        self.setWindowTitle(f"{app_name} {app_version}")
 
-        self.log = Logging.Logging(appName + " " + appVersion, True)
-        self.log.write("--- " + appName + " " + appVersion + " ---", False)
+        self.log = Logging.Logging(app_name + " " + app_version, True)
+        self.log.write(f"--- {app_name} {app_version} ---", False)
         self.log.entry("__init__", False)
 
         # Load the stylesheet from a file
@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
             stream = QTextStream(style_file)
             self.setStyleSheet(stream.readAll())
         else:
-            self.log.error("Warning: Stylesheet " + ":/ui/style.css" + " not found.")
+            self.log.error('Warning: Stylesheet ":/ui/style.css" not found.', False)
 
         # Initiate status bar
         self.status_bar = QStatusBar()
@@ -96,12 +96,15 @@ class MainWindow(QMainWindow):
         self.set_default_values()
 
         # Build the main window with all the widgets
-        self.build_main_window(appName, appVersion)
+        self.build_main_window(app_name, app_version)
 
         self.start_time = time.process_time()
 
         self.history_list = []
-        self.fh = FractalHistory.FractalHistory(appName, "history.json")
+        self.history_window = None
+        self.fh = FractalHistory.FractalHistory(app_name, "history.json")
+        self.history_list = self.fh.load_history()
+        self.log.write(f"history_list={self.history_list}", False)
 
         self.log.exit("__init__", False)
 
@@ -109,7 +112,7 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def build_main_window(self, appName, appVersion):
+    def build_main_window(self, app_name, app_version):
 
         self.log.entry("build_main_window", False)
 
@@ -118,7 +121,7 @@ class MainWindow(QMainWindow):
         yOffset = 10
 
         # Title of the main window
-        self.setWindowTitle(appName + " " + appVersion)
+        self.setWindowTitle(app_name + " " + app_version)
 
         self.setMinimumHeight(800)
 
@@ -315,9 +318,9 @@ class MainWindow(QMainWindow):
         min_height   = self.const_draw_dim['height'] + sb_thickness + frame_margin
         self.scroll_area.setMinimumSize(min_width, min_height)
 
-        log_string = "sb_thickness,frame_margin=" + str(sb_thickness) + "," + str(frame_margin)
+        log_string = f"sb_thickness,frame_margin={sb_thickness},{frame_margin}"
         self.log.write(log_string, False)
-        log_string = "min_width,min_height=" + str(min_width) + "," + str(min_height)
+        log_string = f"min_width,min_height={min_width},{min_height}"
         self.log.write(log_string, False)
 
         self.scroll_area.setWidgetResizable(True)
@@ -378,12 +381,20 @@ class MainWindow(QMainWindow):
         self.quit_action.triggered.connect(self.end_app)
         file_menu.addAction(self.quit_action)
 
-        # Create the "Configuration" menu
-        config_menu = QMenu("&Config", self)
-        menu_bar.addMenu(config_menu)
+        # Create the "Misc" menu
+        misc_menu = QMenu("&Misc", self)
+        menu_bar.addMenu(misc_menu)
+
+        # Create the "Show history" action
+        self.show_history_action = QAction("&Show history", self)
+        self.show_history_action.setShortcut(QKeySequence("Ctrl+S"))
+        self.show_history_action.setStatusTip("Show history")
+        self.show_history_action.triggered.connect(self.show_history)
+        misc_menu.addAction(self.show_history_action)
 
         # MAC FIX: Connect the menu's hovered signal to a custom slots pipeline
         file_menu.hovered.connect(self.update_mac_status_bar)
+        misc_menu.hovered.connect(self.update_mac_status_bar)
 
         self.log.exit("build_menu_bar", False)
 
@@ -392,7 +403,7 @@ class MainWindow(QMainWindow):
     #
 
     def calculation_closing(self, thumbnail):
-        self.log.entry("calculation_closing", True)
+        self.log.entry("calculation_closing", False)
 
         end_time = time.process_time()
         calc_time = end_time - self.start_time
@@ -402,16 +413,16 @@ class MainWindow(QMainWindow):
         self.reset_btn.setEnabled(True)
         self.start_btn.setEnabled(True)
 
-        thumbnail_name = f"{end_time}-{calc_time}.png"
+        thumbnail_name = f"{time.time()}.png"
 
         new_history_element = self.fw.build_history_element(thumbnail_name, calc_time)
-        self.log.write(f"new_history_element={new_history_element}", True)
+        self.log.write(f"new_history_element={new_history_element}", False)
 
         self.history_list.append(new_history_element)
-        self.log.write(f"history_list={self.history_list}", True)
+        self.log.write(f"history_list={self.history_list}", False)
         self.fh.save_history(self.history_list, thumbnail, thumbnail_name)
 
-        self.log.exit("calculation_closing", True)
+        self.log.exit("calculation_closing", False)
 
     #
     # -----------------------------------------------
@@ -420,12 +431,12 @@ class MainWindow(QMainWindow):
     def cp_text_changed(self, text):
         self.log.entry("cp_text_changed", False)
 
-        self.log.write(text, False)
+        self.log.write(f"text={text}", False)
 
         for element in self.cp_list:
             if text == element['name']:
                 self.cp = element
-        self.log.write(str(self.cp), False)
+        self.log.write(f"self.cp={self.cp}", False)
 
         self.fw.set_parameters(
             self.frac_area,
@@ -447,7 +458,7 @@ class MainWindow(QMainWindow):
     def dd_text_changed(self, text):
         self.log.entry("dd_text_changed", False)
 
-        self.log.write("text=" + text, False)
+        self.log.write(f"text={text}", False)
 
         if text == self.sel_draw_dim['HD']:
             self.x_dim_edit.setText("1280")
@@ -565,6 +576,28 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def repeat_item(self, item):
+        self.log.entry("repeat_item", False)
+
+        history_item = self.history_list[item]
+
+        fa = history_item['frac_area']
+        dd = history_item['draw_dim']
+        il = history_item['iter_lim']
+        cp = history_item['col_pal']
+        fs = history_item['frac_set']
+        jc = complex(history_item['real_julia_c'], history_item['imag_julia_c'])
+
+        self.fw.set_parameters(fa, dd, il, cp, fs, jc)
+
+        self.fw.start_calculation()
+
+        self.log.entry("repeat_item", False)
+
+    #
+    # -----------------------------------------------
+    #
+
     def reset(self):
         self.log.entry("reset", False)
 
@@ -609,7 +642,7 @@ class MainWindow(QMainWindow):
             filters,
             initial_filter
         )
-        self.log.write("file_name,selected_filter=" + file_name + "," + selected_filter, False)
+        self.log.write(f"file_name,selected_filter={file_name},{selected_filter}", False)
         if file_name == "":
             self.log.exit("save_image", False)
             return
@@ -734,7 +767,7 @@ class MainWindow(QMainWindow):
         self.log.entry("update_mac_status_bar", False)
 
         if action and action.statusTip():
-            self.log.write("action.statusTip()=" + str(action.statusTip()), False)
+            self.log.write(f"action.statusTip()={action.statusTip()}", False)
             self.status_bar.showMessage(action.statusTip())
         else:
             self.status_bar.clearMessage()
@@ -751,7 +784,7 @@ class MainWindow(QMainWindow):
         if value == 1:
 
             self.start_time = time.process_time()
-            self.log.write("Calculation started (value=" + str(value) + ")", False)
+            self.log.write(f"Calculation started (value={value})", False)
 
             self.reset_btn.setEnabled(False)
             self.start_btn.setEnabled(False)
@@ -793,7 +826,7 @@ class MainWindow(QMainWindow):
         self.log.write("value=" + str(value) + " / " + str(self.draw_dim['height']), False)
 
         percent = int((value / self.progress_bar.maximum()) * 100)
-        self.status_bar.showMessage("--- Progress: " + str(percent) + "%")
+        self.status_bar.showMessage(f"--- Progress: {percent}%")
 
         self.progress_bar.setValue(value)
 
@@ -803,9 +836,24 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def show_history(self):
+        self.log.entry("show_history", False)
+
+        self.fh.show_history_list(self.history_list)
+        if self.fh.repeat():
+            item = self.fh.item_of_history()
+            self.log.entry(f"item={item}", False)
+            self.repeat_item(item)
+
+        self.log.exit("show_history", False)
+
+    #
+    # -----------------------------------------------
+    #
+
     def status_bar_update_area(self, area):
         self.log.entry("status_bar_update_area", False)
-        self.log.write("area=" + str(area), False)
+        self.log.write(f"area={area}", False)
 
         ro = area['realOrigin']
         io = area['imagOrigin']

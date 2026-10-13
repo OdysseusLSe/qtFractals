@@ -17,8 +17,20 @@
 
 import copy
 
-from PySide6.QtCore import Qt, QThread, Signal, QRect
-from PySide6.QtGui import QPainter, QPen, QColor, QImage, QKeySequence, QShortcut
+from PySide6.QtCore import (
+    QRect,
+    Qt,
+    QThread,
+    Signal
+)
+from PySide6.QtGui import (
+    QImage,
+    QColor,
+    QKeySequence,
+    QPainter,
+    QPen,
+    QShortcut
+)
 from PySide6.QtWidgets import QWidget
 
 import FractalWorker
@@ -40,26 +52,26 @@ class FractalWidget(QWidget):
     # Constructor
     #
 
-    def __init__(self, frac_area, draw_dim, iter_lim, col_pal, current_frac_set, julia_c):
+    def __init__(self, frac_area, draw_dim, iter_lim, col_pal, frac_set, julia_c):
         super().__init__()
 
         self.log = Logging.Logging("FractalWidget", True)
         self.log.entry("__init__", False)
 
-        self.calc_area        = copy.deepcopy(frac_area)
-        self.frac_area        = copy.deepcopy(frac_area)
-        self.draw_dim         = copy.deepcopy(draw_dim)
-        self.iter_lim         = iter_lim
-        self.cp               = copy.deepcopy(col_pal)
-        self.current_frac_set = current_frac_set
-        self.julia_c          = julia_c
+        self.calc_area = copy.deepcopy(frac_area)
+        self.frac_area = copy.deepcopy(frac_area)
+        self.draw_dim  = copy.deepcopy(draw_dim)
+        self.iter_lim  = iter_lim
+        self.cp        = copy.deepcopy(col_pal)
+        self.frac_set  = frac_set
+        self.julia_c   = julia_c
 
         self.log.write("self.frac_area=" + str(self.frac_area), False)
         self.log.write("self.draw_dim=" + str(self.draw_dim), False)
         self.log.write("self.iter_lim=" + str(self.iter_lim), False)
         self.log.write("self.cp=" + str(self.cp), False)
         self.log.write("self.julia_c=" + str(self.julia_c), False)
-        self.log.write("self.current_frac_set=" + str(self.current_frac_set), False)
+        self.log.write("self.frac_set=" + str(self.frac_set), False)
 
         self.image = QImage()
 
@@ -103,7 +115,7 @@ class FractalWidget(QWidget):
         self.update()
 
         # Create thumbnail of the image for history
-        self.thumbnail = self.image.scaledToWidth(100, Qt.TransformationMode.SmoothTransformation)
+        self.thumbnail = self.image.scaledToWidth(150, Qt.TransformationMode.SmoothTransformation)
         self.closing.emit(self.thumbnail)
 
         self.log.exit("calculation_finished", False)
@@ -113,35 +125,21 @@ class FractalWidget(QWidget):
     #
 
     def build_history_element(self, thumbnail_name, calc_time):
-        self.log.entry("build_history_element", True)
+        self.log.entry("build_history_element", False)
 
         history_element = {
             'frac_area'    : self.frac_area,
             'draw_dim'     : self.draw_dim,
             'iter_lim'     : self.iter_lim,
+            'col_pal'      : self.cp,
             'real_julia_c' : self.julia_c.real,
             'imag_julia_c' : self.julia_c.imag,
-            'frac_set'     : self.current_frac_set,
+            'frac_set'     : self.frac_set,
             'calc_time'    : calc_time,
             'thumbnail'    : thumbnail_name
         }
 
-        """
-        history_element = {
-            'realOrigin'   : self.frac_area['realOrigin'],
-            'imagOrigin'   : self.frac_area['imagOrigin'],
-            'realWidth'    : self.frac_area['realWidth'],
-            'imagHeight'   : self.frac_area['imagHeight'],
-            'iter_lim'     : self.iter_lim,
-            'real_julia_c' : self.julia_c.real,
-            'imag_julia_c' : self.julia_c.imag,
-            'frac_set'     : self.current_frac_set,
-            'calc_time'    : 0.00,
-            'thumbnail'    : thumbnail_name
-        }
-        """
-
-        self.log.exit("build_history_element", True)
+        self.log.exit("build_history_element", False)
 
         return history_element
 
@@ -156,7 +154,6 @@ class FractalWidget(QWidget):
     def calculate_selected_area(self, rect):
         self.log.entry("calculate_selected_area", False)
         self.log.write("frac_area=" + str(self.frac_area), False)
-
 
         # Check if selected area is to small
         if rect.width() < 5 or rect.height() < 5:
@@ -227,7 +224,7 @@ class FractalWidget(QWidget):
 
         self.log.exit("get_parameters", False)
 
-        return self.frac_area, self.draw_dim, self.iter_lim, self.current_frac_set, self.julia_c
+        return self.frac_area, self.draw_dim, self.iter_lim, self.frac_set, self.julia_c
 
     #
     # -----------------------------------------------
@@ -355,7 +352,7 @@ class FractalWidget(QWidget):
             if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 # Calculate Julia set at selected coordinations
                 self.log.write("LMB and [CMD]/[Control] pressed.", False)
-                self.current_frac_set = "Julia"
+                self.frac_set = "Julia"
                 self.sel_point = (event.position().toPoint())
                 self.update()
                 self.define_julia_parameter()
@@ -450,20 +447,20 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def set_parameters(self, frac_area, draw_dim, iter_lim, col_pal, current_frac_set, julia_c):
+    def set_parameters(self, frac_area, draw_dim, iter_lim, col_pal, frac_set, julia_c):
         self.log.entry("set_parameters", False)
 
         self.frac_area        = copy.deepcopy(frac_area)
         self.draw_dim         = copy.deepcopy(draw_dim)
         self.iter_lim         = iter_lim
         self.cp               = copy.deepcopy(col_pal)
-        self.current_frac_set = current_frac_set
+        self.frac_set = frac_set
         self.julia_c          = julia_c
 
         self.log.write(str(self.frac_area), False)
         self.log.write(str(self.draw_dim), False)
         self.log.write(str(self.iter_lim), False)
-        self.log.write(str(self.current_frac_set), False)
+        self.log.write(str(self.frac_set), False)
         self.log.write(str(self.julia_c), False)
 
         self.log.exit("set_parameters", False)
@@ -489,7 +486,7 @@ class FractalWidget(QWidget):
             self.draw_dim,
             self.iter_lim,
             self.cp,
-            self.current_frac_set,
+            self.frac_set,
             self.julia_c
         )
         self.worker.moveToThread(self.thread)
@@ -498,7 +495,7 @@ class FractalWidget(QWidget):
         # Connect signals and slots
         #
 
-        if self.current_frac_set == "Mandelbrot":
+        if self.frac_set == "Mandelbrot":
             self.thread.started.connect(self.worker.calculate_mandelbrot)
         else:
             self.thread.started.connect(self.worker.calculate_julia)
