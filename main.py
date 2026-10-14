@@ -16,10 +16,11 @@
 #
 
 import copy
-import json
+#import json
 import time
+from math import cos, pi
 
-from pathlib import Path
+#from pathlib import Path
 
 from PySide6.QtCore import (
     Qt,
@@ -40,8 +41,11 @@ from PySide6.QtGui import (
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import (
     QComboBox,
+    QDialog,
+    QDoubleSpinBox,
     QFileDialog,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
@@ -391,11 +395,18 @@ class MainWindow(QMainWindow):
         menu_bar.addMenu(misc_menu)
 
         # Create the "Show history" action
-        self.show_history_action = QAction("Show his&tory", self)
-        self.show_history_action.setShortcut(QKeySequence("Ctrl+T"))
-        self.show_history_action.setStatusTip("Show history")
-        self.show_history_action.triggered.connect(self.show_history)
-        misc_menu.addAction(self.show_history_action)
+        self.shis_action = QAction("Show his&tory", self)
+        self.shis_action.setShortcut(QKeySequence("Ctrl+T"))
+        self.shis_action.setStatusTip("Show history")
+        self.shis_action.triggered.connect(self.show_history)
+        misc_menu.addAction(self.shis_action)
+
+        # Create the "New color palette" action
+        self.ncop_action = QAction("&New color palette", self)
+        self.ncop_action.setShortcut(QKeySequence("Ctrl+N"))
+        self.ncop_action.setStatusTip("Show history")
+        self.ncop_action.triggered.connect(self.new_color_palette)
+        misc_menu.addAction(self.ncop_action)
 
         # MAC FIX: Connect the menu's hovered signal to a custom slots pipeline
         file_menu.hovered.connect(self.update_mac_status_bar)
@@ -418,6 +429,11 @@ class MainWindow(QMainWindow):
         self.reset_btn.setEnabled(True)
         self.start_btn.setEnabled(True)
 
+        if self.is_cp_showroom:
+            self.is_cp_showroom = False
+            self.log.exit("calculation_closing", False)
+            return
+
         thumbnail_name = f"{time.time()}.png"
 
         new_history_element = self.fw.build_history_element(thumbnail_name, calc_time)
@@ -428,6 +444,32 @@ class MainWindow(QMainWindow):
         self.fh.save_history(self.history_list, thumbnail, thumbnail_name)
 
         self.log.exit("calculation_closing", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def cp_showroom(self):
+        self.log.entry("cp_showroom", True)
+
+        self.is_cp_showroom = True
+
+        self.real_part_edit.setText(str(self.const_frac_area['realOrigin']))
+        self.imag_part_edit.setText(str(self.const_frac_area['imagOrigin']))
+        self.width_edit.setText(str(self.const_frac_area['realWidth']))
+        self.height_edit.setText(str(self.const_frac_area['imagHeight']))
+
+        self.x_dim_edit.setText(str(int(self.const_draw_dim['width']/2)))
+        self.y_dim_edit.setText(str(int(self.const_draw_dim['height']/2)))
+
+        self.iter_lim_edit.setText(str(self.const_iter_lim))
+
+        self.current_frac_set = self.default_frac_set
+        self.julia_c = complex(10.0, 10.0)
+
+        self.trigger_calculation()
+
+        self.log.exit("cp_showroom", True)
 
     #
     # -----------------------------------------------
@@ -522,6 +564,102 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def new_color_palette(self):
+        self.log.entry("new_color_palette", True)
+
+        self.ncop_dialog = QDialog()
+        self.ncop_dialog.setWindowTitle("New color palette")
+        self.ncop_dialog.resize(500, 400)
+
+        spin   = [[None for _ in range(3)] for _ in range(4)]
+        vector = [[0.00 for _ in range(3)] for _ in range(4)]
+
+        #
+        # Build the user interface
+        #
+
+        main_layout = QVBoxLayout(self.ncop_dialog)
+
+        layout = QHBoxLayout()
+        name_lbl   = QLabel("<b>Name of new color palette: </b>", self)
+        name_edit  = QLineEdit(self)
+        name_edit.setText("New Color Palette")
+        layout.addWidget(name_lbl)
+        layout.addWidget(name_edit)
+        main_layout.addLayout(layout)
+
+        # Input for the 4 vectors
+
+        vectors = ["Brightness", "Contrast", "Frequency", "Phase"]
+
+        row = 0
+        for item in vectors:
+            layout = QHBoxLayout()
+            desc = QLabel(f"<b>{item} (RGB):</b>", self)
+            desc.setFixedWidth(100)
+            layout.addWidget(desc)
+            column = 0
+            for color in ["R: ", "G: ", "B: "]:
+                spin[row][column] = QDoubleSpinBox()
+                spin[row][column].setRange(0.0, 1.0)
+                spin[row][column].setSingleStep(0.01)
+                spin[row][column].setPrefix(color)
+                layout.addWidget(spin[row][column])
+                column = column + 1
+            main_layout.addLayout(layout)
+            row = row + 1
+            self.log.write(f"spin={spin}", False)
+
+        # Last row: buttons
+        btn_layout = QHBoxLayout()
+        btn_test   = QPushButton("Test", self.ncop_dialog)
+        btn_save   = QPushButton("Save", self.ncop_dialog)
+        btn_cancel = QPushButton("Cancel", self.ncop_dialog)
+        btn_layout.addWidget(btn_test)
+        btn_layout.addWidget(btn_save)
+        btn_layout.addWidget(btn_cancel)
+        main_layout.addLayout(btn_layout)
+
+        def vector_to_cp():
+            self.cp['brightnessR'] = vector[0][0]
+            self.cp['brightnessG'] = vector[0][1]
+            self.cp['brightnessB'] = vector[0][2]
+            self.cp['contrastR'] = vector[1][0]
+            self.cp['contrastG'] = vector[1][1]
+            self.cp['contrastB'] = vector[1][2]
+            self.cp['frequencyR'] = vector[2][0]
+            self.cp['frequencyG'] = vector[2][1]
+            self.cp['frequencyB'] = vector[2][2]
+            self.cp['phaseR'] = vector[3][0]
+            self.cp['phaseG'] = vector[3][1]
+            self.cp['phaseB'] = vector[3][2]
+
+        def test_cp():
+            for row in range(4):
+                for column in range(3):
+                    vector[row][column] = spin[row][column].value()
+            self.log.write(f"vector={vector}", False)
+            vector_to_cp()
+            self.cp['name'] = name_edit.text()
+            self.cp_showroom()
+
+        btn_test.clicked.connect(test_cp)
+        #btn_save.clicked.connect(on_delete_clicked)
+        btn_cancel.clicked.connect(self.ncop_dialog.accept)
+
+        # Show dialog
+
+        #self.ncop_dialog.adjustSize()
+        self.ncop_dialog.setMinimumSize(self.ncop_dialog.sizeHint())
+
+        self.ncop_dialog.exec()
+
+        self.log.exit("new_color_palette", True)
+
+    #
+    # -----------------------------------------------
+    #
+
     def repeat_item(self, item):
         self.log.entry("repeat_item", False)
 
@@ -606,8 +744,9 @@ class MainWindow(QMainWindow):
     #
 
     def set_default_values(self):
-
         self.log.entry("set_default_values", False)
+
+        self.is_cp_showroom = False
 
         # Default coordinates of the fractal (HD ratio)
         self.frac_area = {

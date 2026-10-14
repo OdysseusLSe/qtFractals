@@ -228,7 +228,7 @@ class FractalWorker(QObject):
 
         # Normed value between 0.0 and 1.0 (higher value = higher frequence of color change)
         velocity = smoothed / 40.0
-        self.log.write("smoothed=" + str(smoothed) + " / " + "velocity=" + str(velocity), False)
+        self.log.write(f"smoothed,velocity={smoothed},{velocity}", False)
 
         #
         # Cosine Palette-Method

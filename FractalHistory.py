@@ -23,12 +23,12 @@ from pathlib import Path
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
+    QDialog,
+    QHBoxLayout,
     QListWidget,
     QListWidgetItem,
-    QHBoxLayout,
-    QVBoxLayout,
     QPushButton,
-    QDialog
+    QVBoxLayout
 )
 
 import Logging
