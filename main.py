@@ -596,10 +596,10 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout(self.ncop_dialog)
 
-        layout = QHBoxLayout()
         name_lbl   = QLabel("<b>Name of new color palette: </b>", self)
         name_edit  = QLineEdit(self)
         name_edit.setText("New Color Palette")
+        layout = QHBoxLayout()
         layout.addWidget(name_lbl)
         layout.addWidget(name_edit)
         main_layout.addLayout(layout)
@@ -627,10 +627,10 @@ class MainWindow(QMainWindow):
             self.log.write(f"spin={spin}", False)
 
         # Last row: buttons
-        btn_layout  = QHBoxLayout()
         btn_preview = QPushButton("Preview", self.ncop_dialog)
         btn_save    = QPushButton("Save", self.ncop_dialog)
         btn_done    = QPushButton("Done", self.ncop_dialog)
+        btn_layout = QHBoxLayout()
         btn_layout.addWidget(btn_preview)
         btn_layout.addWidget(btn_save)
         btn_layout.addWidget(btn_done)
