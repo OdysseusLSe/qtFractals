@@ -42,6 +42,7 @@ from PySide6 import QtWidgets
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
+    QDialogButtonBox,
     QDoubleSpinBox,
     QFileDialog,
     QGridLayout,
@@ -626,15 +627,11 @@ class MainWindow(QMainWindow):
             row = row + 1
             self.log.write(f"spin={spin}", False)
 
-        # Last row: buttons
-        btn_preview = QPushButton("Preview", self.ncop_dialog)
-        btn_save    = QPushButton("Save", self.ncop_dialog)
-        btn_done    = QPushButton("Done", self.ncop_dialog)
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(btn_preview)
-        btn_layout.addWidget(btn_save)
-        btn_layout.addWidget(btn_done)
-        main_layout.addLayout(btn_layout)
+        QBtn = (
+            QDialogButtonBox.Apply | QDialogButtonBox.Save | QDialogButtonBox.Close
+        )
+        button_box = QDialogButtonBox(QBtn)
+        main_layout.addWidget(button_box)
 
         def vector_to_cp():
             self.cp['name'] = f"{name_edit.text()} (*)"
@@ -645,15 +642,15 @@ class MainWindow(QMainWindow):
             self.cp['brightnessR'] = vector[0][0]
             self.cp['brightnessG'] = vector[0][1]
             self.cp['brightnessB'] = vector[0][2]
-            self.cp['contrastR'] = vector[1][0]
-            self.cp['contrastG'] = vector[1][1]
-            self.cp['contrastB'] = vector[1][2]
-            self.cp['frequencyR'] = vector[2][0]
-            self.cp['frequencyG'] = vector[2][1]
-            self.cp['frequencyB'] = vector[2][2]
-            self.cp['phaseR'] = vector[3][0]
-            self.cp['phaseG'] = vector[3][1]
-            self.cp['phaseB'] = vector[3][2]
+            self.cp['contrastR']   = vector[1][0]
+            self.cp['contrastG']   = vector[1][1]
+            self.cp['contrastB']   = vector[1][2]
+            self.cp['frequencyR']  = vector[2][0]
+            self.cp['frequencyG']  = vector[2][1]
+            self.cp['frequencyB']  = vector[2][2]
+            self.cp['phaseR']      = vector[3][0]
+            self.cp['phaseG']      = vector[3][1]
+            self.cp['phaseB']      = vector[3][2]
 
         def preview_cp():
             vector_to_cp()
@@ -669,11 +666,20 @@ class MainWindow(QMainWindow):
             self.cp_combo.setCurrentText(self.cp['name'])
             self.log.write(f"calling self.reset()", False)
             self.reset()
-            #self.ncop_dialog.accept()
 
-        btn_preview.clicked.connect(preview_cp)
-        btn_save.clicked.connect(save_cp)
-        btn_done.clicked.connect(self.ncop_dialog.done)
+        def button_clicked(button):
+            role = button_box.buttonRole(button)
+            if role == QDialogButtonBox.ApplyRole:
+                # "Apply" maps to the preview method
+                preview_cp()
+            elif role == QDialogButtonBox.ButtonRole.AcceptRole:
+                # "Save" maps to the save method
+                save_cp()
+            if role == QDialogButtonBox.ButtonRole.RejectRole:
+                # "Close" maps to the reject role
+                self.ncop_dialog.reject()
+
+        button_box.clicked.connect(button_clicked)
 
         # Show dialog
 
