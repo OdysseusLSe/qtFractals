@@ -110,10 +110,20 @@ class MainWindow(QMainWindow):
         self.start_time = time.process_time()
 
         self.history_list = []
-        self.history_window = None
+        #self.history_window = None
         self.fh = FractalHistory.FractalHistory(app_name, "history.json")
         self.history_list = self.fh.load_history()
         self.log.write(f"history_list={self.history_list}", False)
+
+        user_cp_list = []
+        for item in self.history_list:
+            if "(*)" in item['col_pal']['name']:
+                self.log.write(f"user defined cp={item['col_pal']['name']}", False)
+                if item['col_pal']['name'] not in user_cp_list:
+                    self.cp_list.append(item['col_pal'])
+                    user_cp_list.append(item['col_pal']['name'])
+                    self.log.write(f"self.cp_list={self.cp_list}", False)
+                    self.cp_combo.addItem(item['col_pal']['name'])
 
         self.log.exit("__init__", False)
 
@@ -430,6 +440,7 @@ class MainWindow(QMainWindow):
         self.start_btn.setEnabled(True)
 
         if self.is_cp_showroom:
+            # Do not store, because it is a preview for a new color palette
             self.is_cp_showroom = False
             self.log.exit("calculation_closing", False)
             return
@@ -447,31 +458,35 @@ class MainWindow(QMainWindow):
 
     #
     # -----------------------------------------------
+    # Preview of new color palette.
+    # -----------------------------------------------
     #
 
     def cp_showroom(self):
-        self.log.entry("cp_showroom", True)
+        self.log.entry("cp_showroom", False)
 
         self.is_cp_showroom = True
 
-        self.real_part_edit.setText(str(self.const_frac_area['realOrigin']))
-        self.imag_part_edit.setText(str(self.const_frac_area['imagOrigin']))
-        self.width_edit.setText(str(self.const_frac_area['realWidth']))
-        self.height_edit.setText(str(self.const_frac_area['imagHeight']))
+        self.real_part_edit.setText("-1.9")
+        self.imag_part_edit.setText("-1.2")
+        self.width_edit.setText("2.43")
+        self.height_edit.setText("2.43")
 
-        self.x_dim_edit.setText(str(int(self.const_draw_dim['width']/2)))
-        self.y_dim_edit.setText(str(int(self.const_draw_dim['height']/2)))
+        self.x_dim_edit.setText("360")
+        self.y_dim_edit.setText("360")
 
-        self.iter_lim_edit.setText(str(self.const_iter_lim))
+        self.iter_lim_edit.setText("100")
 
         self.current_frac_set = self.default_frac_set
         self.julia_c = complex(10.0, 10.0)
 
         self.trigger_calculation()
 
-        self.log.exit("cp_showroom", True)
+        self.log.exit("cp_showroom", False)
 
     #
+    # -----------------------------------------------
+    # User changed color palette. This triggers immediately a new calculation.
     # -----------------------------------------------
     #
 
@@ -565,7 +580,7 @@ class MainWindow(QMainWindow):
     #
 
     def new_color_palette(self):
-        self.log.entry("new_color_palette", True)
+        self.log.entry("new_color_palette", False)
 
         self.ncop_dialog = QDialog()
         self.ncop_dialog.setWindowTitle("New color palette")
@@ -611,16 +626,21 @@ class MainWindow(QMainWindow):
             self.log.write(f"spin={spin}", False)
 
         # Last row: buttons
-        btn_layout = QHBoxLayout()
-        btn_test   = QPushButton("Test", self.ncop_dialog)
-        btn_save   = QPushButton("Save", self.ncop_dialog)
-        btn_cancel = QPushButton("Cancel", self.ncop_dialog)
-        btn_layout.addWidget(btn_test)
+        btn_layout  = QHBoxLayout()
+        btn_preview = QPushButton("Preview", self.ncop_dialog)
+        btn_save    = QPushButton("Save", self.ncop_dialog)
+        btn_cancel  = QPushButton("Cancel", self.ncop_dialog)
+        btn_layout.addWidget(btn_preview)
         btn_layout.addWidget(btn_save)
         btn_layout.addWidget(btn_cancel)
         main_layout.addLayout(btn_layout)
 
         def vector_to_cp():
+            self.cp['name'] = f"{name_edit.text()} (*)"
+            for row in range(4):
+                for column in range(3):
+                    vector[row][column] = spin[row][column].value()
+            self.log.write(f"vector={vector}", False)
             self.cp['brightnessR'] = vector[0][0]
             self.cp['brightnessG'] = vector[0][1]
             self.cp['brightnessB'] = vector[0][2]
@@ -634,17 +654,21 @@ class MainWindow(QMainWindow):
             self.cp['phaseG'] = vector[3][1]
             self.cp['phaseB'] = vector[3][2]
 
-        def test_cp():
-            for row in range(4):
-                for column in range(3):
-                    vector[row][column] = spin[row][column].value()
-            self.log.write(f"vector={vector}", False)
+        def preview_cp():
             vector_to_cp()
-            self.cp['name'] = name_edit.text()
             self.cp_showroom()
 
-        btn_test.clicked.connect(test_cp)
-        #btn_save.clicked.connect(on_delete_clicked)
+        def save_cp():
+            vector_to_cp()
+            self.cp_list.append(self.cp)
+            self.log.write(f"self.cp_list={self.cp_list}", False)
+            self.cp_combo.addItem(self.cp['name'])
+            self.cp_combo.setCurrentText(self.cp['name'])
+            self.reset()
+            self.ncop_dialog.accept()
+
+        btn_preview.clicked.connect(preview_cp)
+        btn_save.clicked.connect(save_cp)
         btn_cancel.clicked.connect(self.ncop_dialog.accept)
 
         # Show dialog
@@ -654,7 +678,7 @@ class MainWindow(QMainWindow):
 
         self.ncop_dialog.exec()
 
-        self.log.exit("new_color_palette", True)
+        self.log.exit("new_color_palette", False)
 
     #
     # -----------------------------------------------
@@ -784,7 +808,7 @@ class MainWindow(QMainWindow):
 
         # Default color palette
         self.cp = copy.deepcopy(self.load_color_palettes())
-        self.log.write("self.cp=" + str(self.cp), False)
+        self.log.write(f"self.cp={self.cp}", False)
 
         self.log.exit("set_default_values", False)
 
