@@ -495,21 +495,22 @@ class MainWindow(QMainWindow):
 
         self.log.write(f"text={text}", False)
 
-        for element in self.cp_list:
-            if text == element['name']:
-                self.cp = element
-        self.log.write(f"self.cp={self.cp}", False)
-
-        self.fw.set_parameters(
-            self.frac_area,
-            self.draw_dim,
-            self.iter_lim,
-            self.cp,
-            self.current_frac_set,
-            self.julia_c
-        )
-
-        self.trigger_calculation()
+        if self.is_new_cp:
+            self.is_new_cp = False
+        else:
+            for element in self.cp_list:
+                if text == element['name']:
+                    self.cp = element
+            self.log.write(f"self.cp={self.cp}", False)
+            self.fw.set_parameters(
+                self.frac_area,
+                self.draw_dim,
+                self.iter_lim,
+                self.cp,
+                self.current_frac_set,
+                self.julia_c
+            )
+            self.trigger_calculation()
 
         self.log.exit("cp_text_changed", False)
 
@@ -629,10 +630,10 @@ class MainWindow(QMainWindow):
         btn_layout  = QHBoxLayout()
         btn_preview = QPushButton("Preview", self.ncop_dialog)
         btn_save    = QPushButton("Save", self.ncop_dialog)
-        btn_cancel  = QPushButton("Cancel", self.ncop_dialog)
+        btn_done    = QPushButton("Done", self.ncop_dialog)
         btn_layout.addWidget(btn_preview)
         btn_layout.addWidget(btn_save)
-        btn_layout.addWidget(btn_cancel)
+        btn_layout.addWidget(btn_done)
         main_layout.addLayout(btn_layout)
 
         def vector_to_cp():
@@ -656,6 +657,7 @@ class MainWindow(QMainWindow):
 
         def preview_cp():
             vector_to_cp()
+            self.log.write(f"calling self.cp_showroom()", False)
             self.cp_showroom()
 
         def save_cp():
@@ -663,13 +665,15 @@ class MainWindow(QMainWindow):
             self.cp_list.append(self.cp)
             self.log.write(f"self.cp_list={self.cp_list}", False)
             self.cp_combo.addItem(self.cp['name'])
+            self.is_new_cp = True
             self.cp_combo.setCurrentText(self.cp['name'])
+            self.log.write(f"calling self.reset()", False)
             self.reset()
-            self.ncop_dialog.accept()
+            #self.ncop_dialog.accept()
 
         btn_preview.clicked.connect(preview_cp)
         btn_save.clicked.connect(save_cp)
-        btn_cancel.clicked.connect(self.ncop_dialog.accept)
+        btn_done.clicked.connect(self.ncop_dialog.done)
 
         # Show dialog
 
@@ -771,6 +775,7 @@ class MainWindow(QMainWindow):
         self.log.entry("set_default_values", False)
 
         self.is_cp_showroom = False
+        self.is_new_cp      = False
 
         # Default coordinates of the fractal (HD ratio)
         self.frac_area = {

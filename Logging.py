@@ -23,7 +23,7 @@ class Logging():
     def __init__(self, app_name, debug):
         self.app_name = app_name
         self.global_debug = debug
-        self.n = 28
+        self.n = 30
 
     def entry(self, info, local_debug=True):
         if self.global_debug and local_debug:
