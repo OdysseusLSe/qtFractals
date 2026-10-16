@@ -19,6 +19,8 @@
 import copy
 import time
 
+from pathlib import Path
+
 from PySide6.QtCore import (
     Qt,
     QFile,
@@ -53,6 +55,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QStatusBar,
     QStyle,
+    QTextEdit,
     QVBoxLayout,
     QWidget
 )
@@ -74,7 +77,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         app_name = "qtFractals"
-        app_version = "0.5.0"
+        app_version = "0.5.1"
 
         self.setWindowTitle(f"{app_name} {app_version}")
 
@@ -419,9 +422,21 @@ class MainWindow(QMainWindow):
         self.ncop_action.triggered.connect(self.new_color_palette)
         misc_menu.addAction(self.ncop_action)
 
+        # Create the "Help" menu
+        help_menu = QMenu("&Help", self)
+        menu_bar.addMenu(help_menu)
+
+        # Create the "Read me" action
+        self.read_action = QAction("Show Readme", self)
+        self.read_action.setShortcut(QKeySequence("Ctrl+?"))
+        self.read_action.setStatusTip("Show Readme")
+        self.read_action.triggered.connect(self.show_readme)
+        help_menu.addAction(self.read_action)
+
         # MAC FIX: Connect the menu's hovered signal to a custom slots pipeline
         file_menu.hovered.connect(self.update_mac_status_bar)
         misc_menu.hovered.connect(self.update_mac_status_bar)
+        help_menu.hovered.connect(self.update_mac_status_bar)
 
         self.log.exit("build_menu_bar", False)
 
@@ -824,6 +839,78 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def show_history(self):
+        self.log.entry("show_history", False)
+
+        self.fh.show_history_list(self.history_list)
+        if self.fh.repeat():
+            item = self.fh.item_of_history()
+            self.log.entry(f"item={item}", False)
+            self.repeat_item(item)
+
+        self.log.exit("show_history", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def show_readme(self):
+        self.log.entry("show_readme", False)
+
+        self.read_dialog = QDialog(self)
+        self.read_dialog.setWindowTitle("Readme")
+        self.read_dialog.resize(1000, 600)
+        # Makes the dialog modal without blocking the TSM subsystem
+        self.read_dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+
+        layout = QVBoxLayout(self.read_dialog)
+
+        self.text_edit = QTextEdit(self.read_dialog)
+        self.text_edit.setReadOnly(True)
+
+        layout.addWidget(self.text_edit)
+
+        path = Path("README.md")
+        if path.exists():
+            content = path.read_text(encoding="utf-8")
+            self.text_edit.setMarkdown(content)
+        else:
+            self.log.error("Readme file not found!", False)
+
+        QBtn = (QDialogButtonBox.Ok)
+        button_box = QDialogButtonBox(QBtn)
+        layout.addWidget(button_box)
+        button_box.accepted.connect(self.read_dialog.accept)
+
+        # Show dialog
+
+        self.read_dialog.setMinimumSize(self.read_dialog.sizeHint())
+        self.read_dialog.exec()
+
+        self.log.exit("show_readme", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def status_bar_update_area(self, area):
+        self.log.entry("status_bar_update_area", False)
+        self.log.write(f"area={area}", False)
+
+        ro = area['realOrigin']
+        io = area['imagOrigin']
+        rw = area['realWidth']
+        ih = area['imagHeight']
+        status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
+        status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
+        self.status_bar.showMessage(status)
+
+        self.log.exit("status_bar_update_area", False)
+
+    #
+    # -----------------------------------------------
+    #
+
     def trigger_calculation(self):
         self.log.entry("trigger_calculation", False)
 
@@ -948,39 +1035,6 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(value)
 
         self.log.exit("update_progress", False)
-
-    #
-    # -----------------------------------------------
-    #
-
-    def show_history(self):
-        self.log.entry("show_history", False)
-
-        self.fh.show_history_list(self.history_list)
-        if self.fh.repeat():
-            item = self.fh.item_of_history()
-            self.log.entry(f"item={item}", False)
-            self.repeat_item(item)
-
-        self.log.exit("show_history", False)
-
-    #
-    # -----------------------------------------------
-    #
-
-    def status_bar_update_area(self, area):
-        self.log.entry("status_bar_update_area", False)
-        self.log.write(f"area={area}", False)
-
-        ro = area['realOrigin']
-        io = area['imagOrigin']
-        rw = area['realWidth']
-        ih = area['imagHeight']
-        status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
-        status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
-        self.status_bar.showMessage(status)
-
-        self.log.exit("status_bar_update_area", False)
 
     #
     # -----------------------------------------------

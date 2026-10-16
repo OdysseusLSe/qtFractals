@@ -26,7 +26,7 @@ published.
 
 In this section I describe the main window and its controls:
 
-![Main window](docs/main_window_legend.png)
+![Main window](docs/main_window_legend-s.png)
 
 1.  **Origin coordinates of the complex area** separated by the real part
     and complex part.
@@ -56,7 +56,7 @@ In this section I describe the main window and its controls:
 
 ## History window
 
-![History window](docs/app_screenshot_history.png)
+![History window](docs/app_screenshot_history-s.png)
 
 The history window shows all past calculations since starting the app the first
 time. The entries are sorted by time. You can delete single entries (at the moment
@@ -65,7 +65,7 @@ new history entry!
 
 ## New color palette window
 
-![New color palette window](docs/app_screenshot_new_cp.png)
+![New color palette window](docs/app_screenshot_new_cp-s.png)
 
 With this window you may define a new color palette. At the top of the window you
 may provide a name for the new color palette. Pressing "Apply" shows a small
