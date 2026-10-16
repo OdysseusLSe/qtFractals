@@ -839,6 +839,78 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def show_history(self):
+        self.log.entry("show_history", False)
+
+        self.fh.show_history_list(self.history_list)
+        if self.fh.repeat():
+            item = self.fh.item_of_history()
+            self.log.entry(f"item={item}", False)
+            self.repeat_item(item)
+
+        self.log.exit("show_history", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def show_readme(self):
+        self.log.entry("show_readme", False)
+
+        self.read_dialog = QDialog(self)
+        self.read_dialog.setWindowTitle("Readme")
+        self.read_dialog.resize(1000, 600)
+        # Makes the dialog modal without blocking the TSM subsystem
+        self.read_dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+
+        layout = QVBoxLayout(self.read_dialog)
+
+        self.text_edit = QTextEdit(self.read_dialog)
+        self.text_edit.setReadOnly(True)
+
+        layout.addWidget(self.text_edit)
+
+        path = Path("README.md")
+        if path.exists():
+            content = path.read_text(encoding="utf-8")
+            self.text_edit.setMarkdown(content)
+        else:
+            self.log.error("Readme file not found!", False)
+
+        QBtn = (QDialogButtonBox.Ok)
+        button_box = QDialogButtonBox(QBtn)
+        layout.addWidget(button_box)
+        button_box.accepted.connect(self.read_dialog.accept)
+
+        # Show dialog
+
+        self.read_dialog.setMinimumSize(self.read_dialog.sizeHint())
+        self.read_dialog.exec()
+
+        self.log.exit("show_readme", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def status_bar_update_area(self, area):
+        self.log.entry("status_bar_update_area", False)
+        self.log.write(f"area={area}", False)
+
+        ro = area['realOrigin']
+        io = area['imagOrigin']
+        rw = area['realWidth']
+        ih = area['imagHeight']
+        status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
+        status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
+        self.status_bar.showMessage(status)
+
+        self.log.exit("status_bar_update_area", False)
+
+    #
+    # -----------------------------------------------
+    #
+
     def trigger_calculation(self):
         self.log.entry("trigger_calculation", False)
 
@@ -963,78 +1035,6 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(value)
 
         self.log.exit("update_progress", False)
-
-    #
-    # -----------------------------------------------
-    #
-
-    def show_history(self):
-        self.log.entry("show_history", False)
-
-        self.fh.show_history_list(self.history_list)
-        if self.fh.repeat():
-            item = self.fh.item_of_history()
-            self.log.entry(f"item={item}", False)
-            self.repeat_item(item)
-
-        self.log.exit("show_history", False)
-
-    #
-    # -----------------------------------------------
-    #
-
-    def show_readme(self):
-        self.log.entry("show_readme", False)
-
-        self.read_dialog = QDialog(self)
-        self.read_dialog.setWindowTitle("Readme")
-        self.read_dialog.resize(1000, 600)
-        # Makes the dialog modal without blocking the TSM subsystem
-        self.read_dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
-
-        layout = QVBoxLayout(self.read_dialog)
-
-        self.text_edit = QTextEdit(self.read_dialog)
-        self.text_edit.setReadOnly(True)
-
-        layout.addWidget(self.text_edit)
-
-        path = Path("README.md")
-        if path.exists():
-            content = path.read_text(encoding="utf-8")
-            self.text_edit.setMarkdown(content)
-        else:
-            self.log.error("Readme file not found!", False)
-
-        QBtn = (QDialogButtonBox.Ok)
-        button_box = QDialogButtonBox(QBtn)
-        layout.addWidget(button_box)
-        button_box.accepted.connect(self.read_dialog.accept)
-
-        # Show dialog
-
-        self.read_dialog.setMinimumSize(self.read_dialog.sizeHint())
-        self.read_dialog.exec()
-
-        self.log.exit("show_readme", False)
-
-    #
-    # -----------------------------------------------
-    #
-
-    def status_bar_update_area(self, area):
-        self.log.entry("status_bar_update_area", False)
-        self.log.write(f"area={area}", False)
-
-        ro = area['realOrigin']
-        io = area['imagOrigin']
-        rw = area['realWidth']
-        ih = area['imagHeight']
-        status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
-        status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
-        self.status_bar.showMessage(status)
-
-        self.log.exit("status_bar_update_area", False)
 
     #
     # -----------------------------------------------
