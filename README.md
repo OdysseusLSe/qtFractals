@@ -63,6 +63,30 @@ time. The entries are sorted by time. You can delete single entries (at the mome
 one by one only) or repeat a specific calculation. The repeated one generates a
 new history entry!
 
+## New color palette window
+
+![New color palette window](docs/app_screenshot_new_cp.png)
+
+With this window you may define a new color palette. Pressing "Apply" shows a
+small Mandelbrot fractal set with new parameters as a preview. Pressing "Save"
+saves the new defined color palette by re-calculating a default Mandelbrot fractal
+set and adding it to the history list. Pressing "Close" closes the window.
+
+**Attention**:
+User defined color palettes are stored in the history list only. If you delete the
+specific history item the user defined color palette will be lost!
+
+For the theoretical background of this specific color palette calculation and the
+meaning of these parameters you may follow these two links (the mastermind of this
+is [Inigo Quilez](https://iquilezles.org/)):
+
+- [Procedural Color Palette](https://iquilezles.org/articles/palettes/)
+- [A simple formula to create beautiful color palettes](https://www.youtube.com/shorts/TH3OTy5fTog)
+
+**Attention**:
+User defined color palettes are stored in the history list only. If you delete the
+specific history item the user defined color palette will be lost!
+
 ## Mouse and keyboard actions
 
 ### Julia set
@@ -75,9 +99,10 @@ switches accordingly.
 
 ### Menu actions
 
+- [CTRL]+[N] (Windows/Linux) or [Cmd(⌘)]+[N] (Apple): Show "New color palette" window
 - [CTRL]+[Q] (Windows/Linux) or [Cmd(⌘)]+[Q] (Apple): Quit the application
 - [CTRL]+[S] (Windows/Linux) or [Cmd(⌘)]+[S] (Apple): Save the current image
-- [CTRL]+[T] (Windows/Linux) or [Cmd(⌘)]+[T] (Apple): Show the history window
+- [CTRL]+[T] (Windows/Linux) or [Cmd(⌘)]+[T] (Apple): Show the "History" window
 
 ### Stop running calculation
 
@@ -125,6 +150,5 @@ These are the addional features for the future (arbitrary order):
   via zoom-in.
 - Switch the calculation to NumPy.
 - Provide the ability to change the current default theme.
-- Build your own color palette
 - Transfer the above entry fields in a menu(bar).
 - ...
