@@ -998,7 +998,6 @@ class MainWindow(QMainWindow):
         self.text_edit.setReadOnly(True)
 
         layout.addWidget(self.text_edit)
-        #layout.setContentsMargins(5, 5, 5, 5)
 
         path = Path("README.md")
         if path.exists():
