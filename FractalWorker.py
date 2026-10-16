@@ -84,7 +84,11 @@ class FractalWorker(QObject):
 
         self.log.entry("calculate_julia", False)
 
-        image = QImage(self.draw_dim['width'], self.draw_dim['height'], QImage.Format.Format_RGB32)
+        image = QImage(
+            self.draw_dim['width'],
+            self.draw_dim['height'],
+            QImage.Format.Format_RGB32
+        )
         color = QColor()
 
         # Fill background with black color

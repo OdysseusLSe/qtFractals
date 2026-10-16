@@ -68,8 +68,8 @@ class FractalHistory():
         self.log.entry("build_history_item", False)
         self.log.write(f"history_item={history_item}", False)
 
-        thumbnail_path_name = self.dir.joinpath(history_item['thumbnail'])
-        self.log.write(f"thumbnail_path_name={thumbnail_path_name}", False)
+        tn_path_name = self.dir.joinpath(history_item['thumbnail'])
+        self.log.write(f"tn_path_name={tn_path_name}", False)
 
 
         ro = str(history_item['frac_area']['realOrigin'])
@@ -103,7 +103,7 @@ class FractalHistory():
         text = text + f"Calculation time: {ct} seconds"
 
         item = QListWidgetItem(f"{text}")
-        item.setIcon(QIcon(str(thumbnail_path_name)))
+        item.setIcon(QIcon(str(tn_path_name)))
 
         self.log.exit("build_history_item", False)
 
@@ -150,10 +150,10 @@ class FractalHistory():
         self.log.write(f"history_data={history_data}", False)
 
         if thumbnail is not None:
-            thumbnail_path_name = self.dir.joinpath(thumbnail_name)
-            self.log.write(f"thumbnail_path_name={thumbnail_path_name}", False)
+            tn_path_name = self.dir.joinpath(thumbnail_name)
+            self.log.write(f"tn_path_name={tn_path_name}", False)
 
-            result = thumbnail.save(str(thumbnail_path_name), None, 100)
+            result = thumbnail.save(str(tn_path_name), None, 100)
             if result:
                 self.log.write("Image successful saved.", False)
             else:
@@ -223,15 +223,15 @@ class FractalHistory():
                 self.log.write(f"current_row={current_row}", False)
                 list_widget.takeItem(current_row)
 
-                thumbnail_path_name = self.dir.joinpath(history_data[current_row]['thumbnail'])
-                self.log.write(f"thumbnail_path_name={thumbnail_path_name}", False)
+                tn_path_name = self.dir.joinpath(history_data[current_row]['thumbnail'])
+                self.log.write(f"tn_path_name={tn_path_name}", False)
                 self.log.write(f"item to delete: {history_data[current_row]}", False)
 
                 deleted_item = history_data.pop(current_row)
                 self.log.write(f"Item deleted: {deleted_item}", False)
 
                 # Delete appropriate thumbnail
-                p = Path(thumbnail_path_name)
+                p = Path(tn_path_name)
                 p.unlink()
 
                 self.save_history(history_data)

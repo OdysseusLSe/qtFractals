@@ -12,15 +12,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 # You should have received a copy of the Apache 2.0 license
-# along with this program. If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
+# along with this program.
+# If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 #
 
 import copy
-#import json
 import time
-from math import cos, pi
-
-#from pathlib import Path
 
 from PySide6.QtCore import (
     Qt,
@@ -91,7 +88,7 @@ class MainWindow(QMainWindow):
             stream = QTextStream(style_file)
             self.setStyleSheet(stream.readAll())
         else:
-            self.log.error('Warning: Stylesheet ":/ui/style.css" not found.', False)
+            self.log.error('Stylesheet ":/ui/style.css" not found!', False)
 
         # Initiate status bar
         self.status_bar = QStatusBar()
@@ -102,7 +99,8 @@ class MainWindow(QMainWindow):
         # Build the menu bar with all the menus and actions
         self.build_menu_bar()
 
-        # Set default values for fractal area, drawing dimensions, iteration limit, and color palette
+        # Set default values for fractal area, drawing dimensions, iteration
+        # limit, and color palette
         self.set_default_values()
 
         # Build the main window with all the widgets
@@ -111,20 +109,20 @@ class MainWindow(QMainWindow):
         self.start_time = time.process_time()
 
         self.history_list = []
-        #self.history_window = None
         self.fh = FractalHistory.FractalHistory(app_name, "history.json")
         self.history_list = self.fh.load_history()
         self.log.write(f"history_list={self.history_list}", False)
 
         user_cp_list = []
         for item in self.history_list:
-            if "(*)" in item['col_pal']['name']:
-                self.log.write(f"user defined cp={item['col_pal']['name']}", False)
-                if item['col_pal']['name'] not in user_cp_list:
+            cp_name = item['col_pal']['name']
+            if "(*)" in cp_name:
+                self.log.write(f"user defined cp={cp_name}", False)
+                if cp_name not in user_cp_list:
                     self.cp_list.append(item['col_pal'])
-                    user_cp_list.append(item['col_pal']['name'])
+                    user_cp_list.append(cp_name)
                     self.log.write(f"self.cp_list={self.cp_list}", False)
-                    self.cp_combo.addItem(item['col_pal']['name'])
+                    self.cp_combo.addItem(cp_name)
 
         self.log.exit("__init__", False)
 
@@ -208,7 +206,8 @@ class MainWindow(QMainWindow):
         self.dd_combo.currentTextChanged.connect(self.dd_text_changed)
 
         #
-        # Indicator if Mandelbrot set or Julia set is active (default: Mandelbrot set)
+        # Indicator if Mandelbrot set or Julia set is active
+        # (default: Mandelbrot set).
         #
 
         self.mandel_btn = QPushButton("Mandelbrot")
@@ -347,7 +346,8 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidget(self.fw)
         self.scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Connect the progress signal from the FractalWidget to the update_progress method
+        # Connect the progress signal from the FractalWidget to the
+        # update_progress method.
         self.fw.progress.connect(self.update_progress)
 
         # Build the overall layout of the main window
@@ -415,7 +415,7 @@ class MainWindow(QMainWindow):
         # Create the "New color palette" action
         self.ncop_action = QAction("&New color palette", self)
         self.ncop_action.setShortcut(QKeySequence("Ctrl+N"))
-        self.ncop_action.setStatusTip("Show history")
+        self.ncop_action.setStatusTip("New color palette")
         self.ncop_action.triggered.connect(self.new_color_palette)
         misc_menu.addAction(self.ncop_action)
 
@@ -586,7 +586,6 @@ class MainWindow(QMainWindow):
 
         self.ncop_dialog = QDialog()
         self.ncop_dialog.setWindowTitle("New color palette")
-        self.ncop_dialog.resize(500, 400)
 
         spin   = [[None for _ in range(3)] for _ in range(4)]
         vector = [[0.00 for _ in range(3)] for _ in range(4)]
@@ -613,15 +612,14 @@ class MainWindow(QMainWindow):
         for item in vectors:
             layout = QHBoxLayout()
             desc = QLabel(f"<b>{item} (RGB):</b>", self)
-            desc.setFixedWidth(100)
-            layout.addWidget(desc)
+            layout.addWidget(desc, 1)
             column = 0
             for color in ["R: ", "G: ", "B: "]:
                 spin[row][column] = QDoubleSpinBox()
                 spin[row][column].setRange(0.0, 1.0)
                 spin[row][column].setSingleStep(0.01)
                 spin[row][column].setPrefix(color)
-                layout.addWidget(spin[row][column])
+                layout.addWidget(spin[row][column], 0)
                 column = column + 1
             main_layout.addLayout(layout)
             row = row + 1
@@ -654,7 +652,7 @@ class MainWindow(QMainWindow):
 
         def preview_cp():
             vector_to_cp()
-            self.log.write(f"calling self.cp_showroom()", False)
+            self.log.write("calling self.cp_showroom()", False)
             self.cp_showroom()
 
         def save_cp():
@@ -664,7 +662,7 @@ class MainWindow(QMainWindow):
             self.cp_combo.addItem(self.cp['name'])
             self.is_new_cp = True
             self.cp_combo.setCurrentText(self.cp['name'])
-            self.log.write(f"calling self.reset()", False)
+            self.log.write("calling self.reset()", False)
             self.reset()
 
         def button_clicked(button):
@@ -683,9 +681,7 @@ class MainWindow(QMainWindow):
 
         # Show dialog
 
-        #self.ncop_dialog.adjustSize()
         self.ncop_dialog.setMinimumSize(self.ncop_dialog.sizeHint())
-
         self.ncop_dialog.exec()
 
         self.log.exit("new_color_palette", False)
@@ -760,7 +756,8 @@ class MainWindow(QMainWindow):
             filters,
             initial_filter
         )
-        self.log.write(f"file_name,selected_filter={file_name},{selected_filter}", False)
+        self.log.write(f"file_name={file_name}", False)
+        self.log.write(f"selected_filter={selected_filter}", False)
         if file_name == "":
             self.log.exit("save_image", False)
             return
@@ -916,7 +913,7 @@ class MainWindow(QMainWindow):
             self.iter_lim         = iter_lim
             self.current_frac_set = frac_set
             self.julia_c          = julia_c
-            self.log.write("self.current_frac_set=" + self.current_frac_set, False)
+            self.log.write(f"self.current_frac_set={self.current_frac_set}", False)
 
             # Adapt text fields to current values
 

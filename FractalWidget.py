@@ -115,7 +115,10 @@ class FractalWidget(QWidget):
         self.update()
 
         # Create thumbnail of the image for history
-        self.thumbnail = self.image.scaledToWidth(150, Qt.TransformationMode.SmoothTransformation)
+        self.thumbnail = self.image.scaledToWidth(
+            150,
+            Qt.TransformationMode.SmoothTransformation
+        )
         self.closing.emit(self.thumbnail)
 
         self.log.exit("calculation_finished", False)
@@ -237,7 +240,7 @@ class FractalWidget(QWidget):
 
         x1, y1 = self.sel_start.x(), self.sel_start.y()
         x2, y2 = self.sel_end.x(), self.sel_end.y()
-        self.log.write("x1,y1=" + str(x1) + "," + str(y1) + " / x2,y2=" + str(x2) + "," + str(y2), False)
+        self.log.write(f"x1,y1={x1},{y1} / x2,y2={x2},{y2}", False)
 
         dx = x2 - x1
         dy = y2 - y1
@@ -253,7 +256,7 @@ class FractalWidget(QWidget):
                 dx = -abs(int(dy * draw_ratio))
             else:
                 dx = abs(int(dy * draw_ratio))
-            self.log.write("adapted dx=" + str(dx) + " / adapted dy=" + str(dy), False)
+            self.log.write(f"adapted dx,dy={dx},{dy}", False)
 
             delta_ratio = dx / dy
             self.log.write("adapted delta_ratio=" + str(delta_ratio), False)
@@ -266,7 +269,8 @@ class FractalWidget(QWidget):
             return QRect(x1, y1, 0, 0)
 
         #
-        # Determine the top-left corner of the rectangle based on the direction of the drag
+        # Determine the top-left corner of the rectangle based on the direction
+        # of the drag.
         #
 
         if dx >= 0:
@@ -293,8 +297,7 @@ class FractalWidget(QWidget):
         if y + abs(dy) > self.draw_dim['height']:
             y = self.draw_dim['height'] - abs(dy)
 
-        log_string = "x,y,dx,dy=" + str(x) + "," + str(y) + "," + str(abs(dx)) + "," + str(abs(dy))
-        self.log.write(log_string, False)
+        self.log.write(f"x,y,dx,dy={x},{y},{abs(dx)},{abs(dy)}", False)
 
         self.calculate_selected_area(QRect(int(x), int(y), int(abs(dx)), int(abs(dy))))
         self.log.write("frac_area=" + str(self.frac_area), False)
