@@ -67,10 +67,11 @@ new history entry!
 
 ![New color palette window](docs/app_screenshot_new_cp.png)
 
-With this window you may define a new color palette. Pressing "Apply" shows a
-small Mandelbrot fractal set with new parameters as a preview. Pressing "Save"
-saves the new defined color palette by re-calculating a default Mandelbrot fractal
-set and adding it to the history list. Pressing "Close" closes the window.
+With this window you may define a new color palette. At the top of the window you
+may provide a name for the new color palette. Pressing "Apply" shows a small
+Mandelbrot fractal set with new parameters as a preview. Pressing "Save" saves
+the new defined color palette by re-calculating a default Mandelbrot fractal set
+and adding it to the history list. Pressing "Close" closes the window.
 
 **Attention**:
 User defined color palettes are stored in the history list only. If you delete the
@@ -82,10 +83,6 @@ is [Inigo Quilez](https://iquilezles.org/)):
 
 - [Procedural Color Palette](https://iquilezles.org/articles/palettes/)
 - [A simple formula to create beautiful color palettes](https://www.youtube.com/shorts/TH3OTy5fTog)
-
-**Attention**:
-User defined color palettes are stored in the history list only. If you delete the
-specific history item the user defined color palette will be lost!
 
 ## Mouse and keyboard actions
 
