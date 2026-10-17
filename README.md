@@ -145,7 +145,5 @@ These are the addional features for the future (arbitrary order):
 
 - Create an animation (sequence of images) by defining start point and end point
   via zoom-in.
-- Switch the calculation to NumPy.
 - Provide the ability to change the current default theme.
-- Transfer the above entry fields in a menu(bar).
 - ...
