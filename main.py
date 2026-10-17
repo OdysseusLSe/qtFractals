@@ -483,18 +483,27 @@ class MainWindow(QMainWindow):
 
         self.is_cp_showroom = True
 
-        self.real_part_edit.setText("-1.9")
-        self.imag_part_edit.setText("-1.2")
-        self.width_edit.setText("2.43")
-        self.height_edit.setText("2.43")
+        self.frac_area = {
+            'realOrigin' : -1.9,
+            'imagOrigin' : -1.2,
+            'realWidth'  : 2.43,
+            'imagHeight' : 2.43
+        }
 
-        self.x_dim_edit.setText("360")
-        self.y_dim_edit.setText("360")
+        self.draw_dim = {'width': 360, 'height': 360}
+        self.iter_lim = 100
 
-        self.iter_lim_edit.setText("100")
-
-        self.current_frac_set = self.default_frac_set
+        self.default_frac_set = "Mandelbrot"
         self.julia_c = complex(10.0, 10.0)
+
+        self.fw.set_parameters(
+            self.frac_area,
+            self.draw_dim,
+            self.iter_lim,
+            self.cp,
+            self.current_frac_set,
+            self.julia_c
+        )
 
         self.trigger_calculation()
 
@@ -605,6 +614,8 @@ class MainWindow(QMainWindow):
         spin   = [[None for _ in range(3)] for _ in range(4)]
         vector = [[0.00 for _ in range(3)] for _ in range(4)]
 
+        temp_cp = copy.copy(self.cp)
+
         #
         # Build the user interface
         #
@@ -651,7 +662,6 @@ class MainWindow(QMainWindow):
             for row in range(4):
                 for column in range(3):
                     vector[row][column] = spin[row][column].value()
-            self.log.write(f"vector={vector}", False)
             self.cp['brightnessR'] = vector[0][0]
             self.cp['brightnessG'] = vector[0][1]
             self.cp['brightnessB'] = vector[0][2]
@@ -667,7 +677,6 @@ class MainWindow(QMainWindow):
 
         def preview_cp():
             vector_to_cp()
-            self.log.write("calling self.cp_showroom()", False)
             self.cp_showroom()
 
         def save_cp():
@@ -690,6 +699,7 @@ class MainWindow(QMainWindow):
                 save_cp()
             if role == QDialogButtonBox.ButtonRole.RejectRole:
                 # "Close" maps to the reject role
+                self.cp = copy.copy(temp_cp)
                 self.ncop_dialog.reject()
 
         button_box.clicked.connect(button_clicked)
@@ -914,52 +924,42 @@ class MainWindow(QMainWindow):
     def trigger_calculation(self):
         self.log.entry("trigger_calculation", False)
 
-        if self.real_part_edit.text() != "" \
-            and self.imag_part_edit.text() != "" \
-            and self.width_edit.text() != "" \
-            and self.height_edit.text() != "" \
-            and self.iter_lim_edit.text() != "" \
-            and self.x_dim_edit.text() != "" \
-            and self.y_dim_edit.text() != "":
+        if self.is_cp_showroom:
+            self.fw.start_calculation(self.is_cp_showroom)
+            self.is_cp_showroom = False
+            self.log.exit("trigger_calculation", False)
+            return
 
-            self.progress_bar.setValue(0)
-            self.reset_btn.setEnabled(False)
-            self.start_btn.setEnabled(False)
-            self.frac_area = {
-                'realOrigin': float(self.real_part_edit.text()),
-                'imagOrigin': float(self.imag_part_edit.text()),
-                'realWidth' : float(self.width_edit.text()),
-                'imagHeight': float(self.height_edit.text())
-            }
-            self.log.write("self.frac_area=" + str(self.frac_area), False)
+        self.progress_bar.setValue(0)
+        self.reset_btn.setEnabled(False)
+        self.start_btn.setEnabled(False)
+        self.frac_area = {
+            'realOrigin': float(self.real_part_edit.text()),
+            'imagOrigin': float(self.imag_part_edit.text()),
+            'realWidth' : float(self.width_edit.text()),
+            'imagHeight': float(self.height_edit.text())
+        }
+        self.log.write("self.frac_area=" + str(self.frac_area), False)
 
-            self.draw_dim = {
-                'width' : int(self.x_dim_edit.text()),
-                'height': int(self.y_dim_edit.text())
-            }
-            self.log.write("self.draw_dim=" + str(self.draw_dim), False)
+        self.draw_dim = {
+            'width' : int(self.x_dim_edit.text()),
+            'height': int(self.y_dim_edit.text())
+        }
+        self.log.write("self.draw_dim=" + str(self.draw_dim), False)
 
-            self.iter_lim = int(self.iter_lim_edit.text())
-            self.log.write("self.iter_lim=" + str(self.iter_lim), False)
+        self.iter_lim = int(self.iter_lim_edit.text())
+        self.log.write("self.iter_lim=" + str(self.iter_lim), False)
 
-            self.fw.set_parameters(
-                self.frac_area,
-                self.draw_dim,
-                self.iter_lim,
-                self.cp,
-                self.current_frac_set,
-                self.julia_c
-            )
+        self.fw.set_parameters(
+            self.frac_area,
+            self.draw_dim,
+            self.iter_lim,
+            self.cp,
+            self.current_frac_set,
+            self.julia_c
+        )
 
-            self.fw.start_calculation()
-
-        else:
-            all_fld_dlg = QMessageBox(self)
-            all_fld_dlg.setWindowTitle("Empty input field(s)")
-            all_fld_dlg.setText("All input fields need an input!")
-            all_fld_dlg.setStandardButtons(QMessageBox.Ok)
-            all_fld_dlg.setIcon(QMessageBox.Warning)
-            all_fld_dlg.exec()
+        self.fw.start_calculation()
 
         self.log.exit("trigger_calculation", False)
 

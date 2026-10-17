@@ -473,7 +473,7 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def start_calculation(self):
+    def start_calculation(self, is_cp_showroom=False):
         self.log.entry("start_calculation", False)
         self.log.write(str(self.frac_area)+","+str(self.draw_dim), False)
 
@@ -491,7 +491,8 @@ class FractalWidget(QWidget):
             self.iter_lim,
             self.cp,
             self.frac_set,
-            self.julia_c
+            self.julia_c,
+            is_cp_showroom
         )
         self.worker.moveToThread(self.thread)
 

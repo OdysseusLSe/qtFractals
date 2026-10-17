@@ -51,8 +51,9 @@ class FractalWorker(QObject):
             draw_dim,
             iter_lim,
             col_pal,
-            current_frac_set=None,
-            julia_c=complex(0, 0)
+            current_frac_set,
+            julia_c,
+            is_cp_showroom
         ):
         super().__init__()
 
@@ -65,12 +66,14 @@ class FractalWorker(QObject):
         self.cp               = copy.deepcopy(col_pal)
         self.current_frac_set = current_frac_set
         self.julia_c          = julia_c
+        self.is_cp_showroom   = is_cp_showroom
 
         self.log.write("self.frac_area=" + str(self.frac_area), False)
         self.log.write("self.draw_dim=" + str(self.draw_dim), False)
         self.log.write("self.iter_lim=" + str(self.iter_lim), False)
         self.log.write("self.cp=" + str(self.cp), False)
         self.log.write("self.julia_c=" + str(self.julia_c), False)
+        self.log.write("self.is_cp_showroom=" + str(self.is_cp_showroom), False)
 
         self.is_running = True
 
@@ -104,6 +107,9 @@ class FractalWorker(QObject):
         x_step = self.frac_area['realWidth'] / self.draw_dim['width']
         y_step = self.frac_area['imagHeight'] / self.draw_dim['height']
 
+        real_origin = self.frac_area['realOrigin']
+        imag_origin = self.frac_area['imagOrigin']
+
         val_lim_squared = 4.0
 
         for y in range(self.draw_dim['height']):
@@ -115,15 +121,13 @@ class FractalWorker(QObject):
                 self.log.exit("calculate_julia", False)
                 break
 
-            imag_part = self.frac_area['imagOrigin'] + y * y_step
+            imag_part = imag_origin + y * y_step
 
             self.line = []
 
             for x in range(self.draw_dim['width']):
 
-                real_part = self.frac_area['realOrigin'] + x * x_step
-
-                self.log.write("x=" + str(x) + " / y=" + str(y), False)
+                real_part = real_origin + x * x_step
 
                 z = complex(real_part, imag_part)
                 loop = 0
@@ -151,7 +155,8 @@ class FractalWorker(QObject):
                 image.setPixelColor(item['x'], y, color)
 
             self.progress.emit(y+1)
-            self.drawing.emit(image)
+            if not self.is_cp_showroom:
+                self.drawing.emit(image)
 
         self.log.exit("calculate_julia", False)
 
@@ -183,6 +188,9 @@ class FractalWorker(QObject):
         x_step = self.frac_area['realWidth'] / self.draw_dim['width']
         y_step = self.frac_area['imagHeight'] / self.draw_dim['height']
 
+        real_origin = self.frac_area['realOrigin']
+        imag_origin = self.frac_area['imagOrigin']
+
         val_lim_squared = 4.0
 
         for y in range(self.draw_dim['height']):
@@ -194,13 +202,13 @@ class FractalWorker(QObject):
                 self.log.exit("calculate_mandelbrot", False)
                 break
 
-            imag_part = self.frac_area['imagOrigin'] + y * y_step
+            imag_part = imag_origin + y * y_step
 
             self.line = []
 
             for x in range(self.draw_dim['width']):
 
-                real_part = self.frac_area['realOrigin'] + x * x_step
+                real_part = real_origin + x * x_step
 
                 c = complex(real_part, imag_part)
                 z = complex(0.0, 0.0)
@@ -230,7 +238,8 @@ class FractalWorker(QObject):
                 image.setPixelColor(item['x'], y, color)
 
             self.progress.emit(y+1)
-            self.drawing.emit(image)
+            if not self.is_cp_showroom:
+                self.drawing.emit(image)
 
         self.log.exit("calculate_mandelbrot", False)
 
