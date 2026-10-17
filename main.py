@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         app_name = "qtFractals"
-        app_version = "0.5.1"
+        app_version = "0.6.0"
 
         self.setWindowTitle(f"{app_name} {app_version}")
 

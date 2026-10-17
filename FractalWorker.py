@@ -19,6 +19,8 @@
 import copy
 import math
 
+import numpy as np
+
 from PySide6.QtCore import (
     QObject,
     Signal,
@@ -72,6 +74,8 @@ class FractalWorker(QObject):
 
         self.is_running = True
 
+        self.line = []
+
         self.log.exit("__init__", False)
 
     #
@@ -113,6 +117,8 @@ class FractalWorker(QObject):
 
             imag_part = self.frac_area['imagOrigin'] + y * y_step
 
+            self.line = []
+
             for x in range(self.draw_dim['width']):
 
                 real_part = self.frac_area['realOrigin'] + x * x_step
@@ -127,15 +133,22 @@ class FractalWorker(QObject):
                     z = z * z + self.julia_c
                     val_squared = z.real * z.real + z.imag * z.imag
                     if val_squared > val_lim_squared:
+                        item = {
+                            'x'     : x,
+                            'loop'  : loop,
+                            'value' : math.sqrt(val_squared),
+                            'R'     : 0,
+                            'G'     : 0,
+                            'B'     : 0,
+                        }
+                        self.line.append(item)
                         break
-                    loop = loop + 1
+                    loop += 1
 
-                if val_squared > val_lim_squared:
-                    r, g, b = self.get_color(loop, math.sqrt(val_squared))
-                    color.setRgb(r, g, b)
-                    image.setPixelColor(x, y, color)
-                else:
-                    image.setPixelColor(x, y, QColor(0, 0, 0))
+            self.get_color()
+            for item in self.line:
+                color.setRgb(item['R'], item['G'], item['B'])
+                image.setPixelColor(item['x'], y, color)
 
             self.progress.emit(y+1)
             self.drawing.emit(image)
@@ -155,7 +168,11 @@ class FractalWorker(QObject):
 
         self.log.entry("calculate_mandelbrot", False)
 
-        image = QImage(self.draw_dim['width'], self.draw_dim['height'], QImage.Format.Format_RGB32)
+        image = QImage(
+            self.draw_dim['width'],
+            self.draw_dim['height'],
+            QImage.Format.Format_RGB32
+        )
         color = QColor()
 
         # Fill background with black color
@@ -179,12 +196,15 @@ class FractalWorker(QObject):
 
             imag_part = self.frac_area['imagOrigin'] + y * y_step
 
+            self.line = []
+
             for x in range(self.draw_dim['width']):
 
                 real_part = self.frac_area['realOrigin'] + x * x_step
 
                 c = complex(real_part, imag_part)
-                z = 0.0 + 0.0j
+                z = complex(0.0, 0.0)
+                #z = 0.0 + 0.0j
                 loop = 0
                 val_squared = 0.0
 
@@ -192,16 +212,22 @@ class FractalWorker(QObject):
                     z = z * z + c
                     val_squared = z.real * z.real + z.imag * z.imag
                     if val_squared > val_lim_squared:
+                        item = {
+                            'x'     : x,
+                            'loop'  : loop,
+                            'value' : math.sqrt(val_squared),
+                            'R'     : 0,
+                            'G'     : 0,
+                            'B'     : 0,
+                        }
+                        self.line.append(item)
                         break
                     loop += 1
 
-                if val_squared > val_lim_squared:
-                    # c is not part of the mandelbrot set
-                    r, g, b = self.get_color(loop, math.sqrt(val_squared))
-                    color.setRgb(r, g, b)
-                    image.setPixelColor(x, y, color)
-                else:
-                    image.setPixelColor(x, y, QColor(0, 0, 0))
+            self.get_color()
+            for item in self.line:
+                color.setRgb(item['R'], item['G'], item['B'])
+                image.setPixelColor(item['x'], y, color)
 
             self.progress.emit(y+1)
             self.drawing.emit(image)
@@ -217,49 +243,52 @@ class FractalWorker(QObject):
     # -----------------------------------------------
     #
 
-    def get_color(self, loop, value):
+    def get_color(self):
         self.log.entry("get_color", False)
 
-        # Safeguard against logarithm of values <= 1 or 0 (important for extreme close boundary values)
-        if value <= 1.0:
-            value = 1.0001
+        for item in self.line:
 
-        # Calculate smoothed iteration value
-        try:
-            smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
-        except ValueError:
-            self.log.error("ValueError: loop=" + str(loop) + " / value=" + str(value), False)
-            smoothed = loop
+            loop  = item['loop']
+            value = item['value']
 
-        # Normed value between 0.0 and 1.0 (higher value = higher frequence of color change)
-        velocity = smoothed / 40.0
-        self.log.write(f"smoothed,velocity={smoothed},{velocity}", False)
+            # Calculate smoothed iteration value
+            try:
+                smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
+            except ValueError:
+                self.log.error(f"ValueError: loop,value={loop},{value}", False)
+                smoothed = loop
 
-        #
-        # Cosine Palette-Method
-        # (based on Inigo Quilez, phase value defines time shifted increase of r,g,b):
-        # color = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase))
-        #
+            # Normed value between 0.0 and 1.0
+            # (the higher value = the higher frequency of color change)
+            velocity = smoothed / 40.0
 
-        rgb = {}
-        for channel in ['R', 'G', 'B']:
-            b = self.cp[f'brightness{channel}']
-            c = self.cp[f'contrast{channel}']
-            f = self.cp[f'frequency{channel}']
-            p = self.cp[f'phase{channel}']
+            #
+            # Cosine Palette-Method
+            # (based on Inigo Quilez, phase value defines time shifted increase
+            # of r,g,b):
+            # color = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase))
+            #
 
-            # Calculate raw color value based on cosine palette method
-            raw_val = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
+            rgb = {}
+            for channel in ['R', 'G', 'B']:
+                b = self.cp[f'brightness{channel}']
+                c = self.cp[f'contrast{channel}']
+                f = self.cp[f'frequency{channel}']
+                p = self.cp[f'phase{channel}']
 
-            # Implement safeguard to ensure that the color value is within the valid range of 0-255
-            clipped_val = max(0, min(255, raw_val))
-            rgb[channel] = clipped_val
+                # Calculate raw color value based on cosine palette method
+                raw_val = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
 
-        self.log.write(f"red={rgb['R']} / green={rgb['G']} / blue={rgb['B']}", False)
+                # Implement safeguard to ensure that the color value is within
+                # the valid range of 0-255
+                clipped_val = max(0, min(255, raw_val))
+                rgb[channel] = clipped_val
 
-        self.log.exit("get_color", False)
+            item['R'] = rgb['R']
+            item['G'] = rgb['G']
+            item['B'] = rgb['B']
 
-        return rgb['R'], rgb['G'], rgb['B']
+            self.log.exit("get_color", False)
 
     #
     # -----------------------------------------------
