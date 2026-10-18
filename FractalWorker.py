@@ -171,7 +171,7 @@ class FractalWorker(QObject):
     @Slot()
     def calculate_mandelbrot(self):
 
-        self.log.entry("calculate_mandelbrot", False)
+        self.log.entry("calculate_mandelbrot", True)
 
         image = QImage(
             self.draw_dim['width'],
@@ -241,7 +241,7 @@ class FractalWorker(QObject):
             if not self.is_cp_showroom:
                 self.drawing.emit(image)
 
-        self.log.exit("calculate_mandelbrot", False)
+        self.log.exit("calculate_mandelbrot", True)
 
         self.finished.emit(image)
 

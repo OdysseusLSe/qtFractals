@@ -17,6 +17,7 @@
 #
 
 import copy
+import time
 
 from PySide6.QtCore import (
     QRect,
@@ -474,14 +475,16 @@ class FractalWidget(QWidget):
     #
 
     def start_calculation(self, is_cp_showroom=False):
-        self.log.entry("start_calculation", False)
+        self.log.entry("start_calculation", True)
         self.log.write(str(self.frac_area)+","+str(self.draw_dim), False)
 
         # Check if a thread is already running
         if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
-            self.log.write("Thread still working!", False)
-            self.log.exit("start_calculation", False)
+            self.log.write("Thread still working!", True)
+            self.log.exit("start_calculation", True)
             return
+
+        time.sleep(1)
 
         # Create thread and worker
         self.thread = QThread()
@@ -494,12 +497,18 @@ class FractalWidget(QWidget):
             self.julia_c,
             is_cp_showroom
         )
+
+        self.log.write(f"self.frac_area={self.frac_area}", True)
+        self.log.write(f"self.draw_dim={self.draw_dim}", True)
+        self.log.write(f"self.iter_lim={self.iter_lim}", True)
+
         self.worker.moveToThread(self.thread)
 
         #
         # Connect signals and slots
         #
 
+        self.log.write(f"self.frac_set={self.frac_set}", True)
         if self.frac_set == "Mandelbrot":
             self.thread.started.connect(self.worker.calculate_mandelbrot)
         else:
@@ -515,8 +524,8 @@ class FractalWidget(QWidget):
 
         self.thread.start()
 
-        self.log.write("self.thread.isRunning()=" + str(self.thread.isRunning()), False)
-        self.log.exit("start_calculation", False)
+        self.log.write("self.thread.isRunning()=" + str(self.thread.isRunning()), True)
+        self.log.exit("start_calculation", True)
 
     #
     # -----------------------------------------------
@@ -538,9 +547,9 @@ class FractalWidget(QWidget):
     #
 
     def thread_finished(self):
-        self.log.entry("thread_finished", False)
+        self.log.entry("thread_finished", True)
 
         self.worker = None
         self.thread = None
 
-        self.log.exit("thread_finished", False)
+        self.log.exit("thread_finished", True)

@@ -755,9 +755,46 @@ class MainWindow(QMainWindow):
         height.append(float(height_edit[1].text()))
 
         iter_lim  = int(iter_lim_edit.text())
-        self.log.write(f"real_part,imag_part={real_part}{imag_part}", True)
-        self.log.write(f"width,height={width}{height}", True)
-        self.log.write(f"iter_lim={iter_lim}", True)
+        self.log.write(f"real_part,imag_part={real_part}{imag_part}", False)
+        self.log.write(f"width,height={width}{height}", False)
+        self.log.write(f"iter_lim={iter_lim}", False)
+
+        # calculate steps between pics
+
+        num_of_pics = fps * secs
+        real_step   = (real_part[0] - real_part[1]) / num_of_pics
+        imag_step   = (imag_part[0] - imag_part[1]) / num_of_pics
+        width_step  = (width[0] - width[1]) / num_of_pics
+        height_step = (height[0] - height[1]) / num_of_pics
+
+        for step in range(0, num_of_pics, 1):
+            self.log.write(f"step={step}", True)
+
+            self.is_cp_showroom = True
+
+            self.frac_area = {
+                'realOrigin': real_part[0] + step * real_step,
+                'imagOrigin': imag_part[0] + step * imag_step,
+                'realWidth' : width[0] + step * width_step,
+                'imagHeight': height[0] + step * height_step
+            }
+            self.log.write("self.frac_area=" + str(self.frac_area), False)
+
+            self.log.write("self.draw_dim=" + str(self.draw_dim), False)
+
+            self.iter_lim = iter_lim
+            self.log.write("self.iter_lim=" + str(self.iter_lim), False)
+
+            self.fw.set_parameters(
+                self.frac_area,
+                self.draw_dim,
+                self.iter_lim,
+                self.cp,
+                self.current_frac_set,
+                self.julia_c
+            )
+
+            self.fw.start_calculation(self.is_cp_showroom)
 
         self.log.exit("pics_for_video", True)
 
@@ -1121,7 +1158,7 @@ class MainWindow(QMainWindow):
             title.append(QLabel("<b>Last Mandelbrot set</b>", self))
 
             for loop in range(0, 2, 1):
-                self.log.write(f"loop={loop}", True)
+                self.log.write(f"loop={loop}", False)
 
                 grid = QGridLayout()
 
@@ -1200,6 +1237,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(button_box)
 
         def ok_clicked():
+            self.log.entry("ok_clicked", True)
             self.pics_for_video(
                 real_part_edit,
                 imag_part_edit,
@@ -1207,6 +1245,7 @@ class MainWindow(QMainWindow):
                 height_edit,
                 iter_lim_edit
             )
+            self.log.exit("ok_clicked", True)
             self.log.exit("zoom_video", True)
             self.zoom_dialog.reject()
 
