@@ -18,6 +18,7 @@
 
 import copy
 import time
+import sys
 
 from pathlib import Path
 
@@ -44,6 +45,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QDoubleSpinBox,
     QFileDialog,
+    QFrame,
     QGridLayout,
     QHBoxLayout,
     QLabel,
@@ -77,7 +79,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         app_name = "qtFractals"
-        app_version = "0.6.0"
+        app_version = "0.7.0"
 
         self.setWindowTitle(f"{app_name} {app_version}")
 
@@ -422,6 +424,13 @@ class MainWindow(QMainWindow):
         self.ncop_action.triggered.connect(self.new_color_palette)
         misc_menu.addAction(self.ncop_action)
 
+        # Create the "Zoom video" action
+        self.zoom_action = QAction("Zoom &video", self)
+        self.zoom_action.setShortcut(QKeySequence("Ctrl+V"))
+        self.zoom_action.setStatusTip("Create video")
+        self.zoom_action.triggered.connect(self.zoom_video)
+        misc_menu.addAction(self.zoom_action)
+
         # Create the "Help" menu
         help_menu = QMenu("&Help", self)
         menu_bar.addMenu(help_menu)
@@ -608,7 +617,7 @@ class MainWindow(QMainWindow):
     def new_color_palette(self):
         self.log.entry("new_color_palette", False)
 
-        self.ncop_dialog = QDialog()
+        self.ncop_dialog = QDialog(self)
         self.ncop_dialog.setWindowTitle("New color palette")
 
         spin   = [[None for _ in range(3)] for _ in range(4)]
@@ -704,12 +713,54 @@ class MainWindow(QMainWindow):
 
         button_box.clicked.connect(button_clicked)
 
-        # Show dialog
+        # Exec dialog
 
         self.ncop_dialog.setMinimumSize(self.ncop_dialog.sizeHint())
         self.ncop_dialog.exec()
 
         self.log.exit("new_color_palette", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def pics_for_video(
+            self,
+            real_part_edit,
+            imag_part_edit,
+            width_edit,
+            height_edit,
+            iter_lim_edit,
+            fps = 30,
+            secs = 10
+        ):
+        self.log.entry("pics_for_video", True)
+
+        # From string to number
+
+        real_part = []
+        real_part.append(float(real_part_edit[0].text()))
+        real_part.append(float(real_part_edit[1].text()))
+
+        imag_part = []
+        imag_part.append(float(imag_part_edit[0].text()))
+        imag_part.append(float(imag_part_edit[1].text()))
+
+        width = []
+        width.append(float(width_edit[0].text()))
+        width.append(float(width_edit[1].text()))
+
+        height = []
+        height.append(float(height_edit[0].text()))
+        height.append(float(height_edit[1].text()))
+
+        iter_lim  = int(iter_lim_edit.text())
+        self.log.write(f"real_part,imag_part={real_part}{imag_part}", True)
+        self.log.write(f"width,height={width}{height}", True)
+        self.log.write(f"iter_lim={iter_lim}", True)
+
+        self.log.exit("pics_for_video", True)
+
 
     #
     # -----------------------------------------------
@@ -1040,6 +1091,143 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def zoom_video(self):
+        self.log.entry("zoom_video", True)
+
+        self.zoom_dialog = QDialog(self)
+        self.zoom_dialog.setWindowTitle("Zoom video")
+
+        main_layout = QVBoxLayout(self.zoom_dialog)
+
+        title = []
+        real_part_edit = []
+        imag_part_edit = []
+        width_edit     = []
+        height_edit    = []
+        grab_btn       = []
+
+        def grab(item):
+            frac_area, draw_dim, iter_lim, frac_set, julia_c = self.fw.get_parameters()
+            real_part_edit[item].setText(str(frac_area['realOrigin']))
+            imag_part_edit[item].setText(str(frac_area['imagOrigin']))
+            width_edit[item].setText(str(frac_area['realWidth']))
+            height_edit[item].setText(str(frac_area['imagHeight']))
+
+            iter_lim_edit.setText(str(iter_lim))
+
+        def input_area():
+
+            title.append(QLabel("<b>First Mandelbrot set</b>", self))
+            title.append(QLabel("<b>Last Mandelbrot set</b>", self))
+
+            for loop in range(0, 2, 1):
+                self.log.write(f"loop={loop}", True)
+
+                grid = QGridLayout()
+
+                title[loop].setAlignment(Qt.AlignmentFlag.AlignCenter)
+                main_layout.addWidget(title[loop])
+
+                label = QLabel("<b>Origin of real part</b>:", self)
+                bottom = self.frac_area['realOrigin']
+                top    = self.frac_area['realOrigin'] + self.frac_area['realWidth']
+                real_part_edit.append(QLineEdit(self))
+                real_part_edit[loop].setText(str(self.const_frac_area['realOrigin']))
+                real_part_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
+                real_part_edit[loop].setFixedWidth(160)
+                grid.addWidget(label, 0, 0)
+                grid.addWidget(real_part_edit[loop], 0, 1)
+
+                label = QLabel("<b>Origin of imag. part</b>:", self)
+                bottom = self.frac_area['imagOrigin']
+                top    = self.frac_area['imagOrigin'] + self.frac_area['imagHeight']
+                imag_part_edit.append(QLineEdit(self))
+                imag_part_edit[loop].setText(str(self.const_frac_area['imagOrigin']))
+                imag_part_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
+                imag_part_edit[loop].setFixedWidth(160)
+                grid.addWidget(label, 1, 0)
+                grid.addWidget(imag_part_edit[loop], 1, 1)
+
+                label = QLabel("<b>Width</b>:", self)
+                bottom = 0.00000000001
+                top    = self.frac_area['realWidth']
+                width_edit.append(QLineEdit(self))
+                width_edit[loop].setText(str(self.const_frac_area['realWidth']))
+                width_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
+                width_edit[loop].setFixedWidth(160)
+                grid.addWidget(label, 2, 0)
+                grid.addWidget(width_edit[loop], 2, 1)
+
+                label = QLabel("<b>Height</b>:", self)
+                bottom = 0.00000000001
+                top    = self.frac_area['imagHeight']
+                height_edit.append(QLineEdit(self))
+                height_edit[loop].setText(str(self.const_frac_area['imagHeight']))
+                height_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
+                height_edit[loop].setFixedWidth(160)
+                grid.addWidget(label, 3, 0)
+                grid.addWidget(height_edit[loop], 3, 1)
+
+                main_layout.addLayout(grid)
+
+                # "Grab" Button
+                grab_btn.append(QPushButton('Grab', self))
+                grab_btn[loop].clicked.connect(lambda checked=False, item=loop: grab(item))
+                main_layout.addWidget(grab_btn[loop])
+
+                # Separation line
+                line = QFrame()
+                line.setFrameShape(QFrame.Shape.HLine)
+                line.setFrameShadow(QFrame.Shadow.Sunken)
+                line.setStyleSheet("background-color: #c0c0c0; max-height: 1px;")
+                main_layout.addWidget(line)
+
+        input_area()
+
+        row = QHBoxLayout()
+        label  = QLabel("<b>Iteration limit</b>:", self)
+        iter_lim_edit = QLineEdit(self)
+        iter_lim_edit.setText(str(self.const_iter_lim))
+        iter_lim_edit.setValidator(QIntValidator(100, 10000))
+        iter_lim_edit.setFixedWidth(50)
+        row.addWidget(label)
+        row.addWidget(iter_lim_edit)
+
+        main_layout.addLayout(row)
+
+        QBtn = (QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(QBtn)
+        main_layout.addWidget(button_box)
+
+        def ok_clicked():
+            self.pics_for_video(
+                real_part_edit,
+                imag_part_edit,
+                width_edit,
+                height_edit,
+                iter_lim_edit
+            )
+            self.log.exit("zoom_video", True)
+            self.zoom_dialog.reject()
+
+        def cancel_clicked():
+            self.log.exit("zoom_video", True)
+            self.zoom_dialog.reject()
+
+        button_box.accepted.connect(ok_clicked)
+        button_box.rejected.connect(cancel_clicked)
+
+        # Show dialog
+
+        self.zoom_dialog.setMinimumSize(self.zoom_dialog.sizeHint())
+        self.zoom_dialog.show()
+
+        self.log.exit("zoom_video", True)
+
+    #
+    # -----------------------------------------------
+    #
+
     def end_app(self):
         self.log.entry("end_app", False)
 
@@ -1070,4 +1258,4 @@ app = QtWidgets.QApplication([])
 win = MainWindow()
 win.show()
 
-app.exec()
+sys.exit(app.exec())
