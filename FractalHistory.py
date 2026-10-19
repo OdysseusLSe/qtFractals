@@ -41,20 +41,20 @@ class FractalHistory():
     # Constructor
     #
 
-    def __init__(self, directory, file_name):
+    def __init__(self, app_name, file_name):
         super().__init__()
 
         self.log = Logging.Logging("FractalHistory", True)
         self.log.entry("__init__", False)
 
-        self.dir = Path(directory)
+        self.dir = Path(f"{app_name}.history")
         self.file_name = self.dir.joinpath(file_name)
         self.log.write(f"file_name={self.file_name}", False)
 
         try:
             self.dir.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
-            self.log.error(f"Cannot create directory for history ({error})", False)
+            self.log.error(f"Directory for history ({error})!", False)
 
         self.repeat_item = False
         self.item_to_repeat = -1
@@ -71,7 +71,6 @@ class FractalHistory():
 
         tn_path_name = self.dir.joinpath(history_item['thumbnail'])
         self.log.write(f"tn_path_name={tn_path_name}", False)
-
 
         ro = str(history_item['frac_area']['realOrigin'])
         io = str(history_item['frac_area']['imagOrigin'])

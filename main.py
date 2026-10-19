@@ -16,7 +16,9 @@
 # If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 #
 
+import cv2
 import copy
+import os
 import time
 import sys
 
@@ -27,6 +29,7 @@ from PySide6.QtCore import (
     QFile,
     QIODevice,
     QJsonDocument,
+    QCoreApplication,
     QSize,
     QTextStream
 )
@@ -34,6 +37,7 @@ from PySide6.QtGui import (
     QAction,
     QDoubleValidator,
     QFont,
+    QImage,
     QIntValidator,
     QKeySequence,
     QIcon
@@ -62,6 +66,7 @@ from PySide6.QtWidgets import (
     QWidget
 )
 
+import FractalFrames
 import FractalHistory
 import FractalWidget
 import Logging
@@ -78,13 +83,13 @@ class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
-        app_name = "qtFractals"
-        app_version = "0.7.0"
+        self.app_name    = "qtFractals"
+        self.app_version = "0.7.0"
 
-        self.setWindowTitle(f"{app_name} {app_version}")
+        self.setWindowTitle(f"{self.app_name} {self.app_version}")
 
-        self.log = Logging.Logging(app_name + " " + app_version, True)
-        self.log.write(f"--- {app_name} {app_version} ---", False)
+        self.log = Logging.Logging(self.app_name + " " + self.app_version, True)
+        self.log.write(f"--- {self.app_name} {self.app_version} ---", False)
         self.log.entry("__init__", False)
 
         # Load the stylesheet from a file
@@ -109,12 +114,12 @@ class MainWindow(QMainWindow):
         self.set_default_values()
 
         # Build the main window with all the widgets
-        self.build_main_window(app_name, app_version)
+        self.build_main_window()
 
         self.start_time = time.process_time()
 
         self.history_list = []
-        self.fh = FractalHistory.FractalHistory(app_name, "history.json")
+        self.fh = FractalHistory.FractalHistory(self.app_name, "history.json")
         self.history_list = self.fh.load_history()
         self.log.write(f"history_list={self.history_list}", False)
 
@@ -135,7 +140,7 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def build_main_window(self, app_name, app_version):
+    def build_main_window(self):
 
         self.log.entry("build_main_window", False)
 
@@ -144,7 +149,7 @@ class MainWindow(QMainWindow):
         yOffset = 10
 
         # Title of the main window
-        self.setWindowTitle(app_name + " " + app_version)
+        self.setWindowTitle(self.app_name + " " + self.app_version)
 
         self.setMinimumHeight(800)
 
@@ -464,9 +469,10 @@ class MainWindow(QMainWindow):
         self.reset_btn.setEnabled(True)
         self.start_btn.setEnabled(True)
 
-        if self.is_cp_showroom:
-            # Do not store, because it is a preview for a new color palette
-            self.is_cp_showroom = False
+        if self.is_interim_pic:
+            # Do not store this calculation in the history, because it is a
+            # either a preview for a new color palette or a frame for a video.
+            self.is_interim_pic = False
             self.log.exit("calculation_closing", False)
             return
 
@@ -490,7 +496,7 @@ class MainWindow(QMainWindow):
     def cp_showroom(self):
         self.log.entry("cp_showroom", False)
 
-        self.is_cp_showroom = True
+        self.is_interim_pic = True
 
         self.frac_area = {
             'realOrigin' : -1.9,
@@ -514,7 +520,7 @@ class MainWindow(QMainWindow):
             self.julia_c
         )
 
-        self.trigger_calculation()
+        self.fw.start_calculation(self.is_interim_pic)
 
         self.log.exit("cp_showroom", False)
 
@@ -547,6 +553,156 @@ class MainWindow(QMainWindow):
             self.trigger_calculation()
 
         self.log.exit("cp_text_changed", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def create_video(
+            self,
+            real_part_edit,
+            imag_part_edit,
+            width_edit,
+            height_edit,
+            iter_lim_edit,
+            fps = 30,
+            secs = 5
+        ):
+        self.log.entry("create_video", False)
+
+        self.zoom_dialog.reject()
+        self.is_stopped = False
+
+        # From string to float
+
+        real_part = []
+        real_part.append(float(real_part_edit[0].text()))
+        real_part.append(float(real_part_edit[1].text()))
+
+        imag_part = []
+        imag_part.append(float(imag_part_edit[0].text()))
+        imag_part.append(float(imag_part_edit[1].text()))
+
+        width = []
+        width.append(float(width_edit[0].text()))
+        width.append(float(width_edit[1].text()))
+
+        height = []
+        height.append(float(height_edit[0].text()))
+        height.append(float(height_edit[1].text()))
+
+        iter_lim  = int(iter_lim_edit.text())
+
+        # calculate steps between pics
+
+        num_of_frames = fps * secs
+        rps = abs((real_part[0] - real_part[1]) / num_of_frames)
+        ips = abs((imag_part[0] - imag_part[1]) / num_of_frames)
+        wps = abs((width[0] - width[1]) / num_of_frames)
+        hps = abs((height[0] - height[1]) / num_of_frames)
+
+        # Create directory for video frames
+
+        dir_name = f"{self.app_name}.video-{time.time()}"
+        dir = Path(dir_name)
+        try:
+            dir.mkdir(exist_ok=True, parents=True)
+        except BaseException as error:
+            self.log.error(f"Directory for video frames ({error})!", False)
+
+        # Build non-modal dialog to show progress
+
+        frames_dialog = QDialog(self)
+        frames_dialog.setWindowTitle("Frames")
+
+        main_layout = QVBoxLayout(frames_dialog)
+
+        progress_bar = QtWidgets.QProgressBar()
+        progress_bar.setRange(0, num_of_frames)
+        progress_bar.setValue(0)
+        main_layout.addWidget(progress_bar)
+
+        progress_lbl = QLabel("<b>0%</b>")
+        progress_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(progress_lbl)
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Abort)
+        main_layout.addWidget(button_box)
+
+        frames_dialog.setMinimumSize(frames_dialog.sizeHint())
+        frames_dialog.show()
+        frames_dialog.raise_()
+        frames_dialog.activateWindow()
+
+        def button_clicked(button):
+            self.is_stopped = True
+            frames_dialog.reject()
+
+        button_box.clicked.connect(button_clicked)
+
+        # Start calculation of frames
+
+        self.ff = FractalFrames.FractalFrames()
+        image = QImage()
+
+        frame_name_list = []
+
+        for step in range(0, num_of_frames, 1):
+
+            if self.is_stopped:
+                break
+
+            self.is_interim_pic = True
+
+            self.frac_area = {
+                'realOrigin': real_part[0] + step * rps,
+                'imagOrigin': imag_part[0] + step * ips,
+                'realWidth' : width[0] - step * wps,
+                'imagHeight': height[0] - step * hps
+            }
+
+            self.iter_lim = iter_lim
+
+            image = self.ff.mandelbrot_frame(
+                self.frac_area,
+                self.draw_dim,
+                self.iter_lim,
+                self.cp,
+            )
+
+            frame_name = f"{step:06d}.png"
+            frame_name_list.append(frame_name)
+            full_path  = dir.joinpath(frame_name)
+            self.log.write(f"full_path={full_path}", False)
+
+            result = image.save(str(full_path), None, 100)
+            if result:
+                self.log.write("Image successful saved.", False)
+            else:
+                self.log.error("Image not saved!", False)
+
+            progress_bar.setValue(step+1)
+            percent = (step+1) / num_of_frames * 100
+            progress_lbl.setText(f"<b>{percent:.2f}%</b>")
+
+            QCoreApplication.processEvents()
+
+        # Render video
+
+        os.chdir(dir_name)
+        self.log.write(f"Build video from frames in {dir_name}", False)
+
+        self.log.write(f"frame_name_list={frame_name_list}", False)
+        width, height = 1280, 720
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video = cv2.VideoWriter("video.mp4", fourcc, 30, (width, height))
+        for frame in frame_name_list:
+            video.write(cv2.imread(os.path.join("./", frame)))
+            self.log.write(f"frame={frame}", False)
+        video.release()
+        cv2.destroyAllWindows()
+
+        self.log.exit("create_video", False)
 
     #
     # -----------------------------------------------
@@ -724,85 +880,6 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def pics_for_video(
-            self,
-            real_part_edit,
-            imag_part_edit,
-            width_edit,
-            height_edit,
-            iter_lim_edit,
-            fps = 30,
-            secs = 10
-        ):
-        self.log.entry("pics_for_video", True)
-
-        # From string to number
-
-        real_part = []
-        real_part.append(float(real_part_edit[0].text()))
-        real_part.append(float(real_part_edit[1].text()))
-
-        imag_part = []
-        imag_part.append(float(imag_part_edit[0].text()))
-        imag_part.append(float(imag_part_edit[1].text()))
-
-        width = []
-        width.append(float(width_edit[0].text()))
-        width.append(float(width_edit[1].text()))
-
-        height = []
-        height.append(float(height_edit[0].text()))
-        height.append(float(height_edit[1].text()))
-
-        iter_lim  = int(iter_lim_edit.text())
-        self.log.write(f"real_part,imag_part={real_part}{imag_part}", False)
-        self.log.write(f"width,height={width}{height}", False)
-        self.log.write(f"iter_lim={iter_lim}", False)
-
-        # calculate steps between pics
-
-        num_of_pics = fps * secs
-        real_step   = (real_part[0] - real_part[1]) / num_of_pics
-        imag_step   = (imag_part[0] - imag_part[1]) / num_of_pics
-        width_step  = (width[0] - width[1]) / num_of_pics
-        height_step = (height[0] - height[1]) / num_of_pics
-
-        for step in range(0, num_of_pics, 1):
-            self.log.write(f"step={step}", True)
-
-            self.is_cp_showroom = True
-
-            self.frac_area = {
-                'realOrigin': real_part[0] + step * real_step,
-                'imagOrigin': imag_part[0] + step * imag_step,
-                'realWidth' : width[0] + step * width_step,
-                'imagHeight': height[0] + step * height_step
-            }
-            self.log.write("self.frac_area=" + str(self.frac_area), False)
-
-            self.log.write("self.draw_dim=" + str(self.draw_dim), False)
-
-            self.iter_lim = iter_lim
-            self.log.write("self.iter_lim=" + str(self.iter_lim), False)
-
-            self.fw.set_parameters(
-                self.frac_area,
-                self.draw_dim,
-                self.iter_lim,
-                self.cp,
-                self.current_frac_set,
-                self.julia_c
-            )
-
-            self.fw.start_calculation(self.is_cp_showroom)
-
-        self.log.exit("pics_for_video", True)
-
-
-    #
-    # -----------------------------------------------
-    #
-
     def repeat_item(self, item):
         self.log.entry("repeat_item", False)
 
@@ -890,7 +967,7 @@ class MainWindow(QMainWindow):
     def set_default_values(self):
         self.log.entry("set_default_values", False)
 
-        self.is_cp_showroom = False
+        self.is_interim_pic = False
         self.is_new_cp      = False
 
         # Default coordinates of the fractal (HD ratio)
@@ -1012,9 +1089,9 @@ class MainWindow(QMainWindow):
     def trigger_calculation(self):
         self.log.entry("trigger_calculation", False)
 
-        if self.is_cp_showroom:
-            self.fw.start_calculation(self.is_cp_showroom)
-            self.is_cp_showroom = False
+        if self.is_interim_pic:
+            self.fw.start_calculation(self.is_interim_pic)
+            self.is_interim_pic = False
             self.log.exit("trigger_calculation", False)
             return
 
@@ -1129,7 +1206,7 @@ class MainWindow(QMainWindow):
     #
 
     def zoom_video(self):
-        self.log.entry("zoom_video", True)
+        self.log.entry("zoom_video", False)
 
         self.zoom_dialog = QDialog(self)
         self.zoom_dialog.setWindowTitle("Zoom video")
@@ -1237,20 +1314,20 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(button_box)
 
         def ok_clicked():
-            self.log.entry("ok_clicked", True)
-            self.pics_for_video(
+            self.log.entry("ok_clicked", False)
+            self.create_video(
                 real_part_edit,
                 imag_part_edit,
                 width_edit,
                 height_edit,
                 iter_lim_edit
             )
-            self.log.exit("ok_clicked", True)
-            self.log.exit("zoom_video", True)
+            self.log.exit("ok_clicked", False)
+            self.log.exit("zoom_video", False)
             self.zoom_dialog.reject()
 
         def cancel_clicked():
-            self.log.exit("zoom_video", True)
+            self.log.exit("zoom_video", False)
             self.zoom_dialog.reject()
 
         button_box.accepted.connect(ok_clicked)
@@ -1261,7 +1338,7 @@ class MainWindow(QMainWindow):
         self.zoom_dialog.setMinimumSize(self.zoom_dialog.sizeHint())
         self.zoom_dialog.show()
 
-        self.log.exit("zoom_video", True)
+        self.log.exit("zoom_video", False)
 
     #
     # -----------------------------------------------

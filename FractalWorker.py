@@ -53,7 +53,7 @@ class FractalWorker(QObject):
             col_pal,
             current_frac_set,
             julia_c,
-            is_cp_showroom
+            is_interim_pic
         ):
         super().__init__()
 
@@ -66,14 +66,14 @@ class FractalWorker(QObject):
         self.cp               = copy.deepcopy(col_pal)
         self.current_frac_set = current_frac_set
         self.julia_c          = julia_c
-        self.is_cp_showroom   = is_cp_showroom
+        self.is_interim_pic   = is_interim_pic
 
         self.log.write("self.frac_area=" + str(self.frac_area), False)
         self.log.write("self.draw_dim=" + str(self.draw_dim), False)
         self.log.write("self.iter_lim=" + str(self.iter_lim), False)
         self.log.write("self.cp=" + str(self.cp), False)
         self.log.write("self.julia_c=" + str(self.julia_c), False)
-        self.log.write("self.is_cp_showroom=" + str(self.is_cp_showroom), False)
+        self.log.write("self.is_interim_pic=" + str(self.is_interim_pic), False)
 
         self.is_running = True
 
@@ -155,7 +155,7 @@ class FractalWorker(QObject):
                 image.setPixelColor(item['x'], y, color)
 
             self.progress.emit(y+1)
-            if not self.is_cp_showroom:
+            if not self.is_interim_pic:
                 self.drawing.emit(image)
 
         self.log.exit("calculate_julia", False)
@@ -170,8 +170,7 @@ class FractalWorker(QObject):
 
     @Slot()
     def calculate_mandelbrot(self):
-
-        self.log.entry("calculate_mandelbrot", True)
+        self.log.entry("calculate_mandelbrot", False)
 
         image = QImage(
             self.draw_dim['width'],
@@ -212,7 +211,6 @@ class FractalWorker(QObject):
 
                 c = complex(real_part, imag_part)
                 z = complex(0.0, 0.0)
-                #z = 0.0 + 0.0j
                 loop = 0
                 val_squared = 0.0
 
@@ -238,10 +236,10 @@ class FractalWorker(QObject):
                 image.setPixelColor(item['x'], y, color)
 
             self.progress.emit(y+1)
-            if not self.is_cp_showroom:
+            if not self.is_interim_pic:
                 self.drawing.emit(image)
 
-        self.log.exit("calculate_mandelbrot", True)
+        self.log.exit("calculate_mandelbrot", False)
 
         self.finished.emit(image)
 

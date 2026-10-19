@@ -1,0 +1,200 @@
+# python
+#
+# This file is part of the qtFractals distribution
+# (https://github.com/OdysseusLSe/qtFractals).
+# Copyright (c) 2026 Lavrentios Servissoglou.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the Apache 2.0 license as published.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# You should have received a copy of the Apache 2.0 license
+# along with this program.
+# If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
+#
+
+import copy
+import math
+
+from PySide6.QtCore import (
+    QObject
+)
+from PySide6.QtGui import (
+    QImage,
+    QColor
+)
+
+import Logging
+
+
+class FractalFrames(QObject):
+
+    def __init__(self):
+        super().__init__()
+
+        self.log = Logging.Logging("FractalFrames", True)
+        self.log.entry("__init__", False)
+
+        self.is_running = True
+
+        self.log.exit("__init__", False)
+
+    #
+    # -----------------------------------------------
+    # Calculate Mandelbrot set
+    # -----------------------------------------------
+    #
+
+    def mandelbrot_frame(
+            self,
+            frac_area,
+            draw_dim,
+            iter_lim,
+            col_pal
+        ):
+        self.log.entry("mandelbrot_frame", False)
+
+        self.frac_area        = copy.deepcopy(frac_area)
+        self.draw_dim         = copy.deepcopy(draw_dim)
+        self.iter_lim         = iter_lim
+        self.cp               = copy.deepcopy(col_pal)
+
+        self.log.write("self.frac_area=" + str(self.frac_area), False)
+        self.log.write("self.draw_dim=" + str(self.draw_dim), False)
+        self.log.write("self.iter_lim=" + str(self.iter_lim), False)
+        self.log.write("self.cp=" + str(self.cp), False)
+
+        image = QImage(
+            self.draw_dim['width'],
+            self.draw_dim['height'],
+            QImage.Format.Format_RGB32
+        )
+        color = QColor()
+
+        # Fill background with black color
+        image.fill(QColor(0, 0, 0))
+
+        x = y = 0
+
+        x_step = self.frac_area['realWidth'] / self.draw_dim['width']
+        y_step = self.frac_area['imagHeight'] / self.draw_dim['height']
+
+        real_origin = self.frac_area['realOrigin']
+        imag_origin = self.frac_area['imagOrigin']
+
+        val_lim_squared = 4.0
+
+        for y in range(self.draw_dim['height']):
+
+            if not self.is_running:
+                # Boolean flag to stop the thread (initiated by the user)
+                self.log.write("Thread stopped by user.", False)
+                self.progress.emit(self.draw_dim['height'])
+                self.log.exit("calculate_mandelbrot", False)
+                break
+
+            imag_part = imag_origin + y * y_step
+
+            self.line = []
+
+            for x in range(self.draw_dim['width']):
+
+                real_part = real_origin + x * x_step
+
+                c = complex(real_part, imag_part)
+                z = complex(0.0, 0.0)
+                loop = 0
+                val_squared = 0.0
+
+                while loop < self.iter_lim:
+                    z = z * z + c
+                    val_squared = z.real * z.real + z.imag * z.imag
+                    if val_squared > val_lim_squared:
+                        item = {
+                            'x'     : x,
+                            'loop'  : loop,
+                            'value' : math.sqrt(val_squared),
+                            'R'     : 0,
+                            'G'     : 0,
+                            'B'     : 0,
+                        }
+                        self.line.append(item)
+                        break
+                    loop += 1
+
+            self.get_color()
+            for item in self.line:
+                color.setRgb(item['R'], item['G'], item['B'])
+                image.setPixelColor(item['x'], y, color)
+
+        self.log.exit("mandelbrot_frame", False)
+
+        return image
+
+    #
+    # -----------------------------------------------
+    # Calculate color and smoothed color transfers. Called by
+    # calculate_mandelbrot and calculate_julia
+    # -----------------------------------------------
+    #
+
+    def get_color(self):
+        self.log.entry("get_color", False)
+
+        for item in self.line:
+
+            loop  = item['loop']
+            value = item['value']
+
+            # Calculate smoothed iteration value
+            try:
+                smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
+            except ValueError:
+                self.log.error(f"ValueError: loop,value={loop},{value}", False)
+                smoothed = loop
+
+            # Normed value between 0.0 and 1.0
+            # (the higher value = the higher frequency of color change)
+            velocity = smoothed / 40.0
+
+            #
+            # Cosine Palette-Method
+            # (based on Inigo Quilez, phase value defines time shifted increase
+            # of r,g,b):
+            # color = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase))
+            #
+
+            rgb = {}
+            for channel in ['R', 'G', 'B']:
+                b = self.cp[f'brightness{channel}']
+                c = self.cp[f'contrast{channel}']
+                f = self.cp[f'frequency{channel}']
+                p = self.cp[f'phase{channel}']
+
+                # Calculate raw color value based on cosine palette method
+                raw_val = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
+
+                # Implement safeguard to ensure that the color value is within
+                # the valid range of 0-255
+                clipped_val = max(0, min(255, raw_val))
+                rgb[channel] = clipped_val
+
+            item['R'] = rgb['R']
+            item['G'] = rgb['G']
+            item['B'] = rgb['B']
+
+            self.log.exit("get_color", False)
+
+    #
+    # -----------------------------------------------
+    # Super widget informs the worker that calculation has to be stopped
+    # -----------------------------------------------
+    #
+
+    def stop(self):
+        self.log.entry("stop", False)
+        self.is_running = False
+        self.log.exit("stop", False)

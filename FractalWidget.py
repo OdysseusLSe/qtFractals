@@ -68,13 +68,6 @@ class FractalWidget(QWidget):
         self.frac_set  = frac_set
         self.julia_c   = julia_c
 
-        self.log.write("self.frac_area=" + str(self.frac_area), False)
-        self.log.write("self.draw_dim=" + str(self.draw_dim), False)
-        self.log.write("self.iter_lim=" + str(self.iter_lim), False)
-        self.log.write("self.cp=" + str(self.cp), False)
-        self.log.write("self.julia_c=" + str(self.julia_c), False)
-        self.log.write("self.frac_set=" + str(self.frac_set), False)
-
         self.image = QImage()
 
         # Mouse variables for mandelbrot selection
@@ -455,18 +448,12 @@ class FractalWidget(QWidget):
     def set_parameters(self, frac_area, draw_dim, iter_lim, col_pal, frac_set, julia_c):
         self.log.entry("set_parameters", False)
 
-        self.frac_area        = copy.deepcopy(frac_area)
-        self.draw_dim         = copy.deepcopy(draw_dim)
-        self.iter_lim         = iter_lim
-        self.cp               = copy.deepcopy(col_pal)
-        self.frac_set = frac_set
-        self.julia_c          = julia_c
-
-        self.log.write(str(self.frac_area), False)
-        self.log.write(str(self.draw_dim), False)
-        self.log.write(str(self.iter_lim), False)
-        self.log.write(str(self.frac_set), False)
-        self.log.write(str(self.julia_c), False)
+        self.frac_area = copy.deepcopy(frac_area)
+        self.draw_dim  = copy.deepcopy(draw_dim)
+        self.iter_lim  = iter_lim
+        self.cp        = copy.deepcopy(col_pal)
+        self.frac_set  = frac_set
+        self.julia_c   = julia_c
 
         self.log.exit("set_parameters", False)
 
@@ -475,13 +462,13 @@ class FractalWidget(QWidget):
     #
 
     def start_calculation(self, is_cp_showroom=False):
-        self.log.entry("start_calculation", True)
+        self.log.entry("start_calculation", False)
         self.log.write(str(self.frac_area)+","+str(self.draw_dim), False)
 
         # Check if a thread is already running
         if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
-            self.log.write("Thread still working!", True)
-            self.log.exit("start_calculation", True)
+            self.log.write("Thread still working!", False)
+            self.log.exit("start_calculation", False)
             return
 
         time.sleep(1)
@@ -498,9 +485,9 @@ class FractalWidget(QWidget):
             is_cp_showroom
         )
 
-        self.log.write(f"self.frac_area={self.frac_area}", True)
-        self.log.write(f"self.draw_dim={self.draw_dim}", True)
-        self.log.write(f"self.iter_lim={self.iter_lim}", True)
+        self.log.write(f"self.frac_area={self.frac_area}", False)
+        self.log.write(f"self.draw_dim={self.draw_dim}", False)
+        self.log.write(f"self.iter_lim={self.iter_lim}", False)
 
         self.worker.moveToThread(self.thread)
 
@@ -508,7 +495,6 @@ class FractalWidget(QWidget):
         # Connect signals and slots
         #
 
-        self.log.write(f"self.frac_set={self.frac_set}", True)
         if self.frac_set == "Mandelbrot":
             self.thread.started.connect(self.worker.calculate_mandelbrot)
         else:
@@ -523,9 +509,10 @@ class FractalWidget(QWidget):
         self.worker.finished.connect(self.worker.deleteLater)
 
         self.thread.start()
+        #self.thread.wait(QDeadlineTimer::Forever)
 
-        self.log.write("self.thread.isRunning()=" + str(self.thread.isRunning()), True)
-        self.log.exit("start_calculation", True)
+        self.log.write("self.thread.isRunning()=" + str(self.thread.isRunning()), False)
+        self.log.exit("start_calculation", False)
 
     #
     # -----------------------------------------------
@@ -547,9 +534,9 @@ class FractalWidget(QWidget):
     #
 
     def thread_finished(self):
-        self.log.entry("thread_finished", True)
+        self.log.entry("thread_finished", False)
 
         self.worker = None
         self.thread = None
 
-        self.log.exit("thread_finished", True)
+        self.log.exit("thread_finished", False)
