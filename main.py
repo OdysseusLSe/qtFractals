@@ -471,7 +471,7 @@ class MainWindow(QMainWindow):
         self.start_btn.setEnabled(True)
 
         if self.is_interim_pic:
-            # Do not store this calculation in the history, because it is a
+            # Do not store this calculation in the history, because it is
             # either a preview for a new color palette or a frame for a video.
             self.is_interim_pic = False
             self.log.exit("calculation_closing", False)
@@ -662,8 +662,6 @@ class MainWindow(QMainWindow):
 
             if self.is_stopped:
                 break
-
-            self.is_interim_pic = True
 
             frac_area = {
                 'realOrigin': real_part[0] + step * rps,
