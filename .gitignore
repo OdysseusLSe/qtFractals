@@ -283,7 +283,8 @@ compile_commands.json
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,visualstudiocode,qt
 
 log.txt
-qtFractals/*
+qtFractals.video-*/*
+qtFractals.history/*
 qtFractals_image.png
 temp/*
 temp*.py

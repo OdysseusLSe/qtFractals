@@ -19,8 +19,9 @@
 import cv2
 import copy
 import os
-import time
+import shutil
 import sys
+import time
 
 from pathlib import Path
 
@@ -564,7 +565,10 @@ class MainWindow(QMainWindow):
             imag_part_edit,
             width_edit,
             height_edit,
-            iter_lim_edit,
+            iter_lim,
+            dd_width,
+            dd_height,
+            cp,
             fps = 30,
             secs = 5
         ):
@@ -591,8 +595,6 @@ class MainWindow(QMainWindow):
         height.append(float(height_edit[0].text()))
         height.append(float(height_edit[1].text()))
 
-        iter_lim  = int(iter_lim_edit.text())
-
         # calculate steps between pics
 
         num_of_frames = fps * secs
@@ -612,31 +614,40 @@ class MainWindow(QMainWindow):
 
         # Build non-modal dialog to show progress
 
-        frames_dialog = QDialog(self)
-        frames_dialog.setWindowTitle("Frames")
+        cr_vid_dialog = QDialog(self)
+        cr_vid_dialog.setWindowTitle("Creating video")
 
-        main_layout = QVBoxLayout(frames_dialog)
+        main_layout = QVBoxLayout(cr_vid_dialog)
 
-        progress_bar = QtWidgets.QProgressBar()
-        progress_bar.setRange(0, num_of_frames)
-        progress_bar.setValue(0)
-        main_layout.addWidget(progress_bar)
+        frames_progress = QtWidgets.QProgressBar()
+        frames_progress.setRange(0, num_of_frames)
+        frames_progress.setValue(0)
+        main_layout.addWidget(frames_progress)
 
-        progress_lbl = QLabel("<b>0%</b>")
-        progress_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(progress_lbl)
+        frames_percent = QLabel("<b>Calculation: 0%</b>")
+        frames_percent.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(frames_percent)
+
+        render_progress = QtWidgets.QProgressBar()
+        render_progress.setRange(0, num_of_frames)
+        render_progress.setValue(0)
+        main_layout.addWidget(render_progress)
+
+        render_percent = QLabel("<b>Rendering: 0%</b>")
+        render_percent.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(render_percent)
 
         button_box = QDialogButtonBox(QDialogButtonBox.Abort)
         main_layout.addWidget(button_box)
 
-        frames_dialog.setMinimumSize(frames_dialog.sizeHint())
-        frames_dialog.show()
-        frames_dialog.raise_()
-        frames_dialog.activateWindow()
+        cr_vid_dialog.setMinimumSize(cr_vid_dialog.sizeHint())
+        cr_vid_dialog.show()
+        cr_vid_dialog.raise_()
+        cr_vid_dialog.activateWindow()
 
         def button_clicked(button):
             self.is_stopped = True
-            frames_dialog.reject()
+            cr_vid_dialog.reject()
 
         button_box.clicked.connect(button_clicked)
 
@@ -654,20 +665,19 @@ class MainWindow(QMainWindow):
 
             self.is_interim_pic = True
 
-            self.frac_area = {
+            frac_area = {
                 'realOrigin': real_part[0] + step * rps,
                 'imagOrigin': imag_part[0] + step * ips,
                 'realWidth' : width[0] - step * wps,
                 'imagHeight': height[0] - step * hps
             }
 
-            self.iter_lim = iter_lim
-
             image = self.ff.mandelbrot_frame(
-                self.frac_area,
-                self.draw_dim,
-                self.iter_lim,
-                self.cp,
+                frac_area,
+                iter_lim,
+                dd_width,
+                dd_height,
+                cp
             )
 
             frame_name = f"{step:06d}.png"
@@ -681,11 +691,17 @@ class MainWindow(QMainWindow):
             else:
                 self.log.error("Image not saved!", False)
 
-            progress_bar.setValue(step+1)
+            frames_progress.setValue(step+1)
             percent = (step+1) / num_of_frames * 100
-            progress_lbl.setText(f"<b>{percent:.2f}%</b>")
+            frames_percent.setText(f"<b>Calculation: {percent:.2f}%</b>")
 
             QCoreApplication.processEvents()
+
+        if self.is_stopped:
+            shutil.rmtree(str(dir))
+            cr_vid_dialog.reject()
+            self.log.exit("create_video", False)
+            return
 
         # Render video
 
@@ -696,11 +712,18 @@ class MainWindow(QMainWindow):
         width, height = 1280, 720
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         video = cv2.VideoWriter("video.mp4", fourcc, 30, (width, height))
+        loop = 0
         for frame in frame_name_list:
             video.write(cv2.imread(os.path.join("./", frame)))
+            render_progress.setValue(loop+1)
+            percent = (loop+1) / num_of_frames * 100
+            render_percent.setText(f"<b>Rendering: {percent:.2f}%</b>")
+            loop = loop + 1
             self.log.write(f"frame={frame}", False)
         video.release()
         cv2.destroyAllWindows()
+
+        cr_vid_dialog.reject()
 
         self.log.exit("create_video", False)
 
@@ -759,12 +782,13 @@ class MainWindow(QMainWindow):
             return None
 
         # Filter default color palette
-        for self.cp in self.cp_list:
-            if self.cp['name'] == "Fire & Ice":
-                break
+        for cp in self.cp_list:
+            if cp['name'] == "Fire & Ice":
+                self.log.exit("load_color_palettes", False)
+                return cp
 
         self.log.exit("load_color_palettes", False)
-        return self.cp
+        return None
 
     #
     # -----------------------------------------------
@@ -1005,7 +1029,7 @@ class MainWindow(QMainWindow):
         self.current_frac_set = self.default_frac_set
 
         # Default color palette
-        self.cp = copy.deepcopy(self.load_color_palettes())
+        self.cp = copy.copy(self.load_color_palettes())
         self.log.write(f"self.cp={self.cp}", False)
 
         self.log.exit("set_default_values", False)
@@ -1221,13 +1245,15 @@ class MainWindow(QMainWindow):
         grab_btn       = []
 
         def grab(item):
-            frac_area, draw_dim, iter_lim, frac_set, julia_c = self.fw.get_parameters()
+            frac_area, dd, iter_lim, fd, jc = self.fw.get_parameters()
             real_part_edit[item].setText(str(frac_area['realOrigin']))
             imag_part_edit[item].setText(str(frac_area['imagOrigin']))
             width_edit[item].setText(str(frac_area['realWidth']))
             height_edit[item].setText(str(frac_area['imagHeight']))
 
             iter_lim_edit.setText(str(iter_lim))
+            dd_width.setText(str(dd['width']))
+            dd_height.setText(str(dd['height']))
 
         def input_area():
 
@@ -1285,7 +1311,7 @@ class MainWindow(QMainWindow):
                 main_layout.addLayout(grid)
 
                 # "Grab" Button
-                grab_btn.append(QPushButton('Grab', self))
+                grab_btn.append(QPushButton('Grab current Mandelbrot set', self))
                 grab_btn[loop].clicked.connect(lambda checked=False, item=loop: grab(item))
                 main_layout.addWidget(grab_btn[loop])
 
@@ -1296,16 +1322,73 @@ class MainWindow(QMainWindow):
                 line.setStyleSheet("background-color: #c0c0c0; max-height: 1px;")
                 main_layout.addWidget(line)
 
+        def cp_changed(text):
+            for element in self.cp_list:
+                if text == element['name']:
+                    self.cp = copy.copy(element)
+
         input_area()
 
         row = QHBoxLayout()
-        label  = QLabel("<b>Iteration limit</b>:", self)
+        label  = QLabel("<b>Iterations</b>:", self)
         iter_lim_edit = QLineEdit(self)
         iter_lim_edit.setText(str(self.const_iter_lim))
-        iter_lim_edit.setValidator(QIntValidator(100, 10000))
+        iter_lim_edit.setValidator(QIntValidator(100, 5000))
         iter_lim_edit.setFixedWidth(50)
         row.addWidget(label)
         row.addWidget(iter_lim_edit)
+
+        label  = QLabel("<b>Width x Height</b>:", self)
+        row.addWidget(label)
+
+        dd_width = QLineEdit(self)
+        dd_width.setText("1280")
+        dd_width.setValidator(QIntValidator(100, 10000))
+        dd_width.setFixedWidth(50)
+        row.addWidget(dd_width)
+
+        label  = QLabel("<b>x</b>", self)
+        row.addWidget(label)
+
+        dd_height = QLineEdit(self)
+        dd_height.setText("720")
+        dd_height.setValidator(QIntValidator(100, 10000))
+        dd_height.setFixedWidth(50)
+        row.addWidget(dd_height)
+
+        main_layout.addLayout(row)
+
+        temp_cp = copy.copy(self.cp)
+        row = QHBoxLayout()
+        label  = QLabel("<b>Choose color palette:</b>")
+        row.addWidget(label)
+        cp_combo = QComboBox()
+        for element in self.cp_list:
+            cp_combo.addItem(element['name'])
+            if element['name'] == self.cp['name']:
+                cp_combo.setCurrentText(element['name'])
+        cp_combo.currentTextChanged.connect(cp_changed)
+        row.addWidget(cp_combo)
+
+        main_layout.addLayout(row)
+
+        row = QHBoxLayout()
+
+        label  = QLabel("<b>FPS</b>:", self)
+        fps_edit = QLineEdit(self)
+        fps_edit.setText("30")
+        fps_edit.setValidator(QIntValidator(25, 90))
+        fps_edit.setFixedWidth(50)
+        row.addWidget(label)
+        row.addWidget(fps_edit)
+
+        label  = QLabel("<b>Seconds</b>:", self)
+        sec_edit = QLineEdit(self)
+        sec_edit.setText("10")
+        sec_edit.setValidator(QIntValidator(5, 600))
+        sec_edit.setFixedWidth(50)
+        row.addWidget(label)
+        row.addWidget(sec_edit)
 
         main_layout.addLayout(row)
 
@@ -1320,8 +1403,14 @@ class MainWindow(QMainWindow):
                 imag_part_edit,
                 width_edit,
                 height_edit,
-                iter_lim_edit
+                int(iter_lim_edit.text()),
+                int(dd_width.text()),
+                int(dd_height.text()),
+                self.cp,
+                int(fps_edit.text()),
+                int(sec_edit.text())
             )
+            self.cp = copy.copy(temp_cp)
             self.log.exit("ok_clicked", False)
             self.log.exit("zoom_video", False)
             self.zoom_dialog.reject()

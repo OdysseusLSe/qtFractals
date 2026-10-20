@@ -51,27 +51,21 @@ class FractalFrames(QObject):
     def mandelbrot_frame(
             self,
             frac_area,
-            draw_dim,
             iter_lim,
-            col_pal
+            dd_width,
+            dd_height,
+            cp
         ):
         self.log.entry("mandelbrot_frame", False)
 
-        self.frac_area        = copy.deepcopy(frac_area)
-        self.draw_dim         = copy.deepcopy(draw_dim)
-        self.iter_lim         = iter_lim
-        self.cp               = copy.deepcopy(col_pal)
+        frac_area        = copy.deepcopy(frac_area)
 
-        self.log.write("self.frac_area=" + str(self.frac_area), False)
-        self.log.write("self.draw_dim=" + str(self.draw_dim), False)
-        self.log.write("self.iter_lim=" + str(self.iter_lim), False)
-        self.log.write("self.cp=" + str(self.cp), False)
+        self.log.write("frac_area=" + str(frac_area), False)
+        self.log.write("iter_lim=" + str(iter_lim), False)
+        self.log.write(f"dd_width,dd_height={dd_width},{dd_height}", False)
+        self.log.write("cp=" + str(cp), False)
 
-        image = QImage(
-            self.draw_dim['width'],
-            self.draw_dim['height'],
-            QImage.Format.Format_RGB32
-        )
+        image = QImage(dd_width, dd_height, QImage.Format.Format_RGB32)
         color = QColor()
 
         # Fill background with black color
@@ -79,15 +73,15 @@ class FractalFrames(QObject):
 
         x = y = 0
 
-        x_step = self.frac_area['realWidth'] / self.draw_dim['width']
-        y_step = self.frac_area['imagHeight'] / self.draw_dim['height']
+        x_step = frac_area['realWidth'] / dd_width
+        y_step = frac_area['imagHeight'] / dd_height
 
-        real_origin = self.frac_area['realOrigin']
-        imag_origin = self.frac_area['imagOrigin']
+        real_origin = frac_area['realOrigin']
+        imag_origin = frac_area['imagOrigin']
 
         val_lim_squared = 4.0
 
-        for y in range(self.draw_dim['height']):
+        for y in range(dd_height):
 
             if not self.is_running:
                 # Boolean flag to stop the thread (initiated by the user)
@@ -100,7 +94,7 @@ class FractalFrames(QObject):
 
             self.line = []
 
-            for x in range(self.draw_dim['width']):
+            for x in range(dd_width):
 
                 real_part = real_origin + x * x_step
 
@@ -109,7 +103,7 @@ class FractalFrames(QObject):
                 loop = 0
                 val_squared = 0.0
 
-                while loop < self.iter_lim:
+                while loop < iter_lim:
                     z = z * z + c
                     val_squared = z.real * z.real + z.imag * z.imag
                     if val_squared > val_lim_squared:
@@ -125,7 +119,7 @@ class FractalFrames(QObject):
                         break
                     loop += 1
 
-            self.get_color()
+            self.get_color(cp)
             for item in self.line:
                 color.setRgb(item['R'], item['G'], item['B'])
                 image.setPixelColor(item['x'], y, color)
@@ -141,7 +135,7 @@ class FractalFrames(QObject):
     # -----------------------------------------------
     #
 
-    def get_color(self):
+    def get_color(self, cp):
         self.log.entry("get_color", False)
 
         for item in self.line:
@@ -169,10 +163,10 @@ class FractalFrames(QObject):
 
             rgb = {}
             for channel in ['R', 'G', 'B']:
-                b = self.cp[f'brightness{channel}']
-                c = self.cp[f'contrast{channel}']
-                f = self.cp[f'frequency{channel}']
-                p = self.cp[f'phase{channel}']
+                b = cp[f'brightness{channel}']
+                c = cp[f'contrast{channel}']
+                f = cp[f'frequency{channel}']
+                p = cp[f'phase{channel}']
 
                 # Calculate raw color value based on cosine palette method
                 raw_val = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
