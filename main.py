@@ -605,6 +605,7 @@ class MainWindow(QMainWindow):
 
         # Create directory for video frames
 
+        dir_name = ""
         dir_name = f"{self.app_name}.video-{time.time()}"
         dir = Path(dir_name)
         try:
@@ -703,6 +704,7 @@ class MainWindow(QMainWindow):
 
         # Render video
 
+        current_dir = os.getcwd()
         os.chdir(dir_name)
         self.log.write(f"Build video from frames in {dir_name}", False)
 
@@ -720,6 +722,7 @@ class MainWindow(QMainWindow):
             self.log.write(f"frame={frame}", False)
         video.release()
         cv2.destroyAllWindows()
+        os.chdir(current_dir)
 
         cr_vid_dialog.reject()
 
