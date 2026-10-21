@@ -27,7 +27,7 @@ from PySide6.QtGui import (
     QColor
 )
 
-import Logging
+from Logging import Logging
 
 
 class FractalFrames(QObject):
@@ -35,7 +35,7 @@ class FractalFrames(QObject):
     def __init__(self):
         super().__init__()
 
-        self.log = Logging.Logging("FractalFrames", True)
+        self.log = Logging("FractalFrames", True)
         self.log.entry("__init__", False)
 
         self.is_running = True

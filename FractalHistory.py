@@ -32,7 +32,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout
 )
 
-import Logging
+from Logging import Logging
 
 
 class FractalHistory():
@@ -44,7 +44,7 @@ class FractalHistory():
     def __init__(self, app_name, file_name):
         super().__init__()
 
-        self.log = Logging.Logging("FractalHistory", True)
+        self.log = Logging("FractalHistory", True)
         self.log.entry("__init__", False)
 
         self.dir = Path(f"{app_name}.history")

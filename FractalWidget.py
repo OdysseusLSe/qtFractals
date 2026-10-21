@@ -35,8 +35,8 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QWidget
 
-import FractalWorker
-import Logging
+from FractalWorker import FractalWorker
+from Logging import Logging
 
 
 class FractalWidget(QWidget):
@@ -57,7 +57,7 @@ class FractalWidget(QWidget):
     def __init__(self, frac_area, draw_dim, iter_lim, col_pal, frac_set, julia_c):
         super().__init__()
 
-        self.log = Logging.Logging("FractalWidget", True)
+        self.log = Logging("FractalWidget", True)
         self.log.entry("__init__", False)
 
         self.calc_area = copy.deepcopy(frac_area)
@@ -461,7 +461,7 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def start_calculation(self, is_cp_showroom=False):
+    def start_calculation(self, is_interim_pic=False):
         self.log.entry("start_calculation", False)
         self.log.write(str(self.frac_area)+","+str(self.draw_dim), False)
 
@@ -475,14 +475,14 @@ class FractalWidget(QWidget):
 
         # Create thread and worker
         self.thread = QThread()
-        self.worker = FractalWorker.FractalWorker(
+        self.worker = FractalWorker(
             self.frac_area,
             self.draw_dim,
             self.iter_lim,
             self.cp,
             self.frac_set,
             self.julia_c,
-            is_cp_showroom
+            is_interim_pic
         )
 
         self.log.write(f"self.frac_area={self.frac_area}", False)

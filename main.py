@@ -67,10 +67,10 @@ from PySide6.QtWidgets import (
     QWidget
 )
 
-import FractalFrames
-import FractalHistory
-import FractalWidget
-import Logging
+from FractalFrames import FractalFrames
+from FractalHistory import FractalHistory
+from FractalWidget import FractalWidget
+from Logging import Logging
 
 import resources_rc
 
@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(f"{self.app_name} {self.app_version}")
 
-        self.log = Logging.Logging(self.app_name + " " + self.app_version, True)
+        self.log = Logging("main", True)
         self.log.write(f"--- {self.app_name} {self.app_version} ---", False)
         self.log.entry("__init__", False)
 
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
         self.start_time = time.process_time()
 
         self.history_list = []
-        self.fh = FractalHistory.FractalHistory(self.app_name, "history.json")
+        self.fh = FractalHistory(self.app_name, "history.json")
         self.history_list = self.fh.load_history()
         self.log.write(f"history_list={self.history_list}", False)
 
@@ -329,7 +329,7 @@ class MainWindow(QMainWindow):
         # Create widget fractal ("third row") within a scrollable area
         #
 
-        self.fw = FractalWidget.FractalWidget(
+        self.fw = FractalWidget(
             self.const_frac_area,
             self.const_draw_dim,
             self.const_iter_lim,
@@ -570,7 +570,7 @@ class MainWindow(QMainWindow):
             dd_height,
             cp,
             fps = 30,
-            secs = 5
+            sec = 5
         ):
         self.log.entry("create_video", False)
 
@@ -597,7 +597,7 @@ class MainWindow(QMainWindow):
 
         # calculate steps between pics
 
-        num_of_frames = fps * secs
+        num_of_frames = fps * sec
         rps = abs((real_part[0] - real_part[1]) / num_of_frames)
         ips = abs((imag_part[0] - imag_part[1]) / num_of_frames)
         wps = abs((width[0] - width[1]) / num_of_frames)
@@ -654,7 +654,7 @@ class MainWindow(QMainWindow):
 
         # Start calculation of frames
 
-        self.ff = FractalFrames.FractalFrames()
+        self.ff = FractalFrames()
         image = QImage()
 
         frame_name_list = []
@@ -679,7 +679,7 @@ class MainWindow(QMainWindow):
                 cp
             )
 
-            frame_name = f"{step:06d}.png"
+            frame_name = f"{step:06d}.jpg"
             frame_name_list.append(frame_name)
             full_path  = dir.joinpath(frame_name)
             self.log.write(f"full_path={full_path}", False)
@@ -709,9 +709,11 @@ class MainWindow(QMainWindow):
         self.log.write(f"Build video from frames in {dir_name}", False)
 
         self.log.write(f"frame_name_list={frame_name_list}", False)
-        width, height = 1280, 720
+        self.log.write(f"dd_with,dd_height={dd_width},{dd_height}", False)
+        self.log.write(f"fps,sec={fps},{sec}", False)
+
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter("video.mp4", fourcc, 30, (width, height))
+        video = cv2.VideoWriter("video.mp4", fourcc, fps, (dd_width, dd_height))
         loop = 0
         for frame in frame_name_list:
             video.write(cv2.imread(os.path.join("./", frame)))

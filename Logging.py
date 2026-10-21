@@ -16,20 +16,20 @@
 # If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 #
 
-from datetime import datetime
+from PySide6.QtCore import QDateTime
 
 
 class Logging():
 
-    def __init__(self, app_name, debug):
-        self.app_name      = app_name
+    def __init__(self, func_name, debug):
+        self.func_name     = func_name
         self.global_debug  = debug
         self.output_string = ""
         self.n = 30 # minimum space
 
     def build_output(self):
-        current_time = datetime.now().strftime("%H:%M:%S")
-        self.output_string = f"[{current_time}]-{self.app_name}: "
+        current_time = QDateTime.currentDateTime().toString("hh:mm:ss")
+        self.output_string = f"[{current_time}]-{self.func_name}: "
 
     def entry(self, info, local_debug=True):
         if self.global_debug and local_debug:

@@ -31,7 +31,7 @@ from PySide6.QtGui import (
     QColor
 )
 
-import Logging
+from Logging import Logging
 
 
 class FractalWorker(QObject):
@@ -57,7 +57,7 @@ class FractalWorker(QObject):
         ):
         super().__init__()
 
-        self.log = Logging.Logging("FractalWorker", True)
+        self.log = Logging("FractalWorker", True)
         self.log.entry("__init__", False)
 
         self.frac_area        = copy.deepcopy(frac_area)
