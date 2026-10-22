@@ -34,19 +34,24 @@ class Logging():
     def entry(self, info, local_debug=True):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + ">" + info)
+            print(self.output_string.ljust(self.n) + "->-" + info)
 
     def error(self, info, local_debug=True):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + "*" + info)
+            print(self.output_string.ljust(self.n) + "-E-" + info)
 
     def exit(self, info, local_debug=True):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + "<" + info)
+            print(self.output_string.ljust(self.n) + "-<-" + info)
+
+    def warning(self, info, local_debug=True):
+        if self.global_debug and local_debug:
+            self.build_output()
+            print(self.output_string.ljust(self.n) + "-W-" + info)
 
     def write(self, info, local_debug=True):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + "-" + info)
+            print(self.output_string.ljust(self.n) + "---" + info)

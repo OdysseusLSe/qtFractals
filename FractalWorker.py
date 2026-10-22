@@ -262,7 +262,7 @@ class FractalWorker(QObject):
             try:
                 smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
             except ValueError:
-                self.log.error(f"ValueError: loop,value={loop},{value}", False)
+                self.log.error(f"ValueError: loop,value={loop},{value}", True)
                 smoothed = loop
 
             # Normed value between 0.0 and 1.0

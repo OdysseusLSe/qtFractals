@@ -101,8 +101,8 @@ class FractalWidget(QWidget):
 
         self.image = image
         if self.image.isNull():
-            self.log.error("Missing image!", False)
-            self.log.exit("calculation_finished", False)
+            self.log.error("Missing image!", True)
+            self.log.exit("calculation_finished", True)
             return
 
         self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
@@ -205,8 +205,8 @@ class FractalWidget(QWidget):
         self.log.entry("get_image", False)
 
         if self.image.isNull():
-            self.log.error("Missing image!", False)
-            self.log.exit("get_image", False)
+            self.log.error("Missing image!", True)
+            self.log.exit("get_image", True)
             return
 
         self.log.exit("get_image", False)
@@ -400,8 +400,8 @@ class FractalWidget(QWidget):
         self.log.entry("paintEvent", False)
 
         if self.image.isNull():
-            self.log.error("Missing image!", False)
-            self.log.exit("paintEvent", False)
+            self.log.error("Missing image!", True)
+            self.log.exit("paintEvent", True)
             return
 
         painter = QPainter(self)
@@ -431,8 +431,8 @@ class FractalWidget(QWidget):
 
         self.image = image
         if self.image.isNull():
-            self.log.error("Missing image!", False)
-            self.log.exit("realtime_update", False)
+            self.log.error("Missing image!", True)
+            self.log.exit("realtime_update", True)
             return
 
         self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])

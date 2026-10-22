@@ -24,6 +24,7 @@ import sys
 import time
 
 from pathlib import Path
+from platformdirs import user_data_dir, user_config_dir, user_cache_dir
 
 from PySide6.QtCore import (
     Qt,
@@ -85,7 +86,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         self.app_name    = "qtFractals"
-        self.app_version = "0.7.0"
+        self.app_version = "0.7.1"
 
         self.setWindowTitle(f"{self.app_name} {self.app_version}")
 
@@ -99,7 +100,7 @@ class MainWindow(QMainWindow):
             stream = QTextStream(style_file)
             self.setStyleSheet(stream.readAll())
         else:
-            self.log.error('Stylesheet ":/ui/style.css" not found!', False)
+            self.log.error('Stylesheet ":/ui/style.css" not found!', True)
 
         # Initiate status bar
         self.status_bar = QStatusBar()
@@ -605,13 +606,13 @@ class MainWindow(QMainWindow):
 
         # Create directory for video frames
 
-        dir_name = ""
-        dir_name = f"{self.app_name}.video-{time.time()}"
+        #dir_name = ""
+        dir_name = f"{self.cache_dir}/{self.app_name}.video-{time.time()}"
         dir = Path(dir_name)
         try:
             dir.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
-            self.log.error(f"Directory for video frames ({error})!", False)
+            self.log.error(f"Directory for video frames ({error})!", True)
 
         # Build non-modal dialog to show progress
 
@@ -686,9 +687,9 @@ class MainWindow(QMainWindow):
 
             result = image.save(str(full_path), None, 100)
             if result:
-                self.log.write("Image successful saved.", False)
+                self.log.write("Frame successful saved.", False)
             else:
-                self.log.error("Image not saved!", False)
+                self.log.error("Frame not saved!", True)
 
             frames_progress.setValue(step+1)
             percent = (step+1) / num_of_frames * 100
@@ -697,7 +698,7 @@ class MainWindow(QMainWindow):
             QCoreApplication.processEvents()
 
         if self.is_stopped:
-            shutil.rmtree(str(dir))
+            shutil.rmtree(dir_name)
             cr_vid_dialog.reject()
             self.log.exit("create_video", False)
             return
@@ -713,7 +714,12 @@ class MainWindow(QMainWindow):
         self.log.write(f"fps,sec={fps},{sec}", False)
 
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter("video.mp4", fourcc, fps, (dd_width, dd_height))
+        video = cv2.VideoWriter(
+            f"{self.app_name}-video.mp4",
+            fourcc,
+            fps,
+            (dd_width, dd_height)
+        )
         loop = 0
         for frame in frame_name_list:
             video.write(cv2.imread(os.path.join("./", frame)))
@@ -724,9 +730,24 @@ class MainWindow(QMainWindow):
             self.log.write(f"frame={frame}", False)
         video.release()
         cv2.destroyAllWindows()
-        os.chdir(current_dir)
+        #os.chdir(current_dir)
 
         cr_vid_dialog.reject()
+
+        folder_path = QFileDialog.getExistingDirectory(
+            parent=None,
+            caption="Choose directory to save video",
+            dir=str(Path.home())
+        )
+        if folder_path:
+            #video_name = "f{self.app_name}-video.mp4"
+            shutil.copy2(f"{self.app_name}-video.mp4", folder_path)
+            os.chdir(current_dir)
+            shutil.rmtree(dir_name)
+        else:
+            self.log.warning("No directory selected!", True)
+
+        os.chdir(current_dir)
 
         self.log.exit("create_video", False)
 
@@ -780,7 +801,7 @@ class MainWindow(QMainWindow):
             json_doc = QJsonDocument.fromJson(cp_file_data)
             self.cp_list = json_doc.toVariant()
         else:
-            self.log.error(f"Loading color palettes:{file.errorString()}!", False)
+            self.log.error(f"Loading color palettes:{file.errorString()}!", True)
             self.log.exit("load_color_palettes", False)
             return None
 
@@ -983,7 +1004,7 @@ class MainWindow(QMainWindow):
         if result:
             self.log.write("Image successful saved.", False)
         else:
-            self.log.error("Image not saved!", False)
+            self.log.error("Image not saved!", True)
 
         self.log.exit("save_image", False)
 
@@ -993,6 +1014,8 @@ class MainWindow(QMainWindow):
 
     def set_default_values(self):
         self.log.entry("set_default_values", False)
+
+        self.cache_dir = user_cache_dir(self.app_name, "OdysseusLSe")
 
         self.is_interim_pic = False
         self.is_new_cp      = False
@@ -1077,7 +1100,7 @@ class MainWindow(QMainWindow):
             content = path.read_text(encoding="utf-8")
             self.text_edit.setMarkdown(content)
         else:
-            self.log.error("Readme file not found!", False)
+            self.log.error("Readme file not found!", True)
 
         QBtn = (QDialogButtonBox.Ok)
         button_box = QDialogButtonBox(QBtn)

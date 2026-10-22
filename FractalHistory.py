@@ -17,9 +17,11 @@
 #
 
 import json
+import os
 import time
 
 from pathlib import Path
+from platformdirs import user_data_dir, user_config_dir, user_cache_dir
 
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QIcon
@@ -47,14 +49,23 @@ class FractalHistory():
         self.log = Logging("FractalHistory", True)
         self.log.entry("__init__", False)
 
-        self.dir = Path(f"{app_name}.history")
+        # 1. Für Benutzerdaten (z. B. Datenbanken, Speicherstände)
+        data_dir = user_data_dir(app_name, "OdysseusLSe")
+
+        # 2. Für Konfigurationsdateien (z. B. settings.json, config.ini)
+        config_dir = user_config_dir(app_name, "OdysseusLSe")
+
+        # 3. Für temporäre Caches
+        cache_dir = user_cache_dir(app_name, "OdysseusLSe")
+
+        self.dir = Path(f"{data_dir}/{app_name}.history")
         self.file_name = self.dir.joinpath(file_name)
         self.log.write(f"file_name={self.file_name}", False)
 
         try:
             self.dir.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
-            self.log.error(f"Directory for history ({error})!", False)
+            self.log.error(f"Directory for history ({error})!", True)
 
         self.repeat_item = False
         self.item_to_repeat = -1
@@ -128,7 +139,7 @@ class FractalHistory():
             with open(self.file_name, 'r', encoding="utf-8") as f:
                 history_data = json.load(f)
         except BaseException as error:
-            self.log.error(f"Error ({error}) with reading history!", False)
+            self.log.error(f"Error ({error}) with reading history!", True)
 
         self.log.exit("load_history", False)
         return history_data
@@ -155,15 +166,15 @@ class FractalHistory():
 
             result = thumbnail.save(str(tn_path_name), None, 100)
             if result:
-                self.log.write("Image successful saved.", False)
+                self.log.write("Thumbnail successful saved.", False)
             else:
-                self.log.error("Image not saved!", False)
+                self.log.error("Thumbnail not saved!", True)
 
         try:
             with open(self.file_name, 'w', encoding="utf-8") as f:
                 json.dump(history_data, f, ensure_ascii=False, indent=4)
         except BaseException as error:
-            self.log.error(f"Error ({error}) with saving history!", False)
+            self.log.error(f"Error ({error}) with saving history!", True)
 
         self.log.exit("save_history", False)
 
