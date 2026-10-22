@@ -62,54 +62,54 @@ In this section I describe the main window and its controls:
 <img src="docs/app_screenshot_history.png" alt="History window" style="width:100%; height:auto;">
 
 The history window shows all past calculations since starting the app the first
-time. The entries are sorted by time. You can delete single entries (at the moment
-one by one only) or repeat a specific calculation. The repeated one generates a
-new history entry!
+time. The entries are sorted by time. You can delete single entries (at the
+moment one by one only) or repeat a specific calculation. The repeated one
+generates a new history entry!
 
 ## New color palette window
 
 <!-- ![New color palette window](docs/app_screenshot_new_cp.png) -->
 <img src="docs/app_screenshot_new_cp.png" alt="New color palette window" style="width:100%; height:auto;">
 
-With this window you may define a new color palette. At the top of the window you
-may provide a name for the new color palette. Pressing "Apply" shows a small
+With this window you may define a new color palette. At the top of the window
+you may provide a name for the new color palette. Pressing "Apply" shows a small
 Mandelbrot fractal set with new parameters as a preview. Pressing "Save" saves
 the new defined color palette by re-calculating a default Mandelbrot fractal set
 and adding it to the history list. Pressing "Close" closes the window.
 
-For the theoretical background of this specific color palette calculation and the
-meaning of these parameters you may follow these two links (the mastermind of this
-is [Inigo Quilez](https://iquilezles.org/)):
+For the theoretical background of this specific color palette calculation and
+the meaning of these parameters you may follow these two links (the mastermind
+of this is [Inigo Quilez](https://iquilezles.org/)):
 
 - [Procedural Color Palette](https://iquilezles.org/articles/palettes/)
 - [A simple formula to create beautiful color palettes](https://www.youtube.com/shorts/TH3OTy5fTog)
 
 **Attention**:
-User defined color palettes are stored in the history list only. If you delete the
-specific history item the user defined color palette will be lost!
+User defined color palettes are stored in the history list only. If you delete
+the specific history item the user defined color palette will be lost!
 
 ## Create a zoom video
 
 <!-- ![Zoom video parameters window](docs/app_screenshot_zoom.png) -->
 <img src="docs/app_screenshot_zoom.png" alt="Zoom video parameters window" style="width:100%; height:auto;">
 
-To build a zoom video you have to provide the parameters of two Mandelbrot fractal
-sets: starting point and ending point. You may provide the data manually or grab it
-from the current Mandelbrot fractal set (preferred method). Additionally you may
-select the resolution (width and height), frames per second, and duration (seconds)
-of the video.
+To build a zoom video you have to provide the parameters of two Mandelbrot
+fractal sets: starting point and ending point. You may provide the data manually
+or grab it from the current Mandelbrot fractal set (preferred method).
+Additionally you may select the resolution (width and height), frames per
+second, and duration (seconds) of the video.
 
 Of course you are able to select an existing color palette from a list.
 
-At the end of the rendering process (a progress window will be shown) you may select
-the directory the video will be stored. It replaces an existing file!
+At the end of the rendering process (a progress window will be shown) you may
+select the directory the video will be stored. It replaces an existing file!
 
 **Attention**:
 
-- Take care, that the fractal set ratio (width x height) is the same as the ratio of
-  the resolution (width x height)!
-- During the calculation temporary a lot of video frames (FPS x Seconds) will be generated.
-  So take care to have enough disk space.
+- Take care, that the fractal set ratio (width x height) is the same as the
+  ratio of the resolution (width x height)!
+- During the calculation temporary a lot of video frames (FPS x Seconds) will be
+  generated. So take care to have enough disk space.
 
 
 ## Mouse and keyboard actions
