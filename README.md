@@ -8,6 +8,7 @@ This app calculates fractal sets. It provides a few features like
 - "zoom-in" / "zoom-out" via specific input coordinates,
 - define the area of the calculated set,
 - define the value of iteration for the fractal formula,
+- create zoom-in video
 - history: every fractal calculation will be stored
 - providing pre-defined drawing dimensions,
 - switching from Mandelbrot set to Julia set,
@@ -171,7 +172,5 @@ Windows 11:\
 
 These are the addional features for the future (arbitrary order):
 
-- Create an animation (sequence of images) by defining start point and end point
-  via zoom-in.
 - Provide the ability to change the current default theme.
 - ...
