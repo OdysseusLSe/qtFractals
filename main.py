@@ -338,7 +338,7 @@ class MainWindow(QMainWindow):
             self.current_frac_set,
             self.julia_c
         )
-        self.fw.cur_rect.connect(self.status_bar_update_area)
+        self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
 
         self.scroll_area = QScrollArea()
@@ -432,9 +432,9 @@ class MainWindow(QMainWindow):
         misc_menu.addAction(self.ncop_action)
 
         # Create the "Zoom video" action
-        self.zoom_action = QAction("Zoom &video", self)
-        self.zoom_action.setShortcut(QKeySequence("Ctrl+V"))
-        self.zoom_action.setStatusTip("Create video")
+        self.zoom_action = QAction("Zoo&m video", self)
+        self.zoom_action.setShortcut(QKeySequence("Ctrl+M"))
+        self.zoom_action.setStatusTip("Create zoom video")
         self.zoom_action.triggered.connect(self.zoom_video)
         misc_menu.addAction(self.zoom_action)
 
@@ -443,16 +443,16 @@ class MainWindow(QMainWindow):
         menu_bar.addMenu(help_menu)
 
         # Create the "Read me" action
-        self.read_action = QAction("Show Readme", self)
-        self.read_action.setShortcut(QKeySequence("Ctrl+?"))
+        self.read_action = QAction("Show &Readme", self)
+        self.read_action.setShortcut(QKeySequence("Ctrl+R"))
         self.read_action.setStatusTip("Show Readme")
         self.read_action.triggered.connect(self.show_readme)
         help_menu.addAction(self.read_action)
 
         # MAC FIX: Connect the menu's hovered signal to a custom slots pipeline
-        file_menu.hovered.connect(self.update_mac_status_bar)
-        misc_menu.hovered.connect(self.update_mac_status_bar)
-        help_menu.hovered.connect(self.update_mac_status_bar)
+        file_menu.hovered.connect(self.update_mac_sb)
+        misc_menu.hovered.connect(self.update_mac_sb)
+        help_menu.hovered.connect(self.update_mac_sb)
 
         self.log.exit("build_menu_bar", False)
 
@@ -606,11 +606,10 @@ class MainWindow(QMainWindow):
 
         # Create directory for video frames
 
-        #dir_name = ""
         dir_name = f"{self.cache_dir}/{self.app_name}.video-{time.time()}"
-        dir = Path(dir_name)
+        dir_path = Path(dir_name)
         try:
-            dir.mkdir(exist_ok=True, parents=True)
+            dir_path.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
             self.log.error(f"Directory for video frames ({error})!", True)
 
@@ -680,9 +679,9 @@ class MainWindow(QMainWindow):
                 cp
             )
 
-            frame_name = f"{step:06d}.jpg"
+            frame_name = f"{step:06d}.png"
             frame_name_list.append(frame_name)
-            full_path  = dir.joinpath(frame_name)
+            full_path  = dir_path.joinpath(frame_name)
             self.log.write(f"full_path={full_path}", False)
 
             result = image.save(str(full_path), None, 100)
@@ -698,6 +697,7 @@ class MainWindow(QMainWindow):
             QCoreApplication.processEvents()
 
         if self.is_stopped:
+            # User stopped calculation
             shutil.rmtree(dir_name)
             cr_vid_dialog.reject()
             self.log.exit("create_video", False)
@@ -730,18 +730,17 @@ class MainWindow(QMainWindow):
             self.log.write(f"frame={frame}", False)
         video.release()
         cv2.destroyAllWindows()
-        #os.chdir(current_dir)
 
         cr_vid_dialog.reject()
 
+        video_full_path  = dir_path.joinpath(f"{self.app_name}-video.mp4")
         folder_path = QFileDialog.getExistingDirectory(
             parent=None,
             caption="Choose directory to save video",
             dir=str(Path.home())
         )
         if folder_path:
-            #video_name = "f{self.app_name}-video.mp4"
-            shutil.copy2(f"{self.app_name}-video.mp4", folder_path)
+            video_full_path.copy_into(folder_path, preserve_metadata=True)
             os.chdir(current_dir)
             shutil.rmtree(dir_name)
         else:
@@ -1118,8 +1117,8 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def status_bar_update_area(self, area):
-        self.log.entry("status_bar_update_area", False)
+    def sb_update_area(self, area):
+        self.log.entry("sb_update_area", False)
         self.log.write(f"area={area}", False)
 
         ro = area['realOrigin']
@@ -1130,7 +1129,7 @@ class MainWindow(QMainWindow):
         status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
         self.status_bar.showMessage(status)
 
-        self.log.exit("status_bar_update_area", False)
+        self.log.exit("sb_update_area", False)
 
     #
     # -----------------------------------------------
@@ -1182,8 +1181,8 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def update_mac_status_bar(self, action):
-        self.log.entry("update_mac_status_bar", False)
+    def update_mac_sb(self, action):
+        self.log.entry("update_mac_sb", False)
 
         if action and action.statusTip():
             self.log.write(f"action.statusTip()={action.statusTip()}", False)
@@ -1191,7 +1190,7 @@ class MainWindow(QMainWindow):
         else:
             self.status_bar.clearMessage()
 
-        self.log.exit("update_mac_status_bar", False)
+        self.log.exit("update_mac_sb", False)
 
     #
     # -----------------------------------------------

@@ -19,7 +19,6 @@
 import copy
 import math
 
-import numpy as np
 
 from PySide6.QtCore import (
     QObject,
