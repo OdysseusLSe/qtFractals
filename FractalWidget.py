@@ -471,8 +471,6 @@ class FractalWidget(QWidget):
             self.log.exit("start_calculation", False)
             return
 
-        time.sleep(1)
-
         # Create thread and worker
         self.thread = QThread()
         self.worker = FractalWorker(

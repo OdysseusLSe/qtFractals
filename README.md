@@ -101,8 +101,12 @@ second, and duration (seconds) of the video.
 
 Of course you are able to select an existing color palette from a list.
 
-At the end of the rendering process (a progress window will be shown) you may
-select the directory the video will be stored. It replaces an existing file!
+At the end of the rendering process you may select the directory the video will
+be stored. It replaces an existing file! During calculation and rendering a
+progress window woll be shown. The progress window shows the current set
+calculated/rendered. Here you may abort the whole video creation!
+
+<img src="docs/app_screenshot_progress.png" alt="Progress window" style="width:100%; height:auto;">
 
 **Attention**:
 

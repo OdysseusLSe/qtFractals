@@ -30,12 +30,12 @@ from PySide6.QtGui import (
 from Logging import Logging
 
 
-class FractalFrames(QObject):
+class FractalFrame(QObject):
 
     def __init__(self):
         super().__init__()
 
-        self.log = Logging("FractalFrames", True)
+        self.log = Logging("FractalFrame", True)
         self.log.entry("__init__", False)
 
         self.is_running = True
@@ -48,17 +48,10 @@ class FractalFrames(QObject):
     # -----------------------------------------------
     #
 
-    def mandelbrot_frame(
-            self,
-            frac_area,
-            iter_lim,
-            dd_width,
-            dd_height,
-            cp
-        ):
+    def mandelbrot_frame(self, frac_area, iter_lim, dd_width, dd_height, cp):
         self.log.entry("mandelbrot_frame", False)
 
-        frac_area        = copy.deepcopy(frac_area)
+        frac_area = copy.deepcopy(frac_area)
 
         self.log.write("frac_area=" + str(frac_area), False)
         self.log.write("iter_lim=" + str(iter_lim), False)

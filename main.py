@@ -39,10 +39,11 @@ from PySide6.QtGui import (
     QAction,
     QDoubleValidator,
     QFont,
+    QIcon,
     QImage,
     QIntValidator,
     QKeySequence,
-    QIcon
+    QPixmap
 )
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import (
@@ -68,7 +69,7 @@ from PySide6.QtWidgets import (
     QWidget
 )
 
-from FractalFrames import FractalFrames
+from FractalFrame import FractalFrame
 from FractalHistory import FractalHistory
 from FractalWidget import FractalWidget
 from Logging import Logging
@@ -86,7 +87,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         self.app_name    = "qtFractals"
-        self.app_version = "0.7.1"
+        self.app_version = "0.7.2"
 
         self.setWindowTitle(f"{self.app_name} {self.app_version}")
 
@@ -575,7 +576,6 @@ class MainWindow(QMainWindow):
         ):
         self.log.entry("create_video", False)
 
-        self.zoom_dialog.reject()
         self.is_stopped = False
 
         # From string to float
@@ -606,7 +606,8 @@ class MainWindow(QMainWindow):
 
         # Create directory for video frames
 
-        dir_name = f"{self.cache_dir}/{self.app_name}.video-{time.time()}"
+        dir_time = time.time()
+        dir_name = f"{self.cache_dir}/{self.app_name}.video-{dir_time}"
         dir_path = Path(dir_name)
         try:
             dir_path.mkdir(exist_ok=True, parents=True)
@@ -619,6 +620,13 @@ class MainWindow(QMainWindow):
         cr_vid_dialog.setWindowTitle("Creating video")
 
         main_layout = QVBoxLayout(cr_vid_dialog)
+
+        thumbnail = QLabel()
+        pixmap    = QPixmap()
+        thumbnail.setMinimumSize(155, 155)
+        thumbnail.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        thumbnail.setPixmap(pixmap)
+        main_layout.addWidget(thumbnail)
 
         frames_progress = QtWidgets.QProgressBar()
         frames_progress.setRange(0, num_of_frames)
@@ -648,13 +656,12 @@ class MainWindow(QMainWindow):
 
         def button_clicked(button):
             self.is_stopped = True
-            cr_vid_dialog.reject()
 
         button_box.clicked.connect(button_clicked)
 
         # Start calculation of frames
 
-        self.ff = FractalFrames()
+        self.ff = FractalFrame()
         image = QImage()
 
         frame_name_list = []
@@ -681,7 +688,7 @@ class MainWindow(QMainWindow):
 
             frame_name = f"{step:06d}.png"
             frame_name_list.append(frame_name)
-            full_path  = dir_path.joinpath(frame_name)
+            full_path = dir_path.joinpath(frame_name)
             self.log.write(f"full_path={full_path}", False)
 
             result = image.save(str(full_path), None, 100)
@@ -689,6 +696,11 @@ class MainWindow(QMainWindow):
                 self.log.write("Frame successful saved.", False)
             else:
                 self.log.error("Frame not saved!", True)
+
+            thumbnail.setPixmap(QPixmap.fromImage(image.scaledToWidth(
+                150,
+                Qt.TransformationMode.FastTransformation
+            )))
 
             frames_progress.setValue(step+1)
             percent = (step+1) / num_of_frames * 100
@@ -699,7 +711,7 @@ class MainWindow(QMainWindow):
         if self.is_stopped:
             # User stopped calculation
             shutil.rmtree(dir_name)
-            cr_vid_dialog.reject()
+            cr_vid_dialog.close()
             self.log.exit("create_video", False)
             return
 
@@ -713,9 +725,10 @@ class MainWindow(QMainWindow):
         self.log.write(f"dd_with,dd_height={dd_width},{dd_height}", False)
         self.log.write(f"fps,sec={fps},{sec}", False)
 
+        # Render video with created Mandelbrot fractal sets as frames
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         video = cv2.VideoWriter(
-            f"{self.app_name}-video.mp4",
+            f"{self.app_name}-{dir_time}.mp4",
             fourcc,
             fps,
             (dd_width, dd_height)
@@ -731,13 +744,16 @@ class MainWindow(QMainWindow):
         video.release()
         cv2.destroyAllWindows()
 
-        cr_vid_dialog.reject()
+        # Delete progress dialog for calculation and rendering
+        cr_vid_dialog.close()
 
-        video_full_path  = dir_path.joinpath(f"{self.app_name}-video.mp4")
+        # Select directory where to save the newly created video to
+        video_full_path  = dir_path.joinpath(f"{self.app_name}-{dir_time}.mp4")
         folder_path = QFileDialog.getExistingDirectory(
-            parent=None,
-            caption="Choose directory to save video",
-            dir=str(Path.home())
+            self,
+            caption="Select folder to save video",
+            dir=str(Path.home()),
+            options=QFileDialog.ShowDirsOnly
         )
         if folder_path:
             video_full_path.copy_into(folder_path, preserve_metadata=True)
@@ -1438,11 +1454,11 @@ class MainWindow(QMainWindow):
             self.cp = copy.copy(temp_cp)
             self.log.exit("ok_clicked", False)
             self.log.exit("zoom_video", False)
-            self.zoom_dialog.reject()
+            self.zoom_dialog.close()
 
         def cancel_clicked():
             self.log.exit("zoom_video", False)
-            self.zoom_dialog.reject()
+            self.zoom_dialog.close()
 
         button_box.accepted.connect(ok_clicked)
         button_box.rejected.connect(cancel_clicked)
