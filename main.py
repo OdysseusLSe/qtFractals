@@ -606,16 +606,25 @@ class MainWindow(QMainWindow):
 
         # calculate steps between pics
 
-        zoom_in = True
+        zoom_in = width[0] > width[1]
         num_of_frames = fps * sec
-        if width[0] > width[1]:
-            # zoom in
-            rps = abs((real_part[0] - real_part[1]) / num_of_frames)
-            ips = abs((imag_part[0] - imag_part[1]) / num_of_frames)
-            wps = abs((width[0] - width[1]) / num_of_frames)
-            hps = abs((height[0] - height[1]) / num_of_frames)
+        if zoom_in:
+            # For zoom-in I use an easing formula based on "Ease-Out"
+
+            power = 3  # Higher value increases the slow down at the end
+            ease_out = []
+            for step in range(num_of_frames):
+                t = step / (num_of_frames - 1)
+                ease_out.append(1 - ((1 - t) ** power))
+
+            # Center of the start area and end area
+            cr_start = real_part[0] + width[0]  / 2
+            ci_start = imag_part[0] + height[0] / 2
+            cr_end   = real_part[1] + width[1]  / 2
+            ci_end   = imag_part[1] + height[1] / 2
+
         else:
-            # zoom out
+
             zoom_in = False
             rps = abs((real_part[1] - real_part[0]) / num_of_frames)
             ips = abs((imag_part[1] - imag_part[0]) / num_of_frames)
@@ -692,12 +701,21 @@ class MainWindow(QMainWindow):
                 break
 
             if zoom_in:
+                factor = ease_out[step]
+
+                current_width  = width[0]  + (width[1]  - width[0])  * factor
+                current_height = height[0] + (height[1] - height[0]) * factor
+
+                current_cr = cr_start + (cr_end - cr_start) * factor
+                current_ci = ci_start + (ci_end - ci_start) * factor
+
                 frac_area = {
-                    'realOrigin': real_part[0] + step * rps,
-                    'imagOrigin': imag_part[0] + step * ips,
-                    'realWidth' : width[0] - step * wps,
-                    'imagHeight': height[0] - step * hps
-                }
+                    'realOrigin': current_cr - current_width / 2,
+                    'imagOrigin': current_ci - current_height / 2,
+                    'realWidth' : current_width,
+                    'imagHeight': current_height
+            }
+
             else:
                 frac_area = {
                     'realOrigin': real_part[0] - step * rps,
