@@ -39,6 +39,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import (
     QAction,
+    QColor,
     QDoubleValidator,
     QFont,
     QIcon,
@@ -50,6 +51,7 @@ from PySide6.QtGui import (
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import (
     QComboBox,
+    QColorDialog,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
@@ -604,32 +606,30 @@ class MainWindow(QMainWindow):
         self.log.exit("zoom_video", False)
         self.zoom_dialog.close()
 
+        # Center of the start area and end area
+        cr_start = real_part[0] + width[0]  / 2
+        cr_end   = real_part[1] + width[1]  / 2
+        ci_start = imag_part[0] + height[0] / 2
+        ci_end   = imag_part[1] + height[1] / 2
+
         # calculate steps between pics
 
         zoom_in = width[0] > width[1]
         num_of_frames = fps * sec
         if zoom_in:
             # For zoom-in I use an easing formula based on "Ease-Out"
-
-            power = 3  # Higher value increases the slow down at the end
+            power = 4  # Higher value increases the slow down at the end
             ease_out = []
             for step in range(num_of_frames):
                 t = step / (num_of_frames - 1)
                 ease_out.append(1 - ((1 - t) ** power))
-
-            # Center of the start area and end area
-            cr_start = real_part[0] + width[0]  / 2
-            ci_start = imag_part[0] + height[0] / 2
-            cr_end   = real_part[1] + width[1]  / 2
-            ci_end   = imag_part[1] + height[1] / 2
-
         else:
-
-            zoom_in = False
-            rps = abs((real_part[1] - real_part[0]) / num_of_frames)
-            ips = abs((imag_part[1] - imag_part[0]) / num_of_frames)
-            wps = abs((width[1] - width[0]) / num_of_frames)
-            hps = abs((height[1] - height[0]) / num_of_frames)
+            # For zoom-out I use an easing formula based on "Ease-In"
+            power = 4  # Higher value increases the accelaration at the end
+            ease_in = []
+            for step in range(num_of_frames):
+                t = step / (num_of_frames - 1)
+                ease_in.append(t ** power)
 
         # Build non-modal dialog to show progress
 
@@ -650,9 +650,13 @@ class MainWindow(QMainWindow):
         frames_progress.setValue(0)
         main_layout.addWidget(frames_progress)
 
-        frames_percent = QLabel("<b>Calculation: 0%</b>")
-        frames_percent.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(frames_percent)
+        frames_per = QLabel("<b>Calculation: 0%</b>")
+        frames_per.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(frames_per)
+
+        frames_abs = QLabel(f"<b>Frames: 0/{num_of_frames}</b>")
+        frames_abs.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(frames_abs)
 
         button_box = QDialogButtonBox(QDialogButtonBox.Abort)
         main_layout.addWidget(button_box)
@@ -700,29 +704,20 @@ class MainWindow(QMainWindow):
             if self.is_stopped:
                 break
 
-            if zoom_in:
-                factor = ease_out[step]
+            factor = ease_out[step] if zoom_in else ease_in[step]
 
-                current_width  = width[0]  + (width[1]  - width[0])  * factor
-                current_height = height[0] + (height[1] - height[0]) * factor
+            current_width  = width[0]  + (width[1]  - width[0])  * factor
+            current_height = height[0] + (height[1] - height[0]) * factor
 
-                current_cr = cr_start + (cr_end - cr_start) * factor
-                current_ci = ci_start + (ci_end - ci_start) * factor
+            current_cr = cr_start + (cr_end - cr_start) * factor
+            current_ci = ci_start + (ci_end - ci_start) * factor
 
-                frac_area = {
-                    'realOrigin': current_cr - current_width / 2,
-                    'imagOrigin': current_ci - current_height / 2,
-                    'realWidth' : current_width,
-                    'imagHeight': current_height
+            frac_area = {
+                'realOrigin': current_cr - current_width / 2,
+                'imagOrigin': current_ci - current_height / 2,
+                'realWidth' : current_width,
+                'imagHeight': current_height
             }
-
-            else:
-                frac_area = {
-                    'realOrigin': real_part[0] - step * rps,
-                    'imagOrigin': imag_part[0] - step * ips,
-                    'realWidth' : width[0] + step * wps,
-                    'imagHeight': height[0] + step * hps
-                }
 
             image = self.ff.mandelbrot_frame(
                 frac_area,
@@ -732,16 +727,12 @@ class MainWindow(QMainWindow):
                 cp
             )
 
+            """
             frame_name = f"{step:06d}.png"
             frame_name_list.append(frame_name)
             frame_full_path = dir_path.joinpath(frame_name)
             self.log.write(f"frame_full_path={frame_full_path}", False)
-
-            result = image.save(str(frame_full_path), None, 100)
-            if result:
-                self.log.write("Frame successful saved.", False)
-            else:
-                self.log.error("Frame not saved!", True)
+            """
 
             # Create thumbnail for progress window
             thumbnail.setPixmap(QPixmap.fromImage(image.scaledToWidth(
@@ -758,14 +749,22 @@ class MainWindow(QMainWindow):
 
             frames_progress.setValue(step+1)
             percent = (step+1) / num_of_frames * 100
-            frames_percent.setText(f"<b>Calculation: {percent:.2f}%</b>")
+            frames_per.setText(f"<b>Calculation: {percent:.2f}%</b>")
+
+            frames_abs.setText(f"<b>Frames: {step+1}/{num_of_frames}</b>")
 
             QCoreApplication.processEvents()
 
         if self.is_stopped:
             # User stopped calculation
-            shutil.rmtree(dir_name)
+            video.release()
+            cv2.destroyAllWindows()
+
             cr_vid_dialog.close()
+
+            msg = f"Aborted Video\n {video_name}\n in cache\n {str(dir_path)}"
+            QMessageBox.warning(self, "Video in cache", msg)
+
             self.log.exit("create_video", False)
             return
 
@@ -796,7 +795,8 @@ class MainWindow(QMainWindow):
 
         else:
 
-            self.log.warning("No directory selected!", True)
+            msg = f"Video\n {video_name}\n still in cache\n {str(dir_path)}"
+            QMessageBox.warning(self, "Video in cache", msg)
 
         os.chdir(current_dir)
 
@@ -880,6 +880,15 @@ class MainWindow(QMainWindow):
 
         temp_cp = copy.copy(self.cp)
 
+        def select_color():
+            new_col = QColorDialog.getColor(
+                initial=QColor("black"),
+                parent=self,
+                title="Select color"
+            )
+            if new_col.isValid():
+                self.bg_col = new_col
+
         #
         # Build the user interface
         #
@@ -914,6 +923,10 @@ class MainWindow(QMainWindow):
             main_layout.addLayout(layout)
             row = row + 1
             self.log.write(f"spin={spin}", False)
+
+        col_btn = QPushButton("Select background color", self)
+        col_btn.clicked.connect(select_color)
+        main_layout.addWidget(col_btn)
 
         QBtn = (
             QDialogButtonBox.Apply | QDialogButtonBox.Save | QDialogButtonBox.Close
