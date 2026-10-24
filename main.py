@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         self.app_name    = "qtFractals"
-        self.app_version = "0.7.2"
+        self.app_version = "0.7.5"
 
         self.setWindowTitle(f"{self.app_name} {self.app_version}")
 
@@ -878,16 +878,13 @@ class MainWindow(QMainWindow):
         spin   = [[None for _ in range(3)] for _ in range(4)]
         vector = [[0.00 for _ in range(3)] for _ in range(4)]
 
-        temp_cp = copy.copy(self.cp)
+        temp_cp       = copy.copy(self.cp)
+        self.bg_color = QColor("black")
 
         def select_color():
-            new_col = QColorDialog.getColor(
-                initial=QColor("black"),
-                parent=self,
-                title="Select color"
-            )
-            if new_col.isValid():
-                self.bg_col = new_col
+            new_bg_color = QColorDialog.getColor(parent=self, title="Select color")
+            if new_bg_color.isValid():
+                self.bg_color = new_bg_color
 
         #
         # Build the user interface
@@ -954,10 +951,18 @@ class MainWindow(QMainWindow):
 
         def preview_cp():
             vector_to_cp()
+            R, G, B, A = self.bg_color.getRgb()
+            self.cp['bg_R'] = R
+            self.cp['bg_G'] = G
+            self.cp['bg_B'] = B
             self.cp_showroom()
 
         def save_cp():
             vector_to_cp()
+            R, G, B , A = self.bg_color.getRgb()
+            self.cp['bg_R'] = R
+            self.cp['bg_G'] = G
+            self.cp['bg_B'] = B
             self.cp_list.append(self.cp)
             self.log.write(f"self.cp_list={self.cp_list}", False)
             self.cp_combo.addItem(self.cp['name'])

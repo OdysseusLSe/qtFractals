@@ -59,10 +59,10 @@ class FractalWorker(QObject):
         self.log = Logging("FractalWorker", True)
         self.log.entry("__init__", False)
 
-        self.frac_area        = copy.deepcopy(frac_area)
-        self.draw_dim         = copy.deepcopy(draw_dim)
+        self.frac_area        = copy.copy(frac_area)
+        self.draw_dim         = copy.copy(draw_dim)
         self.iter_lim         = iter_lim
-        self.cp               = copy.deepcopy(col_pal)
+        self.cp               = copy.copy(col_pal)
         self.current_frac_set = current_frac_set
         self.julia_c          = julia_c
         self.is_interim_pic   = is_interim_pic
@@ -98,8 +98,8 @@ class FractalWorker(QObject):
         )
         color = QColor()
 
-        # Fill background with black color
-        image.fill(QColor(0, 0, 0))
+        # Fill background with background color
+        image.fill(QColor(self.cp['bg_R'], self.cp['bg_G'], self.cp['bg_B']))
 
         x = y = 0
 
@@ -178,8 +178,8 @@ class FractalWorker(QObject):
         )
         color = QColor()
 
-        # Fill background with black color
-        image.fill(QColor(0, 0, 0))
+        # Fill background with background color
+        image.fill(QColor(self.cp['bg_R'], self.cp['bg_G'], self.cp['bg_B']))
 
         x = y = 0
 

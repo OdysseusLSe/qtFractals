@@ -61,8 +61,8 @@ class FractalFrame(QObject):
         image = QImage(dd_width, dd_height, QImage.Format.Format_RGB32)
         color = QColor()
 
-        # Fill background with black color
-        image.fill(QColor(0, 0, 0))
+        # Fill background with background color
+        image.fill(QColor(cp['bg_R'], cp['bg_G'], cp['bg_B']))
 
         x = y = 0
 

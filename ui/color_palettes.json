@@ -12,7 +12,10 @@
         "frequencyB": 1.0,
         "phaseR": 0.0,
         "phaseG": 0.0,
-        "phaseB": 0.5
+        "phaseB": 0.5,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
     },
     {
         "name": "Classic Rainbow",
@@ -27,7 +30,10 @@
         "frequencyB": 1.0,
         "phaseR": 0.0,
         "phaseG": 0.33,
-        "phaseB": 0.67
+        "phaseB": 0.67,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
     },
     {
         "name": "Deep Forest",
@@ -42,7 +48,10 @@
         "frequencyB": 1.0,
         "phaseR": 0.0,
         "phaseG": 0.05,
-        "phaseB": 0.33
+        "phaseB": 0.33,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
     },
     {
         "name": "Fire & Ice",
@@ -57,7 +66,10 @@
         "frequencyB": 1.0,
         "phaseR": 0.0,
         "phaseG": 0.15,
-        "phaseB": 0.33
+        "phaseB": 0.33,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
     },
     {
         "name": "Grayscale",
@@ -72,7 +84,10 @@
         "frequencyB": 1.0,
         "phaseR": 0.0,
         "phaseG": 0.0,
-        "phaseB": 0.0
+        "phaseB": 0.0,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
     },
     {
         "name": "Maximum Contrast",
@@ -87,7 +102,10 @@
         "frequencyB": 1.0,
         "phaseR": 0.0,
         "phaseG": 0.0,
-        "phaseB": 0.0
+        "phaseB": 0.0,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
     },
     {
         "name": "Neon Electric",
@@ -102,7 +120,10 @@
         "frequencyB": 1.0,
         "phaseR": 0.0,
         "phaseG": 0.33,
-        "phaseB": 0.67
+        "phaseB": 0.67,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
     },
     {
         "name": "Vintage Pastel",
@@ -117,6 +138,63 @@
         "frequencyB": 1.0,
         "phaseR": 0.3,
         "phaseG": 0.2,
-        "phaseB": 0.2
+        "phaseB": 0.2,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
+    },
+    {
+        "name": "Solaris Sunburn",
+        "brightnessB": 0.7,
+        "brightnessG": 0.8,
+        "brightnessR": 0.9,
+        "contrastB": 0.4,
+        "contrastG": 0.5,
+        "contrastR": 0.6,
+        "frequencyB": 0.6,
+        "frequencyG": 0.5,
+        "frequencyR": 0.4,
+        "phaseB": 0.3,
+        "phaseG": 0.2,
+        "phaseR": 0.1,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
+    },
+    {
+        "name": "Film Negative",
+        "brightnessB": 0.5,
+        "brightnessG": 0.5,
+        "brightnessR": 0.5,
+        "contrastB": 0.5,
+        "contrastG": 0.5,
+        "contrastR": 0.5,
+        "frequencyB": 0.5,
+        "frequencyG": 0.5,
+        "frequencyR": 0.5,
+        "phaseB": 0.5,
+        "phaseG": 0.5,
+        "phaseR": 0.5,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
+    },
+    {
+        "name": "Dark Blue",
+        "brightnessB": 0.9,
+        "brightnessG": 0.57,
+        "brightnessR": 0.5,
+        "contrastB": 0.8,
+        "contrastG": 0.8,
+        "contrastR": 0.82,
+        "frequencyB": 0.6,
+        "frequencyG": 0.5,
+        "frequencyR": 0.4,
+        "phaseB": 0.3,
+        "phaseG": 0.3,
+        "phaseR": 0.38,
+        "bg_R": 0,
+        "bg_G": 0,
+        "bg_B": 0
     }
 ]
