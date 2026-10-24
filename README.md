@@ -103,17 +103,17 @@ Of course you are able to select an existing color palette from a list.
 
 At the end of the rendering process you may select the directory the video will
 be stored. It replaces an existing file! During calculation and rendering a
-progress window woll be shown. The progress window shows the current set
-calculated/rendered. Here you may abort the whole video creation!
+progress window will be shown. The progress window shows the current set
+calculated/rendered as thumbnail. You may abort the whole video creation!
 
 <img src="docs/app_screenshot_progress.png" alt="Progress window" style="width:100%; height:auto;">
 
 **Attention**:
 
-- Take care, that the fractal set ratio (width x height) is the same as the
-  ratio of the resolution (width x height)!
+- Please take care, that the fractal set ratio (width x height) is the same as
+  the ratio of the resolution (width x height)!
 - During the calculation temporary a lot of video frames (FPS x Seconds) will be
-  generated. So take care to have enough disk space.
+  generated. Enough disk space is a prerequisite.
 
 
 ## Mouse and keyboard actions

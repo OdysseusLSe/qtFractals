@@ -23,6 +23,8 @@ import shutil
 import sys
 import time
 
+import numpy as np
+
 from pathlib import Path
 from platformdirs import user_data_dir, user_config_dir, user_cache_dir
 
@@ -157,13 +159,13 @@ class MainWindow(QMainWindow):
         self.setMinimumHeight(800)
 
         # Build labels
-        real_part_lbl = QLabel("<b>Origin of real part</b>:", self)
-        imag_part_lbl = QLabel("<b>Origin of imag. part</b>:", self)
-        width_lbl     = QLabel("<b>Width</b>:", self)
-        height_lbl    = QLabel("<b>Height</b>:", self)
-        xDim_lbl      = QLabel("<b>x-Dim</b>:", self)
-        yDim_lbl      = QLabel("<b>y-Dim</b>:", self)
-        iter_lim_lbl  = QLabel("<b>Iteration limit</b>:", self)
+        rp_lbl       = QLabel("<b>Origin of real part</b>:", self)
+        ip_lbl       = QLabel("<b>Origin of imag. part</b>:", self)
+        width_lbl    = QLabel("<b>Width</b>:", self)
+        height_lbl   = QLabel("<b>Height</b>:", self)
+        xDim_lbl     = QLabel("<b>x-Dim</b>:", self)
+        yDim_lbl     = QLabel("<b>y-Dim</b>:", self)
+        iter_lim_lbl = QLabel("<b>Iteration limit</b>:", self)
 
         #
         # Build line edits
@@ -171,17 +173,17 @@ class MainWindow(QMainWindow):
 
         bottom = self.frac_area['realOrigin']
         top    = self.frac_area['realOrigin'] + self.frac_area['realWidth']
-        self.real_part_edit = QLineEdit(self)
-        self.real_part_edit.setText(str(self.const_frac_area['realOrigin']))
-        self.real_part_edit.setValidator(QDoubleValidator(bottom, top, 15))
-        self.real_part_edit.setFixedWidth(160)
+        self.rp_edit = QLineEdit(self)
+        self.rp_edit.setText(str(self.const_frac_area['realOrigin']))
+        self.rp_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.rp_edit.setFixedWidth(160)
 
         bottom = self.frac_area['imagOrigin']
         top    = self.frac_area['imagOrigin'] + self.frac_area['imagHeight']
-        self.imag_part_edit = QLineEdit(self)
-        self.imag_part_edit.setText(str(self.const_frac_area['imagOrigin']))
-        self.imag_part_edit.setValidator(QDoubleValidator(bottom, top, 15))
-        self.imag_part_edit.setFixedWidth(160)
+        self.ip_edit = QLineEdit(self)
+        self.ip_edit.setText(str(self.const_frac_area['imagOrigin']))
+        self.ip_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.ip_edit.setFixedWidth(160)
 
         bottom = 0.00000000001
         top    = self.frac_area['realWidth']
@@ -273,8 +275,8 @@ class MainWindow(QMainWindow):
 
         # First row
 
-        layout_grid.addWidget(real_part_lbl, 0, 0)
-        layout_grid.addWidget(self.real_part_edit, 0, 1)
+        layout_grid.addWidget(rp_lbl, 0, 0)
+        layout_grid.addWidget(self.rp_edit, 0, 1)
 
         layout_grid.addWidget(width_lbl, 0, 3)
         layout_grid.addWidget(self.width_edit, 0, 4)
@@ -294,8 +296,8 @@ class MainWindow(QMainWindow):
 
         # Second row
 
-        layout_grid.addWidget(imag_part_lbl, 1, 0)
-        layout_grid.addWidget(self.imag_part_edit, 1, 1)
+        layout_grid.addWidget(ip_lbl, 1, 0)
+        layout_grid.addWidget(self.ip_edit, 1, 1)
 
         layout_grid.addWidget(height_lbl, 1, 3)
         layout_grid.addWidget(self.height_edit, 1, 4)
@@ -563,30 +565,31 @@ class MainWindow(QMainWindow):
 
     def create_video(
             self,
-            real_part_edit,
-            imag_part_edit,
+            rp_edit,
+            ip_edit,
             width_edit,
             height_edit,
             iter_lim,
             dd_width,
             dd_height,
-            cp,
-            fps = 30,
-            sec = 5
+            color_palette,
+            fps = 10,
+            sec = 1
         ):
         self.log.entry("create_video", False)
 
         self.is_stopped = False
+        cp = copy.copy(color_palette)
 
         # From string to float
 
         real_part = []
-        real_part.append(float(real_part_edit[0].text()))
-        real_part.append(float(real_part_edit[1].text()))
+        real_part.append(float(rp_edit[0].text()))
+        real_part.append(float(rp_edit[1].text()))
 
         imag_part = []
-        imag_part.append(float(imag_part_edit[0].text()))
-        imag_part.append(float(imag_part_edit[1].text()))
+        imag_part.append(float(ip_edit[0].text()))
+        imag_part.append(float(ip_edit[1].text()))
 
         width = []
         width.append(float(width_edit[0].text()))
@@ -596,23 +599,28 @@ class MainWindow(QMainWindow):
         height.append(float(height_edit[0].text()))
         height.append(float(height_edit[1].text()))
 
+        # Close zoom dialog of method "zoom_video"
+        self.log.exit("ok_clicked", False)
+        self.log.exit("zoom_video", False)
+        self.zoom_dialog.close()
+
         # calculate steps between pics
 
+        zoom_in = True
         num_of_frames = fps * sec
-        rps = abs((real_part[0] - real_part[1]) / num_of_frames)
-        ips = abs((imag_part[0] - imag_part[1]) / num_of_frames)
-        wps = abs((width[0] - width[1]) / num_of_frames)
-        hps = abs((height[0] - height[1]) / num_of_frames)
-
-        # Create directory for video frames
-
-        dir_time = time.time()
-        dir_name = f"{self.cache_dir}/{self.app_name}.video-{dir_time}"
-        dir_path = Path(dir_name)
-        try:
-            dir_path.mkdir(exist_ok=True, parents=True)
-        except BaseException as error:
-            self.log.error(f"Directory for video frames ({error})!", True)
+        if width[0] > width[1]:
+            # zoom in
+            rps = abs((real_part[0] - real_part[1]) / num_of_frames)
+            ips = abs((imag_part[0] - imag_part[1]) / num_of_frames)
+            wps = abs((width[0] - width[1]) / num_of_frames)
+            hps = abs((height[0] - height[1]) / num_of_frames)
+        else:
+            # zoom out
+            zoom_in = False
+            rps = abs((real_part[1] - real_part[0]) / num_of_frames)
+            ips = abs((imag_part[1] - imag_part[0]) / num_of_frames)
+            wps = abs((width[1] - width[0]) / num_of_frames)
+            hps = abs((height[1] - height[0]) / num_of_frames)
 
         # Build non-modal dialog to show progress
 
@@ -637,15 +645,6 @@ class MainWindow(QMainWindow):
         frames_percent.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(frames_percent)
 
-        render_progress = QtWidgets.QProgressBar()
-        render_progress.setRange(0, num_of_frames)
-        render_progress.setValue(0)
-        main_layout.addWidget(render_progress)
-
-        render_percent = QLabel("<b>Rendering: 0%</b>")
-        render_percent.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(render_percent)
-
         button_box = QDialogButtonBox(QDialogButtonBox.Abort)
         main_layout.addWidget(button_box)
 
@@ -659,24 +658,53 @@ class MainWindow(QMainWindow):
 
         button_box.clicked.connect(button_clicked)
 
-        # Start calculation of frames
+        # Create directory for video frames
+        dir_time = time.time()
+        dir_name = f"{self.cache_dir}/{self.app_name}.video-{dir_time}"
+        dir_path = Path(dir_name)
+        try:
+            dir_path.mkdir(exist_ok=True, parents=True)
+        except BaseException as error:
+            self.log.error(f"Directory for video frames ({error})!", True)
 
-        self.ff = FractalFrame()
-        image = QImage()
+        # Define compression and file name for rendering
+        video_name = f"{self.app_name}-{dir_time}.mp4"
+        video_full_path = dir_path.joinpath(video_name)
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video = cv2.VideoWriter(
+            str(video_full_path),
+            fourcc,
+            fps,
+            (dd_width, dd_height)
+        )
 
+        self.ff         = FractalFrame()
+        image           = QImage()
         frame_name_list = []
+
+        #
+        # Start calculation of frames and rendering of video
+        #
 
         for step in range(0, num_of_frames, 1):
 
             if self.is_stopped:
                 break
 
-            frac_area = {
-                'realOrigin': real_part[0] + step * rps,
-                'imagOrigin': imag_part[0] + step * ips,
-                'realWidth' : width[0] - step * wps,
-                'imagHeight': height[0] - step * hps
-            }
+            if zoom_in:
+                frac_area = {
+                    'realOrigin': real_part[0] + step * rps,
+                    'imagOrigin': imag_part[0] + step * ips,
+                    'realWidth' : width[0] - step * wps,
+                    'imagHeight': height[0] - step * hps
+                }
+            else:
+                frac_area = {
+                    'realOrigin': real_part[0] - step * rps,
+                    'imagOrigin': imag_part[0] - step * ips,
+                    'realWidth' : width[0] + step * wps,
+                    'imagHeight': height[0] + step * hps
+                }
 
             image = self.ff.mandelbrot_frame(
                 frac_area,
@@ -688,19 +716,27 @@ class MainWindow(QMainWindow):
 
             frame_name = f"{step:06d}.png"
             frame_name_list.append(frame_name)
-            full_path = dir_path.joinpath(frame_name)
-            self.log.write(f"full_path={full_path}", False)
+            frame_full_path = dir_path.joinpath(frame_name)
+            self.log.write(f"frame_full_path={frame_full_path}", False)
 
-            result = image.save(str(full_path), None, 100)
+            result = image.save(str(frame_full_path), None, 100)
             if result:
                 self.log.write("Frame successful saved.", False)
             else:
                 self.log.error("Frame not saved!", True)
 
+            # Create thumbnail for progress window
             thumbnail.setPixmap(QPixmap.fromImage(image.scaledToWidth(
                 150,
                 Qt.TransformationMode.FastTransformation
             )))
+
+            image = image.convertToFormat(QImage.Format.Format_RGB32)
+            w     = image.width()
+            h     = image.height()
+            ptr   = image.bits()
+            arr   = np.frombuffer(ptr, dtype=np.uint8).reshape((h, w, 4))
+            video.write(cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR))
 
             frames_progress.setValue(step+1)
             percent = (step+1) / num_of_frames * 100
@@ -715,40 +751,16 @@ class MainWindow(QMainWindow):
             self.log.exit("create_video", False)
             return
 
-        # Render video
+        video.release()
+        cv2.destroyAllWindows()
 
         current_dir = os.getcwd()
         os.chdir(dir_name)
-        self.log.write(f"Build video from frames in {dir_name}", False)
-
-        self.log.write(f"frame_name_list={frame_name_list}", False)
-        self.log.write(f"dd_with,dd_height={dd_width},{dd_height}", False)
-        self.log.write(f"fps,sec={fps},{sec}", False)
-
-        # Render video with created Mandelbrot fractal sets as frames
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter(
-            f"{self.app_name}-{dir_time}.mp4",
-            fourcc,
-            fps,
-            (dd_width, dd_height)
-        )
-        loop = 0
-        for frame in frame_name_list:
-            video.write(cv2.imread(os.path.join("./", frame)))
-            render_progress.setValue(loop+1)
-            percent = (loop+1) / num_of_frames * 100
-            render_percent.setText(f"<b>Rendering: {percent:.2f}%</b>")
-            loop = loop + 1
-            self.log.write(f"frame={frame}", False)
-        video.release()
-        cv2.destroyAllWindows()
 
         # Delete progress dialog for calculation and rendering
         cr_vid_dialog.close()
 
         # Select directory where to save the newly created video to
-        video_full_path  = dir_path.joinpath(f"{self.app_name}-{dir_time}.mp4")
         folder_path = QFileDialog.getExistingDirectory(
             self,
             caption="Select folder to save video",
@@ -756,10 +768,16 @@ class MainWindow(QMainWindow):
             options=QFileDialog.ShowDirsOnly
         )
         if folder_path:
+
             video_full_path.copy_into(folder_path, preserve_metadata=True)
             os.chdir(current_dir)
             shutil.rmtree(dir_name)
+
+            msg = f"Video\n {video_name}\n successful saved in\n {folder_path}"
+            QMessageBox.information(self, "Video saved", msg)
+
         else:
+
             self.log.warning("No directory selected!", True)
 
         os.chdir(current_dir)
@@ -968,8 +986,8 @@ class MainWindow(QMainWindow):
     def reset(self):
         self.log.entry("reset", False)
 
-        self.real_part_edit.setText(str(self.const_frac_area['realOrigin']))
-        self.imag_part_edit.setText(str(self.const_frac_area['imagOrigin']))
+        self.rp_edit.setText(str(self.const_frac_area['realOrigin']))
+        self.ip_edit.setText(str(self.const_frac_area['imagOrigin']))
         self.width_edit.setText(str(self.const_frac_area['realWidth']))
         self.height_edit.setText(str(self.const_frac_area['imagHeight']))
 
@@ -1164,8 +1182,8 @@ class MainWindow(QMainWindow):
         self.reset_btn.setEnabled(False)
         self.start_btn.setEnabled(False)
         self.frac_area = {
-            'realOrigin': float(self.real_part_edit.text()),
-            'imagOrigin': float(self.imag_part_edit.text()),
+            'realOrigin': float(self.rp_edit.text()),
+            'imagOrigin': float(self.ip_edit.text()),
             'realWidth' : float(self.width_edit.text()),
             'imagHeight': float(self.height_edit.text())
         }
@@ -1234,8 +1252,8 @@ class MainWindow(QMainWindow):
 
             # Adapt text fields to current values
 
-            self.real_part_edit.setText(str(self.frac_area['realOrigin']))
-            self.imag_part_edit.setText(str(self.frac_area['imagOrigin']))
+            self.rp_edit.setText(str(self.frac_area['realOrigin']))
+            self.ip_edit.setText(str(self.frac_area['imagOrigin']))
             self.width_edit.setText(str(self.frac_area['realWidth']))
             self.height_edit.setText(str(self.frac_area['imagHeight']))
 
@@ -1278,17 +1296,17 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout(self.zoom_dialog)
 
-        title = []
-        real_part_edit = []
-        imag_part_edit = []
-        width_edit     = []
-        height_edit    = []
-        grab_btn       = []
+        title       = []
+        rp_edit     = []
+        ip_edit     = []
+        width_edit  = []
+        height_edit = []
+        grab_btn    = []
 
         def grab(item):
             frac_area, dd, iter_lim, fd, jc = self.fw.get_parameters()
-            real_part_edit[item].setText(str(frac_area['realOrigin']))
-            imag_part_edit[item].setText(str(frac_area['imagOrigin']))
+            rp_edit[item].setText(str(frac_area['realOrigin']))
+            ip_edit[item].setText(str(frac_area['imagOrigin']))
             width_edit[item].setText(str(frac_area['realWidth']))
             height_edit[item].setText(str(frac_area['imagHeight']))
 
@@ -1312,22 +1330,20 @@ class MainWindow(QMainWindow):
                 label = QLabel("<b>Origin of real part</b>:", self)
                 bottom = self.frac_area['realOrigin']
                 top    = self.frac_area['realOrigin'] + self.frac_area['realWidth']
-                real_part_edit.append(QLineEdit(self))
-                real_part_edit[loop].setText(str(self.const_frac_area['realOrigin']))
-                real_part_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
-                real_part_edit[loop].setFixedWidth(160)
+                rp_edit.append(QLineEdit(self))
+                rp_edit[loop].setText(str(self.const_frac_area['realOrigin']))
+                rp_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
                 grid.addWidget(label, 0, 0)
-                grid.addWidget(real_part_edit[loop], 0, 1)
+                grid.addWidget(rp_edit[loop], 0, 1)
 
                 label = QLabel("<b>Origin of imag. part</b>:", self)
                 bottom = self.frac_area['imagOrigin']
                 top    = self.frac_area['imagOrigin'] + self.frac_area['imagHeight']
-                imag_part_edit.append(QLineEdit(self))
-                imag_part_edit[loop].setText(str(self.const_frac_area['imagOrigin']))
-                imag_part_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
-                imag_part_edit[loop].setFixedWidth(160)
+                ip_edit.append(QLineEdit(self))
+                ip_edit[loop].setText(str(self.const_frac_area['imagOrigin']))
+                ip_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
                 grid.addWidget(label, 1, 0)
-                grid.addWidget(imag_part_edit[loop], 1, 1)
+                grid.addWidget(ip_edit[loop], 1, 1)
 
                 label = QLabel("<b>Width</b>:", self)
                 bottom = 0.00000000001
@@ -1335,7 +1351,6 @@ class MainWindow(QMainWindow):
                 width_edit.append(QLineEdit(self))
                 width_edit[loop].setText(str(self.const_frac_area['realWidth']))
                 width_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
-                width_edit[loop].setFixedWidth(160)
                 grid.addWidget(label, 2, 0)
                 grid.addWidget(width_edit[loop], 2, 1)
 
@@ -1345,7 +1360,6 @@ class MainWindow(QMainWindow):
                 height_edit.append(QLineEdit(self))
                 height_edit[loop].setText(str(self.const_frac_area['imagHeight']))
                 height_edit[loop].setValidator(QDoubleValidator(bottom, top, 15))
-                height_edit[loop].setFixedWidth(160)
                 grid.addWidget(label, 3, 0)
                 grid.addWidget(height_edit[loop], 3, 1)
 
@@ -1417,16 +1431,16 @@ class MainWindow(QMainWindow):
 
         label  = QLabel("<b>FPS</b>:", self)
         fps_edit = QLineEdit(self)
-        fps_edit.setText("30")
-        fps_edit.setValidator(QIntValidator(25, 90))
+        fps_edit.setText("10")
+        fps_edit.setValidator(QIntValidator(10, 90))
         fps_edit.setFixedWidth(50)
         row.addWidget(label)
         row.addWidget(fps_edit)
 
         label  = QLabel("<b>Seconds</b>:", self)
         sec_edit = QLineEdit(self)
-        sec_edit.setText("10")
-        sec_edit.setValidator(QIntValidator(5, 600))
+        sec_edit.setText("1")
+        sec_edit.setValidator(QIntValidator(1, 600))
         sec_edit.setFixedWidth(50)
         row.addWidget(label)
         row.addWidget(sec_edit)
@@ -1440,8 +1454,8 @@ class MainWindow(QMainWindow):
         def ok_clicked():
             self.log.entry("ok_clicked", False)
             self.create_video(
-                real_part_edit,
-                imag_part_edit,
+                rp_edit,
+                ip_edit,
                 width_edit,
                 height_edit,
                 int(iter_lim_edit.text()),
@@ -1452,9 +1466,6 @@ class MainWindow(QMainWindow):
                 int(sec_edit.text())
             )
             self.cp = copy.copy(temp_cp)
-            self.log.exit("ok_clicked", False)
-            self.log.exit("zoom_video", False)
-            self.zoom_dialog.close()
 
         def cancel_clicked():
             self.log.exit("zoom_video", False)
