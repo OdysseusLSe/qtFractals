@@ -17,6 +17,7 @@
 #
 
 import json
+import logging
 import time
 
 from pathlib import Path
@@ -46,7 +47,7 @@ class FractalHistory():
         super().__init__()
 
         self.log = Logging("FractalHistory", True)
-        self.log.entry("__init__", False)
+        self.log.write("__init__")
 
         # 1. Für Benutzerdaten (z. B. Datenbanken, Speicherstände)
         data_dir = user_data_dir(app_name, "OdysseusLSe")
@@ -59,7 +60,7 @@ class FractalHistory():
 
         self.dir = Path(f"{data_dir}/{app_name}.history")
         self.file_name = self.dir.joinpath(file_name)
-        self.log.write(f"file_name={self.file_name}", False)
+        self.log.write(f"file_name={self.file_name}")
 
         try:
             self.dir.mkdir(exist_ok=True, parents=True)
@@ -69,18 +70,18 @@ class FractalHistory():
         self.repeat_item = False
         self.item_to_repeat = -1
 
-        self.log.exit("__init__", False)
+        self.log.write("__init__")
 
     #
     # -----------------------------------------------
     #
 
     def build_history_item(self, history_item):
-        self.log.entry("build_history_item", False)
-        self.log.write(f"history_item={history_item}", False)
+        self.log.write("build_history_item")
+        self.log.write(f"history_item={history_item}")
 
         tn_path_name = self.dir.joinpath(history_item['thumbnail'])
-        self.log.write(f"tn_path_name={tn_path_name}", False)
+        self.log.write(f"tn_path_name={tn_path_name}")
 
         ro = str(history_item['frac_area']['realOrigin'])
         io = str(history_item['frac_area']['imagOrigin'])
@@ -92,7 +93,7 @@ class FractalHistory():
         ct = str(history_item['calc_time'])
 
         epoch_time = history_item['thumbnail'].rsplit('.', 1)[0]
-        self.log.write(f"epoch_time={epoch_time}", False)
+        self.log.write(f"epoch_time={epoch_time}")
 
         et = float(epoch_time)
         ts = time.strftime("%Y.%m.%d-%H:%M:%S", time.gmtime(et))
@@ -115,7 +116,7 @@ class FractalHistory():
         item = QListWidgetItem(f"{text}")
         item.setIcon(QIcon(str(tn_path_name)))
 
-        self.log.exit("build_history_item", False)
+        self.log.write("build_history_item")
 
         return item
 
@@ -131,7 +132,7 @@ class FractalHistory():
     #
 
     def load_history(self):
-        self.log.entry("load_history", False)
+        self.log.write("load_history")
 
         history_data = []
         try:
@@ -140,7 +141,7 @@ class FractalHistory():
         except BaseException as error:
             self.log.warning(f"Warning ({error}) with reading history!", True)
 
-        self.log.exit("load_history", False)
+        self.log.write("load_history")
         return history_data
 
     #
@@ -155,17 +156,17 @@ class FractalHistory():
     #
 
     def save_history(self, history_data, thumbnail=None, thumbnail_name=None):
-        self.log.entry("save_history", False)
+        self.log.write("save_history")
 
-        self.log.write(f"history_data={history_data}", False)
+        self.log.write(f"history_data={history_data}")
 
         if thumbnail is not None:
             tn_path_name = self.dir.joinpath(thumbnail_name)
-            self.log.write(f"tn_path_name={tn_path_name}", False)
+            self.log.write(f"tn_path_name={tn_path_name}")
 
             result = thumbnail.save(str(tn_path_name), None, 100)
             if result:
-                self.log.write("Thumbnail successful saved.", False)
+                self.log.write("Thumbnail successful saved.")
             else:
                 self.log.error("Thumbnail not saved!", True)
 
@@ -175,14 +176,14 @@ class FractalHistory():
         except BaseException as error:
             self.log.error(f"Error ({error}) with saving history!", True)
 
-        self.log.exit("save_history", False)
+        self.log.write("save_history")
 
     #
     # -----------------------------------------------
     #
 
     def show_history_list(self, history_data):
-        self.log.entry("show_history_list", False)
+        self.log.write("show_history_list")
 
         self.repeat_item = False
         self.item_to_repeat = -1
@@ -199,7 +200,7 @@ class FractalHistory():
         list_widget.setSpacing(5)
 
         for history_item in history_data:
-            self.log.write(f"history_item={history_item}", False)
+            self.log.write(f"history_item={history_item}")
             item = self.build_history_item(history_item)
             list_widget.addItem(item)
 
@@ -214,31 +215,31 @@ class FractalHistory():
         #------------------------------------------------------------
 
         def on_repeat_clicked():
-            self.log.write(f"Repeat button clicked.", False)
+            self.log.write(f"Repeat button clicked.")
             current_row = list_widget.currentRow()
             if current_row >= 0:
-                self.log.write(f"current_row={current_row}", False)
+                self.log.write(f"current_row={current_row}")
                 selected_item = history_data[current_row]
-                self.log.write(f"Repeat of {current_row}: {selected_item}", False)
+                self.log.write(f"Repeat of {current_row}: {selected_item}")
                 self.history_dialog.accept()
                 self.repeat_item = True
                 self.item_to_repeat = current_row
             else:
-                self.log.write("No item selected!", False)
+                self.log.write("No item selected!")
 
         def on_delete_clicked():
-            self.log.write(f"Delete button clicked.", False)
+            self.log.write(f"Delete button clicked.")
             current_row = list_widget.currentRow()
             if current_row >= 0:
-                self.log.write(f"current_row={current_row}", False)
+                self.log.write(f"current_row={current_row}")
                 list_widget.takeItem(current_row)
 
                 tn_path_name = self.dir.joinpath(history_data[current_row]['thumbnail'])
-                self.log.write(f"tn_path_name={tn_path_name}", False)
-                self.log.write(f"item to delete: {history_data[current_row]}", False)
+                self.log.write(f"tn_path_name={tn_path_name}")
+                self.log.write(f"item to delete: {history_data[current_row]}")
 
                 deleted_item = history_data.pop(current_row)
-                self.log.write(f"Item deleted: {deleted_item}", False)
+                self.log.write(f"Item deleted: {deleted_item}")
 
                 # Delete appropriate thumbnail
                 p = Path(tn_path_name)
@@ -246,7 +247,7 @@ class FractalHistory():
 
                 self.save_history(history_data)
             else:
-                self.log.write("No item for deletion selected.", False)
+                self.log.write("No item for deletion selected.")
 
         # Connect buttons on actions
         btn_repeat.clicked.connect(on_repeat_clicked)
@@ -264,4 +265,4 @@ class FractalHistory():
 
         self.history_dialog.exec()
 
-        self.log.exit("show_history_list", False)
+        self.log.write("show_history_list")

@@ -16,7 +16,7 @@
 # If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 #
 
-from PySide6.QtCore import QDateTime
+import logging
 
 
 class Logging():
@@ -28,30 +28,29 @@ class Logging():
         self.n = 30 # minimum space
 
     def build_output(self):
-        current_time = QDateTime.currentDateTime().toString("hh:mm:ss")
-        self.output_string = f"[{current_time}]-{self.func_name}: "
+        self.output_string = f"[{self.func_name}: "
 
-    def entry(self, info, local_debug=True):
+    def entry(self, info, local_debug=False):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + "->-" + info)
+            logging.debug(self.output_string.ljust(self.n) + "->-" + info)
 
-    def error(self, info, local_debug=True):
+    def error(self, info, local_debug=False):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + "-E-" + info)
+            logging.debug(self.output_string.ljust(self.n) + "-E-" + info)
 
-    def exit(self, info, local_debug=True):
+    def exit(self, info, local_debug=False):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + "-<-" + info)
+            logging.debug(self.output_string.ljust(self.n) + "-<-" + info)
 
-    def warning(self, info, local_debug=True):
+    def warning(self, info, local_debug=False):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + "-W-" + info)
+            logging.debug(self.output_string.ljust(self.n) + "-W-" + info)
 
-    def write(self, info, local_debug=True):
+    def write(self, info, local_debug=False):
         if self.global_debug and local_debug:
             self.build_output()
-            print(self.output_string.ljust(self.n) + "---" + info)
+            logging.debug(self.output_string.ljust(self.n) + "---" + info)
