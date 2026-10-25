@@ -25,7 +25,7 @@ import sys
 import time
 
 import logging as pylog
-import numpy   as np
+import numpy as np
 
 from pathlib import Path
 from platformdirs import user_data_dir, user_config_dir, user_cache_dir
