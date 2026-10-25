@@ -622,20 +622,11 @@ class MainWindow(QMainWindow):
 
         zoom_in = width[0] > width[1]
         num_of_frames = fps * sec
-        if zoom_in:
-            # For zoom-in I use an easing formula based on "Ease-Out"
-            power = 4  # Higher value increases the slow down at the end
-            ease_out = []
-            for step in range(num_of_frames):
-                t = step / (num_of_frames - 1)
-                ease_out.append(1 - ((1 - t) ** power))
-        else:
-            # For zoom-out I use an easing formula based on "Ease-In"
-            power = 4  # Higher value increases the accelaration at the end
-            ease_in = []
-            for step in range(num_of_frames):
-                t = step / (num_of_frames - 1)
-                ease_in.append(t ** power)
+        ease_data = []
+        power = 4
+        for step in range(num_of_frames):
+            t = step / (num_of_frames - 1)
+            ease_data.append(1 - ((1 - t) ** power) if zoom_in else t ** power)
 
         # Build non-modal dialog to show progress
 
@@ -699,7 +690,6 @@ class MainWindow(QMainWindow):
 
         self.ff         = FractalFrame()
         image           = QImage()
-        frame_name_list = []
 
         #
         # Start calculation of frames and rendering of video
@@ -710,7 +700,7 @@ class MainWindow(QMainWindow):
             if self.is_stopped:
                 break
 
-            factor = ease_out[step] if zoom_in else ease_in[step]
+            factor = ease_data[step]
 
             current_width  = width[0]  + (width[1]  - width[0])  * factor
             current_height = height[0] + (height[1] - height[0]) * factor
