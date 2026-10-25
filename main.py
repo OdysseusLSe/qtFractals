@@ -852,7 +852,10 @@ class MainWindow(QMainWindow):
             json_doc = QJsonDocument.fromJson(cp_file_data)
             self.cp_list = json_doc.toVariant()
         else:
-            self.log.error(f"Loading color palettes:{file.errorString()}!", True)
+            self.log.error(
+                f"Loading color palettes: {file.errorString()}!",
+                True
+            )
             self.log.exit("load_color_palettes", False)
             return None
 

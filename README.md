@@ -72,7 +72,7 @@ generates a new history entry!
 <img src="docs/app_screenshot_new_cp.png" alt="New color palette window" style="width:100%; height:auto;">
 
 With this window you may define a new color palette. At the top of the window
-you may provide a name for the new color palette. Pressing "Apply" shows a small
+you can provide a name for the new color palette. Pressing "Apply" shows a small
 Mandelbrot fractal set with new parameters as a preview. Pressing "Save" saves
 the new defined color palette by re-calculating a default Mandelbrot fractal set
 and adding it to the history list. Pressing "Close" closes the window.
@@ -83,6 +83,9 @@ of this is [Inigo Quilez](https://iquilezles.org/)):
 
 - [Procedural Color Palette](https://iquilezles.org/articles/palettes/)
 - [A simple formula to create beautiful color palettes](https://www.youtube.com/shorts/TH3OTy5fTog)
+
+Additionally you are able to change the background color (default black). The
+background color ist the color of the origin fractal set!
 
 **Attention**:
 User defined color palettes are stored in the history list only. If you delete

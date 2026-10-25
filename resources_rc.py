@@ -6,7 +6,7 @@
 from PySide6 import QtCore
 
 qt_resource_data = b"\
-\x00\x00\x1d\xae\
+\x00\x00\x1e7\
 #\
  qtFractals\x0aApp \
 to calculate fra\
@@ -215,7 +215,7 @@ indow you may de\
 fine a new color\
  palette. At the\
  top of the wind\
-ow\x0ayou may provi\
+ow\x0ayou can provi\
 de a name for th\
 e new color pale\
 tte. Pressing \x22A\
@@ -258,231 +258,240 @@ eate beautiful c\
 olor palettes](h\
 ttps://www.youtu\
 be.com/shorts/TH\
-3OTy5fTog)\x0a\x0a**At\
-tention**:\x0aUser \
-defined color pa\
-lettes are store\
-d in the history\
- list only. If y\
-ou delete\x0athe sp\
-ecific history i\
-tem the user def\
-ined color palet\
-te will be lost!\
-\x0a\x0a## Create a zo\
-om video\x0a\x0a<!-- !\
-[Zoom video para\
-meters window](d\
-ocs/app_screensh\
-ot_zoom.png) -->\
-\x0a<img src=\x22docs/\
-app_screenshot_z\
-oom.png\x22 alt=\x22Zo\
-om video paramet\
-ers window\x22 styl\
-e=\x22width:100%; h\
-eight:auto;\x22>\x0a\x0aT\
-o build a zoom v\
-ideo you have to\
- provide the par\
-ameters of two M\
-andelbrot\x0afracta\
-l sets: starting\
- point and endin\
-g point. You may\
- provide the dat\
-a manually\x0aor gr\
-ab it from the c\
-urrent Mandelbro\
-t fractal set (p\
-referred method)\
-.\x0aAdditionally y\
-ou may select th\
-e resolution (wi\
-dth and height),\
- frames per\x0aseco\
-nd, and duration\
- (seconds) of th\
-e video.\x0a\x0aOf cou\
-rse you are able\
- to select an ex\
-isting color pal\
-ette from a list\
-.\x0a\x0aAt the end of\
- the rendering p\
-rocess you may s\
-elect the direct\
-ory the video wi\
-ll\x0abe stored. It\
- replaces an exi\
-sting file! Duri\
-ng calculation a\
-nd rendering a\x0ap\
-rogress window w\
-ill be shown. Th\
-e progress windo\
-w shows the curr\
-ent set\x0acalculat\
-ed/rendered as t\
-humbnail. You ma\
-y abort the whol\
-e video creation\
-!\x0a\x0a<img src=\x22doc\
-s/app_screenshot\
-_progress.png\x22 a\
-lt=\x22Progress win\
+3OTy5fTog)\x0a\x0aAddi\
+tionally you are\
+ able to change \
+the background c\
+olor (default bl\
+ack). The\x0abackgr\
+ound color ist t\
+he color of the \
+origin fractal s\
+et!\x0a\x0a**Attention\
+**:\x0aUser defined\
+ color palettes \
+are stored in th\
+e history list o\
+nly. If you dele\
+te\x0athe specific \
+history item the\
+ user defined co\
+lor palette will\
+ be lost!\x0a\x0a## Cr\
+eate a zoom vide\
+o\x0a\x0a<!-- ![Zoom v\
+ideo parameters \
+window](docs/app\
+_screenshot_zoom\
+.png) -->\x0a<img s\
+rc=\x22docs/app_scr\
+eenshot_zoom.png\
+\x22 alt=\x22Zoom vide\
+o parameters win\
 dow\x22 style=\x22widt\
 h:100%; height:a\
-uto;\x22>\x0a\x0a**Attent\
-ion**:\x0a\x0a- Please\
- take care, that\
- the fractal set\
- ratio (width x \
-height) is the s\
-ame as\x0a  the rat\
-io of the resolu\
-tion (width x he\
-ight)!\x0a- During \
-the calculation \
-temporary a lot \
-of video frames \
-(FPS x Seconds) \
-will be\x0a  genera\
-ted. Enough disk\
- space is a prer\
-equisite.\x0a\x0a\x0a## M\
-ouse and keyboar\
-d actions\x0a\x0a### J\
-ulia set\x0a\x0aYou ma\
-y switch from th\
-e Mandelbrot set\
- to the Julia se\
-t by pressing [C\
-TRL]+LMB\x0a(Window\
-s/Linux) or [Cmd\
-(\xe2\x8c\x98)]+LMB (Appl\
-e) on any point \
-of the calculate\
-d set.\x0aImmediatl\
-y the calculatio\
-n starts for the\
- Julia set at th\
-is point. Of cou\
-rse\x0ayou may zoom\
--in in the Julia\
- set, too. The f\
-ractal indicator\
- (see item 5 abo\
-ve)\x0aswitches acc\
-ordingly.\x0a\x0a### M\
-enu actions\x0a\x0a- [\
-CTRL]+[M] (Windo\
-ws/Linux) or [Cm\
-d(\xe2\x8c\x98)]+[N] (App\
-le): Show \x22Zoom \
-video\x22 window\x0a- \
-[CTRL]+[N] (Wind\
-ows/Linux) or [C\
-md(\xe2\x8c\x98)]+[N] (Ap\
-ple): Show \x22New \
-color palette\x22 w\
-indow\x0a- [CTRL]+[\
-Q] (Windows/Linu\
+uto;\x22>\x0a\x0aTo build\
+ a zoom video yo\
+u have to provid\
+e the parameters\
+ of two Mandelbr\
+ot\x0afractal sets:\
+ starting point \
+and ending point\
+. You may provid\
+e the data manua\
+lly\x0aor grab it f\
+rom the current \
+Mandelbrot fract\
+al set (preferre\
+d method).\x0aAddit\
+ionally you may \
+select the resol\
+ution (width and\
+ height), frames\
+ per\x0asecond, and\
+ duration (secon\
+ds) of the video\
+.\x0a\x0aOf course you\
+ are able to sel\
+ect an existing \
+color palette fr\
+om a list.\x0a\x0aAt t\
+he end of the re\
+ndering process \
+you may select t\
+he directory the\
+ video will\x0abe s\
+tored. It replac\
+es an existing f\
+ile! During calc\
+ulation and rend\
+ering a\x0aprogress\
+ window will be \
+shown. The progr\
+ess window shows\
+ the current set\
+\x0acalculated/rend\
+ered as thumbnai\
+l. You may abort\
+ the whole video\
+ creation!\x0a\x0a<img\
+ src=\x22docs/app_s\
+creenshot_progre\
+ss.png\x22 alt=\x22Pro\
+gress window\x22 st\
+yle=\x22width:100%;\
+ height:auto;\x22>\x0a\
+\x0a**Attention**:\x0a\
+\x0a- Please take c\
+are, that the fr\
+actal set ratio \
+(width x height)\
+ is the same as\x0a\
+  the ratio of t\
+he resolution (w\
+idth x height)!\x0a\
+- During the cal\
+culation tempora\
+ry a lot of vide\
+o frames (FPS x \
+Seconds) will be\
+\x0a  generated. En\
+ough disk space \
+is a prerequisit\
+e.\x0a\x0a\x0a## Mouse an\
+d keyboard actio\
+ns\x0a\x0a### Julia se\
+t\x0a\x0aYou may switc\
+h from the Mande\
+lbrot set to the\
+ Julia set by pr\
+essing [CTRL]+LM\
+B\x0a(Windows/Linux\
+) or [Cmd(\xe2\x8c\x98)]+\
+LMB (Apple) on a\
+ny point of the \
+calculated set.\x0a\
+Immediatly the c\
+alculation start\
+s for the Julia \
+set at this poin\
+t. Of course\x0ayou\
+ may zoom-in in \
+the Julia set, t\
+oo. The fractal \
+indicator (see i\
+tem 5 above)\x0aswi\
+tches accordingl\
+y.\x0a\x0a### Menu act\
+ions\x0a\x0a- [CTRL]+[\
+M] (Windows/Linu\
 x) or [Cmd(\xe2\x8c\x98)]\
-+[Q] (Apple): Qu\
-it the applicati\
-on\x0a- [CTRL]+[S] \
-(Windows/Linux) \
-or [Cmd(\xe2\x8c\x98)]+[S\
-] (Apple): Save \
-the current imag\
-e\x0a- [CTRL]+[T] (\
-Windows/Linux) o\
-r [Cmd(\xe2\x8c\x98)]+[T]\
- (Apple): Show t\
-he \x22History\x22 win\
-dow\x0a\x0a### Stop ru\
-nning calculatio\
-n\x0a\x0aTo stop a (lo\
-ng) running calc\
-ulation you may \
-press the key [E\
-SC] or the RMB.\x0a\
-\x0a### Zoom-in\x0a\x0aBy\
- pressing the LM\
-B only you may d\
-raw an rectangle\
- with the cursor\
- (based on the\x0ac\
-urrent ratio, se\
-e item 3) which \
-defines the area\
- you want to zoo\
-m in. As soon\x0aas\
- the calculation\
- starts (immedia\
-tely after relea\
-se of the LMB), \
-the new values\x0a(\
-see item 1 and 2\
- above) will be \
-adapted accordin\
-gly.\x0a\x0a## Develop\
-ment recommendat\
-ions\x0a\x0a### Resour\
-ces\x0a\x0aTo iclude a\
-ll necessary res\
-ources you need \
-the Qt resource \
-system (`.qrc`)\x0a\
-provided by PySi\
-de6 from Qt: \x22py\
-side6-rcc\x22 (incl\
-uded already in \
-the \x22pyside6\x22\x0apa\
-ckage):\x0a\x0a`pyside\
-6-rcc resources.\
-qrc -o resources\
-_rc.py`\x0a\x0aThis fi\
-le contains all \
-\x22styles\x22 as text\
- and the images \
-as binary code.\x0a\
-\x0a### Build\x0a\x0aTo b\
-uild a standalon\
-e app you need \x22\
-pyinstaller\x22. Yo\
-u have to instal\
-l it first:\x0a\x0a`pi\
-p install pyinst\
-aller`\x0a\x0aIn the n\
-ext step you hav\
-e to change in t\
-he directory whe\
-re \x22main.py\x22 is \
-and\x0aexecute the \
-following line i\
-n a terminal:\x0a\x0am\
-acOS:\x5c\x0a`pyinstal\
-ler --noconsole \
---onefile --icon\
-=ui/Mandelbrot.i\
-cns main.py`\x0a\x0aWi\
-ndows 11:\x5c\x0a`pyin\
-staller --nocons\
-ole --onefile --\
-icon=ui/Mandelbr\
-ot.ico main.py`\x0a\
-\x0a## Forthcoming \
-features\x0a\x0aThese \
-are the addional\
- features for th\
-e future (arbitr\
-ary order):\x0a\x0a- P\
-rovide the abili\
-ty to change the\
- current default\
- theme.\x0a- ...\
++[N] (Apple): Sh\
+ow \x22Zoom video\x22 \
+window\x0a- [CTRL]+\
+[N] (Windows/Lin\
+ux) or [Cmd(\xe2\x8c\x98)\
+]+[N] (Apple): S\
+how \x22New color p\
+alette\x22 window\x0a-\
+ [CTRL]+[Q] (Win\
+dows/Linux) or [\
+Cmd(\xe2\x8c\x98)]+[Q] (A\
+pple): Quit the \
+application\x0a- [C\
+TRL]+[S] (Window\
+s/Linux) or [Cmd\
+(\xe2\x8c\x98)]+[S] (Appl\
+e): Save the cur\
+rent image\x0a- [CT\
+RL]+[T] (Windows\
+/Linux) or [Cmd(\
+\xe2\x8c\x98)]+[T] (Apple\
+): Show the \x22His\
+tory\x22 window\x0a\x0a##\
+# Stop running c\
+alculation\x0a\x0aTo s\
+top a (long) run\
+ning calculation\
+ you may press t\
+he key [ESC] or \
+the RMB.\x0a\x0a### Zo\
+om-in\x0a\x0aBy pressi\
+ng the LMB only \
+you may draw an \
+rectangle with t\
+he cursor (based\
+ on the\x0acurrent \
+ratio, see item \
+3) which defines\
+ the area you wa\
+nt to zoom in. A\
+s soon\x0aas the ca\
+lculation starts\
+ (immediately af\
+ter release of t\
+he LMB), the new\
+ values\x0a(see ite\
+m 1 and 2 above)\
+ will be adapted\
+ accordingly.\x0a\x0a#\
+# Development re\
+commendations\x0a\x0a#\
+## Resources\x0a\x0aTo\
+ iclude all nece\
+ssary resources \
+you need the Qt \
+resource system \
+(`.qrc`)\x0aprovide\
+d by PySide6 fro\
+m Qt: \x22pyside6-r\
+cc\x22 (included al\
+ready in the \x22py\
+side6\x22\x0apackage):\
+\x0a\x0a`pyside6-rcc r\
+esources.qrc -o \
+resources_rc.py`\
+\x0a\x0aThis file cont\
+ains all \x22styles\
+\x22 as text and th\
+e images as bina\
+ry code.\x0a\x0a### Bu\
+ild\x0a\x0aTo build a \
+standalone app y\
+ou need \x22pyinsta\
+ller\x22. You have \
+to install it fi\
+rst:\x0a\x0a`pip insta\
+ll pyinstaller`\x0a\
+\x0aIn the next ste\
+p you have to ch\
+ange in the dire\
+ctory where \x22mai\
+n.py\x22 is and\x0aexe\
+cute the followi\
+ng line in a ter\
+minal:\x0a\x0amacOS:\x5c\x0a\
+`pyinstaller --n\
+oconsole --onefi\
+le --icon=ui/Man\
+delbrot.icns mai\
+n.py`\x0a\x0aWindows 1\
+1:\x5c\x0a`pyinstaller\
+ --noconsole --o\
+nefile --icon=ui\
+/Mandelbrot.ico \
+main.py`\x0a\x0a## For\
+thcoming feature\
+s\x0a\x0aThese are the\
+ addional featur\
+es for the futur\
+e (arbitrary ord\
+er):\x0a\x0a- Provide \
+the ability to c\
+hange the curren\
+t default theme.\
+\x0a- ...\
 \x00\x00\x18\xd8\
 \x89\
 PNG\x0d\x0a\x1a\x0a\x00\x00\x00\x0dIHDR\x00\
@@ -1281,36 +1290,37 @@ n\x8c\xad\x09}\x05W0\xd4\xcer\xc15\x0c\x8cc\
 \xecV1\x0e\x8c\x07\x83A\xf3\x16\xdd[\x0c\xff\x1f\xec\
 \xf5Q3\x1bW\xc3\x0e\x00\x00\x00\x00IEND\xae\
 B`\x82\
-\x00\x00\x01\xbe\
+\x00\x00\x01\xc5\
 \x00\
-\x00\x11\xd1x\xda\xed\xd7AO\xc20\x14\x07\xf0;\x9f\
-\xa2\xd9\xc1\x13\x12\xd8(\x0c\x8f\x03Y<H\xccH\xbc\
-\x18c\xca\xf2\x1c\x8d[\x87\xed\xa6\x12\xe3w\x17\x87D\
-\xc8\xda2&\x13\x0f\xdb\x81C\xff\xac\xe9\xfa\xcb\xdb\xfa\
-\xee\x1ahu\xbdg\xbf_\x97\xc1H\x04\xc6\x052\x1c\
-\xc29\x05~>\xe6\x00F\xf3'\x9fq\x1a\xcc\x13\x06\
-Bx\xab\xbf\xb5[=i\xe6f\x19\x96fN\x96u\
-\xb72?f\x09'\x22\xf1\x94I~\xbeM\xe2\xe4V\
-\xf1\xc8\xe19\x05\xe6/\xbf\xa6\xeb\xb4\xda\xb2\xc8UG\
-N.Z\xcc\x89\x80\xf5\xdar\xc3\xae|\xd8\xc9?\x7f\
-\xf0\x90M\xb1;\xe4\xe6\x87\xb2[\xb3\x91\x8f\xa6\x0ag\
-\x18\x12!\xa8\x8f<B\xd9,~\xd5\xf9\xe0\x92>X\
-\xe9\x83K\xf8\xe0\xd3\xfaX\x96\x1c\xa8\xd7\xafJh\x04\
-\xb0@\xe3\x98\x83Ht:\x96F\xa7\xa7\xd11\x95:\
-\x96R\xa7\xab\xd41O\x5c=X\xae\xb3\xa3vT\x9d\
-1\xe5\x80\xce\xd0\x95\x0fu\xe9\xec\xc1\xe9\xfc9\x8e\xcb\
-\xc9R\xf8$\xacmJ~v\xdaU\xc9\x5c\x937\x1a\
-\xa5\x11\x1a~oB\x0d\xf4\xcf\x80&\x103t\x19\x82\
-\x9fp\xea\xebt\xec\xa3\x9f\xda\xeaSA\x01\x9f[\xca\
-\x12\x12\x00\xbaYm\x01\x84u\xf9l\x80,9\x90)\
-\xf71\xab\xe2\x99\xc6!\xe1T\xa0i\xcaf)g\x86\
-f\x9f\xfb\x1a\x1f[\xe3:P\xee\xf5am\x8f\xa7n\
-{4\x1d\x91\xabW\xdd]\xc4\xf6\xc7\xbe\xa0\xcfz\x92\
-Nu\xc7\xb60B\x13\x08HB_\xc0(X\x05\xc5\
-\xaa\xc7;\xa0\x12\x8a\xea`\xb5\x0e.\xa5\x83\xf7\xb7\x99\
-[:X\xaeSYS:\x22\xfc\x099a\xaa\x95\x19\
-\xe8d\xfa\xa5hl%\x8d\xad\xa4\xb1\xcd\xd3V\x8e\xa5\
-x\x0f\xda\xbf\xc4i\xdc\x7f\x02m\x90\x08\xba\
+\x00\x11\xd5x\xda\xed\x97KO\x83@\x14\x85\xf7\xfd\x15\
+\x13\x16\xaejm\xa1P\xea\x92*\xc4\x85\x8di\x13]\
+\x18c\xa6\xe4\xdaN\x84\xa1\xce\x80\xda\x18\xff\xbb-\xbe\
+\xda\xcc\xa3\x94\x14\xeb\x82Y\xb0\xb8\x07n\x86\xf3\xe5\x0c\
+\x97\xdb\x06Z\xae\xb7\xfc\xbaZ\x06\xc51\x18\xa7\xc8\xf0\
+0c\x04\xd8\xb1\xcf\x00\x8c\xe6\xaf>ad:K)\
+p>Z\xde\xd6n9R-\xc85[\xaay\xb9\xd6\
+]\xd3\xc2\x84\xa6\x0c\xf3t\xa4T\xc4~\xdf\x8a'\xec\
+\xe2\x81\xc1S\x064\x5c\xac\xdauZm\x99\x14\xa8%\
+O\x90\xe63\xcc\xe1soB9\x90\x97=\xf1\xfd\xa7\
+\xf7y\x8b\xcdR \x96\xf2G\xf3\xca{S\x09\xe7\xe4\
+\x06\x0da\x8aS\xf2\x0c\xc8'Qlh\x9c\xb6w&\
+4\xda\xe2\xb6\xbd\x13!\xb1\xdb\x86\xd7\x0a)PKb\
+C\x85\xe7k\x84l9\xcf\xca\x08\x0d\x22\xcc9\x09\xd1\
+\x08\x13:I^\x8c\x82>\xef\x92\xa0b^\x17M\x90\
+}\xd8\x04Y\x96\x1c\xa7\xd3\xab\x8a\xd0\x19f\x8f\xc8\x8b\
+2\xd0e\xa7\xafc\xd3+\x15\x1eW\x09\xc7U\x02u\
+Muz\x9cR\xe9\xe9\xca\xed\xb6\x14t\xe4,-\xb7\
+28\x00s\xe4'\x0cx\xaa\x8b\x8e\xa5\xc1\xe3h\xb0\
+\x9aJ\xa7-%\x9d\xae\x92\xa8y\xe0\x8f\x8f\xe2$\xdc\
+\x88\xd4^\xe9\xf8\x84\x01:B\x17!\xd4\xe7\xda\x168\
+\x9d?\x87\x130\xbc\xe0!\x8ej6%\xa7\xb6vU\
+d.\xf1+\x89\xb3\x18\x0d\xbeL\xa8\x01\xfd3@C\
+H(:\x8f L\x19\x09ut\xdc\xbd\xff\xf4\xd4#\
+[\x01>\xe3$\xc2\x8cp4\xce\xe8$cT7\xb8\
+\xf54\x84\x5c\x0d\xd9\xbe\xd2\xedn\x89\x9f\x1e\xe7\xb0c\
+\x9b)\xe7\xd9\xa9\x8a\xcf5\xa1)\x9e\x02\xbaZ\x1a\x00\
+Q}\xbc\xfd\xcc\xc9\x05\xf1\x88\xe3d\x19<\x8d\xbb\x0f\
+\xb6=\x09\xa2\
 \x00\x00\x015\
 /\
 * style.css */\x0a\x0a\
@@ -163639,18 +163649,18 @@ qt_resource_struct = b"\
 \x00\x00\x00\x00\x00\x02\x00\x00\x00\x02\x00\x00\x00\x04\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x0e\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
-\x00\x00\x01\xa1m3dN\
-\x00\x00\x00\xc8\x00\x00\x00\x00\x00\x01\x00\x00RA\
+\x00\x00\x01\xa1r\x80\x86#\
+\x00\x00\x00\xc8\x00\x00\x00\x00\x00\x01\x00\x00R\xd1\
 \x00\x00\x01\xa1E\xa8b/\
-\x00\x00\x00\xfa\x00\x00\x00\x00\x00\x01\x00 \x84\xab\
+\x00\x00\x00\xfa\x00\x00\x00\x00\x00\x01\x00 \x85;\
 \x00\x00\x01\xa1E\xa8b\x1e\
-\x00\x00\x00\xb0\x00\x00\x00\x00\x00\x01\x00\x00Q\x08\
+\x00\x00\x00\xb0\x00\x00\x00\x00\x00\x01\x00\x00Q\x98\
 \x00\x00\x01\xa1\x12\x04\x9b\x95\
-\x00\x00\x000\x00\x00\x00\x00\x00\x01\x00\x00\x1d\xb2\
+\x00\x00\x000\x00\x00\x00\x00\x00\x01\x00\x00\x1e;\
 \x00\x00\x01\xa1_Y\x8f\xe1\
-\x00\x00\x00\x84\x00\x01\x00\x00\x00\x01\x00\x00OF\
-\x00\x00\x01\xa1n\xbb\x82\x96\
-\x00\x00\x00\x5c\x00\x00\x00\x00\x00\x01\x00\x006\x8e\
+\x00\x00\x00\x84\x00\x01\x00\x00\x00\x01\x00\x00O\xcf\
+\x00\x00\x01\xa1r\x8dGF\
+\x00\x00\x00\x5c\x00\x00\x00\x00\x00\x01\x00\x007\x17\
 \x00\x00\x01\xa1_Y\x8f\xe1\
 "
 

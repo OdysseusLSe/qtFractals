@@ -138,7 +138,7 @@ class FractalHistory():
             with open(self.file_name, 'r', encoding="utf-8") as f:
                 history_data = json.load(f)
         except BaseException as error:
-            self.log.error(f"Error ({error}) with reading history!", True)
+            self.log.warning(f"Warning ({error}) with reading history!", True)
 
         self.log.exit("load_history", False)
         return history_data
