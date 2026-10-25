@@ -727,13 +727,6 @@ class MainWindow(QMainWindow):
                 cp
             )
 
-            """
-            frame_name = f"{step:06d}.png"
-            frame_name_list.append(frame_name)
-            frame_full_path = dir_path.joinpath(frame_name)
-            self.log.write(f"frame_full_path={frame_full_path}", False)
-            """
-
             # Create thumbnail for progress window
             thumbnail.setPixmap(QPixmap.fromImage(image.scaledToWidth(
                 150,
