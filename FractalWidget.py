@@ -482,10 +482,6 @@ class FractalWidget(QWidget):
             is_interim_pic
         )
 
-        self.log.write(f"self.frac_area={self.frac_area}", False)
-        self.log.write(f"self.draw_dim={self.draw_dim}", False)
-        self.log.write(f"self.iter_lim={self.iter_lim}", False)
-
         self.worker.moveToThread(self.thread)
 
         #
@@ -506,9 +502,9 @@ class FractalWidget(QWidget):
         self.worker.finished.connect(self.worker.deleteLater)
 
         self.thread.start()
-        #self.thread.wait(QDeadlineTimer::Forever)
 
-        self.log.write("self.thread.isRunning()=" + str(self.thread.isRunning()), False)
+        log_string = f"self.thread.isRunning()={self.thread.isRunning()}"
+        self.log.write(log_string, False)
         self.log.exit("start_calculation", False)
 
     #
