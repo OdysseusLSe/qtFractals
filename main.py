@@ -16,6 +16,8 @@
 # If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 #
 
+from pickle import TRUE
+
 import cv2
 import copy
 import os
@@ -582,7 +584,7 @@ class MainWindow(QMainWindow):
             fps = 10,
             sec = 1
         ):
-        self.log.write("create_video")
+        self.log.entry("create_video")
 
         self.is_stopped = False
         cp = copy.copy(color_palette)
@@ -744,25 +746,23 @@ class MainWindow(QMainWindow):
 
         if self.is_stopped:
             # User stopped calculation
-            video.release()
-            cv2.destroyAllWindows()
 
             cr_vid_dialog.close()
 
-            msg = f"Aborted Video\n {video_name}\n in cache\n {str(dir_path)}"
+            video.release()
+            cv2.destroyAllWindows()
+
+            msg = f"Aborted Video\n {video_name}\n in cache\n {dir_name}"
             QMessageBox.warning(self, "Video in cache", msg)
 
             self.log.write("create_video")
             return
 
-        video.release()
-        cv2.destroyAllWindows()
-
-        current_dir = os.getcwd()
-        os.chdir(dir_name)
-
         # Delete progress dialog for calculation and rendering
         cr_vid_dialog.close()
+
+        video.release()
+        cv2.destroyAllWindows()
 
         # Select directory where to save the newly created video to
         folder_path = QFileDialog.getExistingDirectory(
@@ -773,9 +773,12 @@ class MainWindow(QMainWindow):
         )
         if folder_path:
 
-            video_full_path.copy_into(folder_path, preserve_metadata=True)
-            os.chdir(current_dir)
-            shutil.rmtree(dir_name)
+            self.log.write(f"video_name={video_name}", False)
+            self.log.write(f"video_full_path={video_full_path}", False)
+            self.log.write(f"folder_path={folder_path}", False)
+
+            video_full_path.move_into(folder_path)
+            dir_path.rmdir()
 
             msg = f"Video\n {video_name}\n successful saved in\n {folder_path}"
             QMessageBox.information(self, "Video saved", msg)
@@ -785,16 +788,15 @@ class MainWindow(QMainWindow):
             msg = f"Video\n {video_name}\n still in cache\n {str(dir_path)}"
             QMessageBox.warning(self, "Video in cache", msg)
 
-        os.chdir(current_dir)
 
-        self.log.write("create_video")
+        self.log.exit("create_video")
 
     #
     # -----------------------------------------------
     #
 
     def dd_text_changed(self, text):
-        self.log.write("dd_text_changed")
+        self.log.entry("dd_text_changed")
 
         self.log.write(f"text={text}")
 
@@ -819,7 +821,7 @@ class MainWindow(QMainWindow):
 
         self.trigger_calculation()
 
-        self.log.write("dd_text_changed")
+        self.log.exit("dd_text_changed")
 
     #
     # -----------------------------------------------
