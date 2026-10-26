@@ -111,6 +111,13 @@ class FractalWorker(QObject):
 
         val_lim_squared = 4.0
 
+        log_2  = math.log(2.0)
+        pi_x_2 = math.pi * 2
+
+        local_cos  = math.cos
+        local_log  = math.log
+        local_sqrt = math.sqrt
+
         for y in range(self.draw_dim['height']):
 
             if not self.is_running:
@@ -136,22 +143,45 @@ class FractalWorker(QObject):
                     z = z * z + self.julia_c
                     val_squared = z.real * z.real + z.imag * z.imag
                     if val_squared > val_lim_squared:
-                        item = {
-                            'x'     : x,
-                            'loop'  : loop,
-                            'value' : math.sqrt(val_squared),
-                            'R'     : 0,
-                            'G'     : 0,
-                            'B'     : 0,
-                        }
-                        self.line.append(item)
-                        break
-                    loop += 1
 
-            self.get_color()
-            for item in self.line:
-                color.setRgb(item['R'], item['G'], item['B'])
-                image.setPixelColor(item['x'], y, color)
+                        # Calculate color and smoothed color transfers.
+
+                        value = local_sqrt(val_squared)
+
+                        # Calculate smoothed iteration value
+                        try:
+                            smoothed = loop + 1 - local_log(local_log(value)) / log_2
+                        except ValueError:
+                            self.log.error(f"ValueError: loop,value={loop},{value}", True)
+                            smoothed = loop
+
+                        # Normed value between 0.0 and 1.0 (the higher value the
+                        # higher frequency of color change)
+                        velocity = smoothed / 40.0
+
+                        # Cosine Palette-Method
+                        rgb = {}
+                        for channel in ['R', 'G', 'B']:
+                            b = self.cp[f'brightness{channel}']
+                            c = self.cp[f'contrast{channel}']
+                            f = self.cp[f'frequency{channel}']
+                            p = self.cp[f'phase{channel}']
+
+                            # Calculate raw color value based on cosine palette
+                            # method.
+                            raw_val = int(255 * (b + c * local_cos(pi_x_2 * (f * velocity + p))))
+
+                            # Implement safeguard to ensure that the color value
+                            # is within the valid range of 0-255.
+                            clipped_val  = max(0, min(255, raw_val))
+                            rgb[channel] = clipped_val
+
+                        color.setRgb(rgb['R'], rgb['G'], rgb['B'])
+                        image.setPixelColor(x, y, color)
+
+                        break
+
+                    loop += 1
 
             self.progress.emit(y+1)
             if not self.is_interim_pic:
@@ -191,6 +221,13 @@ class FractalWorker(QObject):
 
         val_lim_squared = 4.0
 
+        log_2  = math.log(2.0)
+        pi_x_2 = math.pi * 2
+
+        local_cos  = math.cos
+        local_log  = math.log
+        local_sqrt = math.sqrt
+
         for y in range(self.draw_dim['height']):
 
             if not self.is_running:
@@ -217,22 +254,45 @@ class FractalWorker(QObject):
                     z = z * z + c
                     val_squared = z.real * z.real + z.imag * z.imag
                     if val_squared > val_lim_squared:
-                        item = {
-                            'x'     : x,
-                            'loop'  : loop,
-                            'value' : math.sqrt(val_squared),
-                            'R'     : 0,
-                            'G'     : 0,
-                            'B'     : 0,
-                        }
-                        self.line.append(item)
-                        break
-                    loop += 1
 
-            self.get_color()
-            for item in self.line:
-                color.setRgb(item['R'], item['G'], item['B'])
-                image.setPixelColor(item['x'], y, color)
+                        # Calculate color and smoothed color transfers.
+
+                        value = local_sqrt(val_squared)
+
+                        # Calculate smoothed iteration value
+                        try:
+                            smoothed = loop + 1 - local_log(local_log(value)) / log_2
+                        except ValueError:
+                            self.log.error(f"ValueError: loop,value={loop},{value}", True)
+                            smoothed = loop
+
+                        # Normed value between 0.0 and 1.0 (the higher value the
+                        # higher frequency of color change)
+                        velocity = smoothed / 40.0
+
+                        # Cosine Palette-Method
+                        rgb = {}
+                        for channel in ['R', 'G', 'B']:
+                            b = self.cp[f'brightness{channel}']
+                            c = self.cp[f'contrast{channel}']
+                            f = self.cp[f'frequency{channel}']
+                            p = self.cp[f'phase{channel}']
+
+                            # Calculate raw color value based on cosine palette
+                            # method.
+                            raw_val = int(255 * (b + c * local_cos(pi_x_2 * (f * velocity + p))))
+
+                            # Implement safeguard to ensure that the color value
+                            # is within the valid range of 0-255.
+                            clipped_val  = max(0, min(255, raw_val))
+                            rgb[channel] = clipped_val
+
+                        color.setRgb(rgb['R'], rgb['G'], rgb['B'])
+                        image.setPixelColor(x, y, color)
+
+                        break
+
+                    loop += 1
 
             self.progress.emit(y+1)
             if not self.is_interim_pic:
@@ -241,60 +301,6 @@ class FractalWorker(QObject):
         self.log.exit("calculate_mandelbrot", False)
 
         self.finished.emit(image)
-
-    #
-    # -----------------------------------------------
-    # Calculate color and smoothed color transfers. Called by
-    # calculate_mandelbrot and calculate_julia
-    # -----------------------------------------------
-    #
-
-    def get_color(self):
-        self.log.entry("get_color", False)
-
-        for item in self.line:
-
-            loop  = item['loop']
-            value = item['value']
-
-            # Calculate smoothed iteration value
-            try:
-                smoothed = loop + 1 - math.log(math.log(value)) / math.log(2.0)
-            except ValueError:
-                self.log.error(f"ValueError: loop,value={loop},{value}", True)
-                smoothed = loop
-
-            # Normed value between 0.0 and 1.0
-            # (the higher value = the higher frequency of color change)
-            velocity = smoothed / 40.0
-
-            #
-            # Cosine Palette-Method
-            # (based on Inigo Quilez, phase value defines time shifted increase
-            # of r,g,b):
-            # color = brightness + contrast * math.cos(2 * math.pi * (frequency * velocity + phase))
-            #
-
-            rgb = {}
-            for channel in ['R', 'G', 'B']:
-                b = self.cp[f'brightness{channel}']
-                c = self.cp[f'contrast{channel}']
-                f = self.cp[f'frequency{channel}']
-                p = self.cp[f'phase{channel}']
-
-                # Calculate raw color value based on cosine palette method
-                raw_val = int(255 * (b + c * math.cos(2 * math.pi * (f * velocity + p))))
-
-                # Implement safeguard to ensure that the color value is within
-                # the valid range of 0-255
-                clipped_val = max(0, min(255, raw_val))
-                rgb[channel] = clipped_val
-
-            item['R'] = rgb['R']
-            item['G'] = rgb['G']
-            item['B'] = rgb['B']
-
-            self.log.exit("get_color", False)
 
     #
     # -----------------------------------------------

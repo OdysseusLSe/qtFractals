@@ -75,7 +75,7 @@ class FractalFrame(QObject):
         val_lim_squared = 4.0
 
         log_2  = math.log(2.0)
-        pi_x_2 = 2 * math.pi
+        pi_x_2 = math.pi * 2
 
         local_cos  = math.cos
         local_log  = math.log
@@ -138,7 +138,7 @@ class FractalFrame(QObject):
 
                             # Implement safeguard to ensure that the color value
                             # is within the valid range of 0-255.
-                            clipped_val = max(0, min(255, raw_val))
+                            clipped_val  = max(0, min(255, raw_val))
                             rgb[channel] = clipped_val
 
                         color.setRgb(rgb['R'], rgb['G'], rgb['B'])
