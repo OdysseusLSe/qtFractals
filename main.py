@@ -154,7 +154,6 @@ class MainWindow(QMainWindow):
     #
 
     def build_main_window(self):
-
         self.log.entry("build_main_window")
 
         # Offset of the widgets from the main window frame
@@ -399,7 +398,7 @@ class MainWindow(QMainWindow):
     #
 
     def build_menu_bar(self):
-        self.log.write("build_menu_bar")
+        self.log.entry("build_menu_bar")
 
         self.status_bar.showMessage("--- Ready ---")
 
@@ -472,7 +471,7 @@ class MainWindow(QMainWindow):
     #
 
     def calculation_closing(self, thumbnail, calc_time):
-        self.log.write("calculation_closing")
+        self.log.entry("calculation_closing")
 
         status = f" --- Process time: {calc_time} seconds ---"
         self.status_bar.showMessage(status)
@@ -507,7 +506,7 @@ class MainWindow(QMainWindow):
     #
 
     def cp_showroom(self):
-        self.log.write("cp_showroom")
+        self.log.entry("cp_showroom")
 
         self.is_interim_pic = True
 
@@ -544,9 +543,7 @@ class MainWindow(QMainWindow):
     #
 
     def cp_text_changed(self, text):
-        self.log.write("cp_text_changed")
-
-        self.log.write(f"text={text}")
+        self.log.entry(f"cp_text_changed({text})")
 
         if self.is_new_cp:
             self.is_new_cp = False
@@ -565,7 +562,7 @@ class MainWindow(QMainWindow):
             )
             self.trigger_calculation()
 
-        self.log.write("cp_text_changed")
+        self.log.exit("cp_text_changed")
 
     #
     # -----------------------------------------------
@@ -830,7 +827,7 @@ class MainWindow(QMainWindow):
     #
 
     def load_color_palettes(self):
-        self.log.write("load_color_palettes")
+        self.log.entry("load_color_palettes")
 
         self.cp_list = []
         file = QFile(":/ui/color_palettes.json")
@@ -862,7 +859,7 @@ class MainWindow(QMainWindow):
     #
 
     def new_color_palette(self):
-        self.log.write("new_color_palette")
+        self.log.entry("new_color_palette")
 
         self.ncop_dialog = QDialog(self)
         self.ncop_dialog.setWindowTitle("New color palette")
@@ -991,7 +988,7 @@ class MainWindow(QMainWindow):
     #
 
     def repeat_item(self, item):
-        self.log.write("repeat_item")
+        self.log.entry("repeat_item")
 
         history_item = self.history_list[item]
 
@@ -1013,7 +1010,7 @@ class MainWindow(QMainWindow):
     #
 
     def reset(self):
-        self.log.write("reset")
+        self.log.entry("reset")
 
         self.rp_edit.setText(str(self.const_frac_area['realOrigin']))
         self.ip_edit.setText(str(self.const_frac_area['imagOrigin']))
@@ -1037,7 +1034,7 @@ class MainWindow(QMainWindow):
     #
 
     def save_image(self):
-        self.log.write("save_image")
+        self.log.entry("save_image")
 
         image = self.fw.get_image()
 
@@ -1075,7 +1072,7 @@ class MainWindow(QMainWindow):
     #
 
     def set_default_values(self):
-        self.log.write("set_default_values")
+        self.log.entry("set_default_values")
 
         self.cache_dir = user_cache_dir(APP_NAME, "OdysseusLSe")
 
@@ -1127,7 +1124,7 @@ class MainWindow(QMainWindow):
     #
 
     def show_history(self):
-        self.log.write("show_history")
+        self.log.entry("show_history")
 
         self.fh.show_history_list(self.history_list)
         if self.fh.repeat():
@@ -1142,7 +1139,7 @@ class MainWindow(QMainWindow):
     #
 
     def show_readme(self):
-        self.log.write("show_readme")
+        self.log.entry("show_readme")
 
         self.read_dialog = QDialog(self)
         self.read_dialog.setWindowTitle("Readme")
@@ -1181,7 +1178,7 @@ class MainWindow(QMainWindow):
     #
 
     def sb_update_area(self, area):
-        self.log.write("sb_update_area")
+        self.log.entry("sb_update_area")
         self.log.write(f"area={area}")
 
         ro = area['realOrigin']
@@ -1199,7 +1196,7 @@ class MainWindow(QMainWindow):
     #
 
     def trigger_calculation(self):
-        self.log.write("trigger_calculation")
+        self.log.entry("trigger_calculation")
 
         if self.is_interim_pic:
             self.fw.start_calculation(self.is_interim_pic)
@@ -1245,7 +1242,7 @@ class MainWindow(QMainWindow):
     #
 
     def update_mac_sb(self, action):
-        self.log.write("update_mac_sb")
+        self.log.entry("update_mac_sb")
 
         if action and action.statusTip():
             self.log.write(f"action.statusTip()={action.statusTip()}")
@@ -1260,7 +1257,7 @@ class MainWindow(QMainWindow):
     #
 
     def update_progress(self, value):
-        self.log.write("update_progress")
+        self.log.entry("update_progress")
 
         if value == 1:
 
@@ -1317,7 +1314,7 @@ class MainWindow(QMainWindow):
     #
 
     def zoom_video(self):
-        self.log.write("zoom_video")
+        self.log.entry("zoom_video")
 
         self.zoom_dialog = QDialog(self)
         self.zoom_dialog.setWindowTitle("Zoom video")
@@ -1514,7 +1511,7 @@ class MainWindow(QMainWindow):
     #
 
     def end_app(self):
-        self.log.write("end_app")
+        self.log.entry("end_app")
 
         end_app_dlg = QMessageBox(self)
         end_app_dlg.setWindowTitle("Quit the application")
