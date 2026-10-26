@@ -18,6 +18,7 @@
 
 import copy
 import math
+import time
 
 
 from PySide6.QtCore import (
@@ -42,7 +43,7 @@ class FractalWorker(QObject):
     drawing  = Signal(QImage)
 
     # Signal to show finished calculation result
-    finished = Signal(QImage)
+    finished = Signal(QImage, float)
 
     def __init__(
             self,
@@ -118,6 +119,8 @@ class FractalWorker(QObject):
         local_log  = math.log
         local_sqrt = math.sqrt
 
+        start_time = time.process_time()
+
         for y in range(self.draw_dim['height']):
 
             if not self.is_running:
@@ -187,9 +190,12 @@ class FractalWorker(QObject):
             if not self.is_interim_pic:
                 self.drawing.emit(image)
 
+        end_time  = time.process_time()
+        calc_time = end_time - start_time
+
         self.log.exit("calculate_julia", False)
 
-        self.finished.emit(image)
+        self.finished.emit(image, calc_time)
 
     #
     # -----------------------------------------------
@@ -227,6 +233,8 @@ class FractalWorker(QObject):
         local_cos  = math.cos
         local_log  = math.log
         local_sqrt = math.sqrt
+
+        start_time = time.process_time()
 
         for y in range(self.draw_dim['height']):
 
@@ -298,9 +306,12 @@ class FractalWorker(QObject):
             if not self.is_interim_pic:
                 self.drawing.emit(image)
 
+        end_time  = time.process_time()
+        calc_time = end_time - start_time
+
         self.log.exit("calculate_mandelbrot", False)
 
-        self.finished.emit(image)
+        self.finished.emit(image, calc_time)
 
     #
     # -----------------------------------------------

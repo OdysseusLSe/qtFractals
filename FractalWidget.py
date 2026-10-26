@@ -47,7 +47,7 @@ class FractalWidget(QWidget):
     cur_rect = Signal(dict)
 
     # Signal finished calculation
-    closing = Signal(QImage)
+    closing = Signal(QImage, float)
 
     #
     # Constructor
@@ -95,7 +95,7 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def calculation_finished(self, image):
+    def calculation_finished(self, image, calc_time):
         self.log.entry("calculation_finished", False)
 
         self.image = image
@@ -113,7 +113,7 @@ class FractalWidget(QWidget):
             150,
             Qt.TransformationMode.SmoothTransformation
         )
-        self.closing.emit(self.thumbnail)
+        self.closing.emit(self.thumbnail, calc_time)
 
         self.log.exit("calculation_finished", False)
 

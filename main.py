@@ -469,11 +469,9 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def calculation_closing(self, thumbnail):
+    def calculation_closing(self, thumbnail, calc_time):
         self.log.write("calculation_closing")
 
-        end_time = time.process_time()
-        calc_time = end_time - self.start_time
         status = f" --- Process time: {calc_time} seconds ---"
         self.status_bar.showMessage(status)
 
@@ -1264,7 +1262,6 @@ class MainWindow(QMainWindow):
 
         if value == 1:
 
-            self.start_time = time.process_time()
             self.log.write(f"Calculation started (value={value})")
 
             self.reset_btn.setEnabled(False)
