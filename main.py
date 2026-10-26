@@ -686,8 +686,8 @@ class MainWindow(QMainWindow):
             (dd_width, dd_height)
         )
 
-        self.ff         = FractalFrame()
-        image           = QImage()
+        self.ff = FractalFrame()
+        image   = QImage()
 
         #
         # Start calculation of frames and rendering of video

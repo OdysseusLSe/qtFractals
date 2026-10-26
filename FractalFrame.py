@@ -77,6 +77,7 @@ class FractalFrame(QObject):
         log_2  = math.log(2.0)
         pi_x_2 = math.pi * 2
 
+        # Build local lookups
         local_cos  = math.cos
         local_log  = math.log
         local_sqrt = math.sqrt
@@ -102,16 +103,16 @@ class FractalFrame(QObject):
                 z = complex(0.0, 0.0)
 
                 loop = 0
-                val_squared = 0.0
+                value_squared = 0.0
 
                 while loop < iter_lim:
                     z = z * z + c
-                    val_squared = z.real * z.real + z.imag * z.imag
-                    if val_squared > val_lim_squared:
+                    value_squared = z.real * z.real + z.imag * z.imag
+                    if value_squared > val_lim_squared:
 
                         # Calculate color and smoothed color transfers.
 
-                        value = local_sqrt(val_squared)
+                        value = local_sqrt(value_squared)
 
                         # Calculate smoothed iteration value
                         try:

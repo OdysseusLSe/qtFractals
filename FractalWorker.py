@@ -115,13 +115,16 @@ class FractalWorker(QObject):
         log_2  = math.log(2.0)
         pi_x_2 = math.pi * 2
 
+        # Build local lookups
         local_cos  = math.cos
         local_log  = math.log
         local_sqrt = math.sqrt
 
-        start_time = time.process_time()
+        calc_time = 0.0
 
         for y in range(self.draw_dim['height']):
+
+            start_time = time.process_time()
 
             if not self.is_running:
                 # Boolean flag to stop the thread (initiated by the user)
@@ -140,16 +143,16 @@ class FractalWorker(QObject):
 
                 z = complex(real_part, imag_part)
                 loop = 0
-                val_squared = 0.0
+                value_squared = 0.0
 
                 while loop < self.iter_lim:
                     z = z * z + self.julia_c
-                    val_squared = z.real * z.real + z.imag * z.imag
-                    if val_squared > val_lim_squared:
+                    value_squared = z.real * z.real + z.imag * z.imag
+                    if value_squared > val_lim_squared:
 
                         # Calculate color and smoothed color transfers.
 
-                        value = local_sqrt(val_squared)
+                        value = local_sqrt(value_squared)
 
                         # Calculate smoothed iteration value
                         try:
@@ -186,15 +189,14 @@ class FractalWorker(QObject):
 
                     loop += 1
 
-            self.progress.emit(y+1)
             if not self.is_interim_pic:
+                calc_time = calc_time + time.process_time() - start_time
+                self.progress.emit(y+1)
                 self.drawing.emit(image)
 
-        end_time  = time.process_time()
-        calc_time = end_time - start_time
+        calc_time = calc_time + time.process_time() - start_time
 
         self.log.exit("calculate_julia", False)
-
         self.finished.emit(image, calc_time)
 
     #
@@ -230,13 +232,16 @@ class FractalWorker(QObject):
         log_2  = math.log(2.0)
         pi_x_2 = math.pi * 2
 
+        # Build local lookups
         local_cos  = math.cos
         local_log  = math.log
         local_sqrt = math.sqrt
 
-        start_time = time.process_time()
+        calc_time = 0.0
 
         for y in range(self.draw_dim['height']):
+
+            start_time = time.process_time()
 
             if not self.is_running:
                 # Boolean flag to stop the thread (initiated by the user)
@@ -256,16 +261,16 @@ class FractalWorker(QObject):
                 c = complex(real_part, imag_part)
                 z = complex(0.0, 0.0)
                 loop = 0
-                val_squared = 0.0
+                value_squared = 0.0
 
                 while loop < self.iter_lim:
                     z = z * z + c
-                    val_squared = z.real * z.real + z.imag * z.imag
-                    if val_squared > val_lim_squared:
+                    value_squared = z.real * z.real + z.imag * z.imag
+                    if value_squared > val_lim_squared:
 
                         # Calculate color and smoothed color transfers.
 
-                        value = local_sqrt(val_squared)
+                        value = local_sqrt(value_squared)
 
                         # Calculate smoothed iteration value
                         try:
@@ -302,17 +307,16 @@ class FractalWorker(QObject):
 
                     loop += 1
 
-            self.progress.emit(y+1)
             if not self.is_interim_pic:
+                calc_time = calc_time + time.process_time() - start_time
+                self.progress.emit(y+1)
                 self.drawing.emit(image)
 
-        end_time  = time.process_time()
-        calc_time = end_time - start_time
+        calc_time = calc_time + time.process_time() - start_time
 
-        self.log.exit("calculate_mandelbrot", False)
+        self.log.exit("calculate_julia", False)
 
         self.finished.emit(image, calc_time)
-
     #
     # -----------------------------------------------
     # Super widget informs the worker that calculation has to be stopped
