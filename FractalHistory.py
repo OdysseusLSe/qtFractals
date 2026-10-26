@@ -17,7 +17,6 @@
 #
 
 import json
-import logging
 import time
 
 from pathlib import Path
@@ -30,6 +29,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QVBoxLayout
 )
@@ -47,7 +47,7 @@ class FractalHistory():
         super().__init__()
 
         self.log = Logging("FractalHistory", True)
-        self.log.write("__init__")
+        self.log.entry("__init__")
 
         # 1. Für Benutzerdaten (z. B. Datenbanken, Speicherstände)
         data_dir = user_data_dir(app_name, "OdysseusLSe")
@@ -68,16 +68,17 @@ class FractalHistory():
             self.log.error(f"Directory for history ({error})!", True)
 
         self.repeat_item = False
+        self.history_clr = False
         self.item_to_repeat = -1
 
-        self.log.write("__init__")
+        self.log.exit("__init__")
 
     #
     # -----------------------------------------------
     #
 
     def build_history_item(self, history_item):
-        self.log.write("build_history_item")
+        self.log.entry("build_history_item(history_item)")
         self.log.write(f"history_item={history_item}")
 
         tn_path_name = self.dir.joinpath(history_item['thumbnail'])
@@ -116,9 +117,34 @@ class FractalHistory():
         item = QListWidgetItem(f"{text}")
         item.setIcon(QIcon(str(tn_path_name)))
 
-        self.log.write("build_history_item")
-
+        self.log.exit("build_history_item")
         return item
+
+    #
+    # -----------------------------------------------
+    #
+
+    def clear_history(self):
+        self.log.entry("clear_history()")
+
+        if self.history_clr:
+            return
+
+        self.file_name.unlink()
+        for item in self.dir.iterdir():
+            if item.is_file():
+                item.unlink()
+
+        self.history_clr = True
+
+        self.log.exit("clear_history")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def history_clear(self):
+        return self.history_clr
 
     #
     # -----------------------------------------------
@@ -132,7 +158,7 @@ class FractalHistory():
     #
 
     def load_history(self):
-        self.log.write("load_history")
+        self.log.entry("load_history()")
 
         history_data = []
         try:
@@ -141,7 +167,7 @@ class FractalHistory():
         except BaseException as error:
             self.log.warning(f"Warning ({error}) with reading history!", True)
 
-        self.log.write("load_history")
+        self.log.exit("load_history")
         return history_data
 
     #
@@ -156,7 +182,7 @@ class FractalHistory():
     #
 
     def save_history(self, history_data, thumbnail=None, thumbnail_name=None):
-        self.log.write("save_history")
+        self.log.entry("save_history(history_data, thumbnail=None, thumbnail_name=None)")
 
         self.log.write(f"history_data={history_data}")
 
@@ -176,7 +202,9 @@ class FractalHistory():
         except BaseException as error:
             self.log.error(f"Error ({error}) with saving history!", True)
 
-        self.log.write("save_history")
+        self.history_clr = False
+
+        self.log.exit("save_history")
 
     #
     # -----------------------------------------------
@@ -210,12 +238,29 @@ class FractalHistory():
 
         btn_repeat = QPushButton("Repeat", self.history_dialog)
         btn_delete = QPushButton("Delete", self.history_dialog)
+        btn_clear  = QPushButton("Clear\nhistory", self.history_dialog)
         btn_close  = QPushButton("Close", self.history_dialog)
 
-        #------------------------------------------------------------
+        btn_clear.setStyleSheet("""
+            QPushButton {
+                background-color: yellow;
+                color: black;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: red;
+                color: white;
+            }
+            QPushButton:pressed {
+                background-color: darkred;
+            }
+        """)
+
+        # ------------------------------------------------------------
 
         def on_repeat_clicked():
-            self.log.write(f"Repeat button clicked.")
+            self.log.entry(f"on_repeat_clicked()")
             current_row = list_widget.currentRow()
             if current_row >= 0:
                 self.log.write(f"current_row={current_row}")
@@ -228,7 +273,7 @@ class FractalHistory():
                 self.log.write("No item selected!")
 
         def on_delete_clicked():
-            self.log.write(f"Delete button clicked.")
+            self.log.entry(f"on_delete_clicked()")
             current_row = list_widget.currentRow()
             if current_row >= 0:
                 self.log.write(f"current_row={current_row}")
@@ -249,15 +294,33 @@ class FractalHistory():
             else:
                 self.log.write("No item for deletion selected.")
 
+        def on_clear_clicked():
+            self.log.entry(f"on_clear_clicked()")
+
+            warning_dlg = QMessageBox(self.history_dialog)
+            warning_dlg.setIcon(QMessageBox.Icon.Warning)
+            warning_dlg.setWindowTitle("Clear history?")
+            warning_dlg.setText("Clear history?")
+            warning_dlg.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            button = warning_dlg.exec()
+            if button == QMessageBox.StandardButton.Yes:
+                self.clear_history()
+                self.history_dialog.accept()
+
         # Connect buttons on actions
         btn_repeat.clicked.connect(on_repeat_clicked)
         btn_delete.clicked.connect(on_delete_clicked)
+        btn_clear.clicked.connect(on_clear_clicked)
         btn_close.clicked.connect(self.history_dialog.accept)
 
-        #------------------------------------------------------------
+        # ------------------------------------------------------------
 
         btn_layout.addWidget(btn_repeat)
         btn_layout.addWidget(btn_delete)
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_clear)
         btn_layout.addStretch()
         btn_layout.addWidget(btn_close)
 

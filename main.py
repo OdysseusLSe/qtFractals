@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
         self.fh = FractalHistory(APP_NAME, "history.json")
         self.history_list = self.fh.load_history()
         log_string = pprint.pformat(self.history_list)
-        self.log.write(f"self.history_list=\n{log_string}")
+        self.log.write(f"self.history_list=\n{log_string}", True)
 
         user_cp_list = []
         for item in self.history_list:
@@ -497,7 +497,7 @@ class MainWindow(QMainWindow):
         self.log.write(f"self.history_list=\n{log_string}")
         self.fh.save_history(self.history_list, thumbnail, thumbnail_name)
 
-        self.log.write("calculation_closing")
+        self.log.exit("calculation_closing")
 
     #
     # -----------------------------------------------
@@ -988,7 +988,7 @@ class MainWindow(QMainWindow):
     #
 
     def repeat_item(self, item):
-        self.log.entry("repeat_item")
+        self.log.entry(f"repeat_item({item})")
 
         history_item = self.history_list[item]
 
@@ -1003,7 +1003,7 @@ class MainWindow(QMainWindow):
 
         self.fw.start_calculation()
 
-        self.log.write("repeat_item")
+        self.log.exit("repeat_item")
 
     #
     # -----------------------------------------------
@@ -1127,10 +1127,13 @@ class MainWindow(QMainWindow):
         self.log.entry("show_history")
 
         self.fh.show_history_list(self.history_list)
+
         if self.fh.repeat():
             item = self.fh.item_of_history()
             self.log.write(f"item={item}")
             self.repeat_item(item)
+        elif self.fh.history_clear():
+            self.history_list.clear()
 
         self.log.write("show_history")
 
