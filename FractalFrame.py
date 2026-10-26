@@ -19,8 +19,13 @@
 import copy
 import math
 
-from PySide6.QtCore import QObject
-from PySide6.QtGui import QImage, QColor
+from PySide6.QtCore import (
+    QObject
+)
+from PySide6.QtGui import (
+    QImage,
+    QColor
+)
 
 from Logging import Logging
 
@@ -37,15 +42,29 @@ class FractalFrame(QObject):
 
         self.log.exit("__init__", False)
 
+    #
+    # -----------------------------------------------
+    # Calculate Mandelbrot set
+    # -----------------------------------------------
+    #
+
     def mandelbrot_frame(self, frac_area, iter_lim, dd_width, dd_height, cp):
         self.log.entry("mandelbrot_frame", False)
 
-        frac_area = copy.copy(frac_area)
+        frac_area = copy.deepcopy(frac_area)
 
         self.log.write("frac_area=" + str(frac_area), False)
         self.log.write("iter_lim=" + str(iter_lim), False)
         self.log.write(f"dd_width,dd_height={dd_width},{dd_height}", False)
         self.log.write("cp=" + str(cp), False)
+
+        image = QImage(dd_width, dd_height, QImage.Format.Format_RGB32)
+        color = QColor()
+
+        # Fill background with background color
+        image.fill(QColor(cp['bg_R'], cp['bg_G'], cp['bg_B']))
+
+        x = y = 0
 
         x_step = frac_area['realWidth'] / dd_width
         y_step = frac_area['imagHeight'] / dd_height
@@ -53,30 +72,19 @@ class FractalFrame(QObject):
         real_origin = frac_area['realOrigin']
         imag_origin = frac_area['imagOrigin']
 
-        pi_2  = 2.0 * math.pi
-        log_2 = math.log(2.0)
+        val_lim_squared = 4.0
 
-        b_R, c_R = cp['brightnessR'], cp['contrastR']
-        f_R, p_R = cp['frequencyR'], cp['phaseR']
-        b_G, c_G = cp['brightnessG'], cp['contrastG']
-        f_G, p_G = cp['frequencyG'], cp['phaseG']
-        b_B, c_B = cp['brightnessB'], cp['contrastB']
-        f_B, p_B = cp['frequencyB'], cp['phaseB']
+        log_2  = math.log(2.0)
+        pi_x_2 = 2 * math.pi
 
-        bg_R, bg_G, bg_B = cp['bg_R'], cp['bg_G'], cp['bg_B']
+        local_cos  = math.cos
+        local_log  = math.log
+        local_sqrt = math.sqrt
 
-        img_buffer = bytearray([bg_B, bg_G, bg_R, 255] * (dd_width * dd_height))
-
-        # Lokale Lookups von mathematischen Funktionen beschleunigen den Zugriff erheblich
-        _cos = math.cos
-        _log = math.log
-
-        real_parts = [real_origin + x * x_step for x in range(dd_width)]
-
-        idx = 0
         for y in range(dd_height):
 
             if not self.is_running:
+                # Boolean flag to stop the thread (initiated by the user)
                 self.log.write("Thread stopped by user.", False)
                 self.progress.emit(self.draw_dim['height'])
                 self.log.exit("calculate_mandelbrot", False)
@@ -84,58 +92,71 @@ class FractalFrame(QObject):
 
             imag_part = imag_origin + y * y_step
 
-            for x in range(dd_width):
-                c_re = real_parts[x]
-                c_im = imag_part
+            self.line = []
 
-                z_re = 0.0
-                z_im = 0.0
+            for x in range(dd_width):
+
+                real_part = real_origin + x * x_step
+
+                c = complex(real_part, imag_part)
+                z = complex(0.0, 0.0)
+
                 loop = 0
                 val_squared = 0.0
 
                 while loop < iter_lim:
-                    z_re_sq = z_re * z_re
-                    z_im_sq = z_im * z_im
-                    val_squared = z_re_sq + z_im_sq
+                    z = z * z + c
+                    val_squared = z.real * z.real + z.imag * z.imag
+                    if val_squared > val_lim_squared:
 
-                    if val_squared > 4.0:
+                        # Calculate color and smoothed color transfers.
+
+                        value = local_sqrt(val_squared)
+
+                        # Calculate smoothed iteration value
+                        try:
+                            smoothed = loop + 1 - local_log(local_log(value)) / log_2
+                        except ValueError:
+                            self.log.error(f"ValueError: loop,value={loop},{value}", True)
+                            smoothed = loop
+
+                        # Normed value between 0.0 and 1.0 (the higher value the
+                        # higher frequency of color change)
+                        velocity = smoothed / 40.0
+
+                        # Cosine Palette-Method
+                        rgb = {}
+                        for channel in ['R', 'G', 'B']:
+                            b = cp[f'brightness{channel}']
+                            c = cp[f'contrast{channel}']
+                            f = cp[f'frequency{channel}']
+                            p = cp[f'phase{channel}']
+
+                            # Calculate raw color value based on cosine palette
+                            # method.
+                            raw_val = int(255 * (b + c * local_cos(pi_x_2 * (f * velocity + p))))
+
+                            # Implement safeguard to ensure that the color value
+                            # is within the valid range of 0-255.
+                            clipped_val = max(0, min(255, raw_val))
+                            rgb[channel] = clipped_val
+
+                        color.setRgb(rgb['R'], rgb['G'], rgb['B'])
+                        image.setPixelColor(x, y, color)
+
                         break
 
-                    z_im = 2.0 * z_re * z_im + c_im
-                    z_re = z_re_sq - z_im_sq + c_re
                     loop += 1
 
-                if loop < iter_lim:
-                    value = math.sqrt(val_squared)
-                    if value > 1.0:
-                        smoothed = loop + 1 - _log(_log(value)) / log_2
-                    else:
-                        smoothed = loop
-
-                    velocity = smoothed / 40.0
-                    v_pi_2 = velocity * pi_2
-
-                    # Format: BGRA
-                    raw_B = int(255 * (b_B + c_B * _cos(f_B * v_pi_2 + p_B * pi_2)))
-                    raw_G = int(255 * (b_G + c_G * _cos(f_G * v_pi_2 + p_G * pi_2)))
-                    raw_R = int(255 * (b_R + c_R * _cos(f_R * v_pi_2 + p_R * pi_2)))
-                    img_buffer[idx]     = 0 if raw_B < 0 else (255 if raw_B > 255 else raw_B)
-                    img_buffer[idx + 1] = 0 if raw_G < 0 else (255 if raw_G > 255 else raw_G)
-                    img_buffer[idx + 2] = 0 if raw_R < 0 else (255 if raw_R > 255 else raw_R)
-
-                # Ignore Alpha value
-                idx += 4
-
-        image = QImage(
-            img_buffer,
-            dd_width,
-            dd_height,
-            QImage.Format.Format_RGB32
-        )
-        final_image = image.copy()
-
         self.log.exit("mandelbrot_frame", False)
-        return final_image
+
+        return image
+
+    #
+    # -----------------------------------------------
+    # Parent widget informs the worker that calculation has to be stopped
+    # -----------------------------------------------
+    #
 
     def stop(self):
         self.log.entry("stop", False)
