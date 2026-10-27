@@ -161,7 +161,7 @@ class MainWindow(QMainWindow):
         # Title of the main window
         self.setWindowTitle(APP_NAME + " " + APP_VERSION)
 
-        self.setMinimumHeight(800)
+        #self.setMinimumHeight(800)
 
         # Build labels
         rp_lbl       = QLabel("<b>Origin of real part</b>:", self)
@@ -276,7 +276,31 @@ class MainWindow(QMainWindow):
         # Layout labels, line edits, fractal window, progress bar, and buttons
         #
 
-        layout_grid = QGridLayout()
+        # Widget for parameters
+
+        parameter_widget = QWidget()
+        layout_grid = QGridLayout(parameter_widget)
+
+        # Toggle widget (toggle visibility of parameters)
+
+        self.toggle_button = QPushButton("Show details ▼")
+        self.toggle_button.setCheckable(True)
+
+        def toggle_extension(checked):
+            parameter_widget.setVisible(checked)
+
+            if checked:
+                self.toggle_button.setText("Details ausblenden ▲")
+            else:
+                self.toggle_button.setText("Details anzeigen ▼")
+
+            self.setMinimumSize(0, 0)
+            main_layout.activate()
+
+            self.adjustSize()
+            self.setMinimumSize(self.sizeHint())
+
+        self.toggle_button.clicked.connect(toggle_extension)
 
         # First row
 
@@ -378,14 +402,21 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(xOffset, yOffset, xOffset, yOffset)
         main_layout.setSpacing(10)
 
-        main_layout.addLayout(layout_grid)
+        main_layout.addWidget(self.toggle_button)
+
+        parameter_widget.setVisible(False)
+        main_layout.addWidget(parameter_widget)
+
         main_layout.addWidget(self.scroll_area)
         main_layout.addWidget(self.progress_bar)
+
+        main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMinAndMaxSize)
 
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
 
+        main_layout.activate()
         self.adjustSize()
         self.setMinimumSize(self.sizeHint())
 

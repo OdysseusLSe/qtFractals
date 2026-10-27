@@ -25,7 +25,7 @@ class Logging():
         self.func_name     = func_name
         self.global_debug  = debug
         self.output_string = ""
-        self.n = 15 # minimum space
+        self.n = 15  # minimum space
 
     def build_output(self):
         self.output_string = f"[{self.func_name}: "
