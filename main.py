@@ -161,8 +161,6 @@ class MainWindow(QMainWindow):
         # Title of the main window
         self.setWindowTitle(APP_NAME + " " + APP_VERSION)
 
-        #self.setMinimumHeight(800)
-
         # Build labels
         rp_lbl       = QLabel("<b>Origin of real part</b>:", self)
         ip_lbl       = QLabel("<b>Origin of imag. part</b>:", self)
