@@ -17,6 +17,7 @@
 #
 
 import json
+import pprint
 import time
 
 from pathlib import Path
@@ -211,7 +212,10 @@ class FractalHistory():
     #
 
     def show_history_list(self, history_data):
-        self.log.write("show_history_list")
+        self.log.entry("show_history_list(history_data)")
+
+        log_string = pprint.pformat(history_data)
+        self.log.write(f"history_data=\n{log_string}")
 
         self.repeat_item = False
         self.item_to_repeat = -1
@@ -231,6 +235,7 @@ class FractalHistory():
             self.log.write(f"history_item={history_item}")
             item = self.build_history_item(history_item)
             list_widget.addItem(item)
+        list_widget.clearSelection()
 
         main_layout.addWidget(list_widget)
 
@@ -243,17 +248,13 @@ class FractalHistory():
 
         btn_clear.setStyleSheet("""
             QPushButton {
-                background-color: yellow;
-                color: black;
-                font-weight: bold;
-                border-radius: 5px;
+                border: 2px solid black;
+                border-radius: 12px;
+                padding: 10px;
             }
             QPushButton:hover {
-                background-color: red;
                 color: white;
-            }
-            QPushButton:pressed {
-                background-color: darkred;
+                background-color: red;
             }
         """)
 
@@ -276,31 +277,55 @@ class FractalHistory():
             self.log.entry(f"on_delete_clicked()")
             current_row = list_widget.currentRow()
             if current_row >= 0:
-                self.log.write(f"current_row={current_row}")
-                list_widget.takeItem(current_row)
 
-                tn_path_name = self.dir.joinpath(history_data[current_row]['thumbnail'])
-                self.log.write(f"tn_path_name={tn_path_name}")
-                self.log.write(f"item to delete: {history_data[current_row]}")
+                list_widget.setCurrentRow(current_row)
 
-                deleted_item = history_data.pop(current_row)
-                self.log.write(f"Item deleted: {deleted_item}")
+                dlg_text = "Delete selected history item?"
 
-                # Delete appropriate thumbnail
-                p = Path(tn_path_name)
-                p.unlink()
+                warning_dlg = QMessageBox(self.history_dialog)
+                warning_dlg.setIcon(QMessageBox.Icon.Warning)
+                warning_dlg.setWindowTitle("Delete item?")
+                warning_dlg.setText(dlg_text)
+                warning_dlg.setStyleSheet("QLabel { text-align: center; }")
+                warning_dlg.setStandardButtons(
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                )
+                button = warning_dlg.exec()
 
-                self.save_history(history_data)
+                if button == QMessageBox.StandardButton.Yes:
+                    self.log.write(f"current_row={current_row}")
+                    list_widget.takeItem(current_row)
+
+                    self.log.write(f"item to delete: {history_data[current_row]}")
+
+                    # Delete appropriate thumbnail
+                    tn_path_name = self.dir.joinpath(history_data[current_row]['thumbnail'])
+                    self.log.write(f"tn_path_name={tn_path_name}")
+                    p = Path(tn_path_name)
+                    p.unlink()
+
+                    # Delete item in history list
+                    deleted_item = history_data.pop(current_row)
+                    self.log.write(f"Item deleted: {deleted_item}")
+
+                    self.save_history(history_data)
+
             else:
+
                 self.log.write("No item for deletion selected.")
 
         def on_clear_clicked():
             self.log.entry(f"on_clear_clicked()")
 
+            dlg_text = "Clear history?\n"
+            dlg_text = dlg_text + "All entries and associated user defined\n"
+            dlg_text = dlg_text + "color palettes will be deleted!"
+
             warning_dlg = QMessageBox(self.history_dialog)
             warning_dlg.setIcon(QMessageBox.Icon.Warning)
             warning_dlg.setWindowTitle("Clear history?")
-            warning_dlg.setText("Clear history?")
+            warning_dlg.setText(dlg_text)
+            warning_dlg.setStyleSheet("QLabel { text-align: center; }")
             warning_dlg.setStandardButtons(
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
@@ -309,13 +334,13 @@ class FractalHistory():
                 self.clear_history()
                 self.history_dialog.accept()
 
+        # ------------------------------------------------------------
+
         # Connect buttons on actions
         btn_repeat.clicked.connect(on_repeat_clicked)
         btn_delete.clicked.connect(on_delete_clicked)
         btn_clear.clicked.connect(on_clear_clicked)
         btn_close.clicked.connect(self.history_dialog.accept)
-
-        # ------------------------------------------------------------
 
         btn_layout.addWidget(btn_repeat)
         btn_layout.addWidget(btn_delete)
@@ -328,4 +353,4 @@ class FractalHistory():
 
         self.history_dialog.exec()
 
-        self.log.write("show_history_list")
+        self.log.exit("show_history_list")

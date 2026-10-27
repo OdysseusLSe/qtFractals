@@ -20,9 +20,7 @@ from pickle import TRUE
 
 import cv2
 import copy
-import os
 import pprint
-import shutil
 import sys
 import time
 
