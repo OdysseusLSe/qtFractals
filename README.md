@@ -16,8 +16,6 @@ This app calculates fractal sets. It provides a few features like
 - change the color palette (providing pre-defined color palettes)
 - ...
 
-The app is written in Python3 and PySide6.
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the
 [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0) as
@@ -63,8 +61,14 @@ In this section I describe the main window and its controls:
 
 The history window shows all past calculations since starting the app the first
 time. The entries are sorted by time. You can delete single entries (at the
-moment one by one only) or repeat a specific calculation. The repeated one
-generates a new history entry!
+moment one by one only) or delete the whole history. On the other side you may
+repeat a specific calculation. The repeated one generates a new history entry!
+
+**Attention**:
+
+Deleting a history item deletes a possibly associated user defined color paette
+defintion too! As long as this user defined color palette is associated with
+another history item the color palete is safe.
 
 ## New color palette window
 
@@ -98,7 +102,8 @@ the specific history item the user defined color palette will be lost!
 
 To build a zoom video you have to provide the parameters of two Mandelbrot
 fractal sets: starting point and ending point. You may provide the data manually
-or grab it from the current Mandelbrot fractal set (preferred method).
+or grab it from the current Mandelbrot fractal set (preferred method). Depending
+which of the set is smaller or bigger the video will zoom-in or zoom-out.
 Additionally you may select the resolution (width and height), frames per
 second, and duration (seconds) of the video.
 
@@ -115,8 +120,6 @@ calculated/rendered as thumbnail. You may abort the whole video creation!
 
 - Please take care, that the fractal set ratio (width x height) is the same as
   the ratio of the resolution (width x height)!
-- During the calculation temporary a lot of video frames (FPS x Seconds) will be
-  generated. Enough disk space is a prerequisite.
 
 
 ## Mouse and keyboard actions
@@ -149,6 +152,8 @@ as the calculation starts (immediately after release of the LMB), the new values
 (see item 1 and 2 above) will be adapted accordingly.
 
 ## Development recommendations
+
+The app is written in Python3 (**version 3.14** and newer) and PySide6.
 
 ### Resources
 

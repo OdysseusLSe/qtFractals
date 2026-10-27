@@ -15,7 +15,6 @@
 <li>change the color palette (providing pre-defined color palettes)</li>
 <li>...</li>
 </ul>
-<p>The app is written in Python3 and PySide6.</p>
 <p>This program is free software: you can redistribute it and/or modify
 it under the terms of the
 <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a> as
@@ -58,8 +57,12 @@ detailled results).</li>
 <p><img src="docs/app_screenshot_history.png" alt="History window" style="width:100%; height:auto;"></p>
 <p>The history window shows all past calculations since starting the app the first
 time. The entries are sorted by time. You can delete single entries (at the
-moment one by one only) or repeat a specific calculation. The repeated one
-generates a new history entry!</p>
+moment one by one only) or delete the whole history. On the other side you may
+repeat a specific calculation. The repeated one generates a new history entry!</p>
+<p><strong>Attention</strong>:</p>
+<p>Deleting a history item deletes a possibly associated user defined color paette
+defintion too! As long as this user defined color palette is associated with
+another history item the color palete is safe.</p>
 <h2>New color palette window</h2>
 <!-- ![New color palette window](docs/app_screenshot_new_cp.png) -->
 <p><img src="docs/app_screenshot_new_cp.png" alt="New color palette window" style="width:100%; height:auto;"></p>
@@ -85,7 +88,8 @@ the specific history item the user defined color palette will be lost!</p>
 <p><img src="docs/app_screenshot_zoom.png" alt="Zoom video parameters window" style="width:100%; height:auto;"></p>
 <p>To build a zoom video you have to provide the parameters of two Mandelbrot
 fractal sets: starting point and ending point. You may provide the data manually
-or grab it from the current Mandelbrot fractal set (preferred method).
+or grab it from the current Mandelbrot fractal set (preferred method). Depending
+which of the set is smaller or bigger the video will zoom-in or zoom-out.
 Additionally you may select the resolution (width and height), frames per
 second, and duration (seconds) of the video.</p>
 <p>Of course you are able to select an existing color palette from a list.</p>
@@ -98,8 +102,6 @@ calculated/rendered as thumbnail. You may abort the whole video creation!</p>
 <ul>
 <li>Please take care, that the fractal set ratio (width x height) is the same as
   the ratio of the resolution (width x height)!</li>
-<li>During the calculation temporary a lot of video frames (FPS x Seconds) will be
-  generated. Enough disk space is a prerequisite.</li>
 </ul>
 <h2>Mouse and keyboard actions</h2>
 <h3>Julia set</h3>
@@ -124,6 +126,7 @@ current ratio, see item 3) which defines the area you want to zoom in. As soon
 as the calculation starts (immediately after release of the LMB), the new values
 (see item 1 and 2 above) will be adapted accordingly.</p>
 <h2>Development recommendations</h2>
+<p>The app is written in Python3 (<strong>version 3.14</strong> and newer) and PySide6.</p>
 <h3>Resources</h3>
 <p>To iclude all necessary resources you need the Qt resource system (<code>.qrc</code>)
 provided by PySide6 from Qt: "pyside6-rcc" (included already in the "pyside6"
