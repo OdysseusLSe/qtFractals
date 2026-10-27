@@ -59,11 +59,11 @@ class FractalWidget(QWidget):
         self.log = Logging("FractalWidget", True)
         self.log.entry("__init__", False)
 
-        self.calc_area = copy.deepcopy(frac_area)
-        self.frac_area = copy.deepcopy(frac_area)
-        self.draw_dim  = copy.deepcopy(draw_dim)
+        self.calc_area = copy.copy(frac_area)
+        self.frac_area = copy.copy(frac_area)
+        self.draw_dim  = copy.copy(draw_dim)
         self.iter_lim  = iter_lim
-        self.cp        = copy.deepcopy(col_pal)
+        self.cp        = copy.copy(col_pal)
         self.frac_set  = frac_set
         self.julia_c   = julia_c
 
@@ -104,7 +104,7 @@ class FractalWidget(QWidget):
             self.log.exit("calculation_finished", True)
             return
 
-        self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
+        #self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
 
         self.update()
 
@@ -384,7 +384,7 @@ class FractalWidget(QWidget):
                 # Calculate new fractal area
                 if self.calculate_selected_area(rect):
                     self.log.write("frac_area=" + str(self.frac_area), False)
-                    self.frac_area = copy.deepcopy(self.calc_area)
+                    self.frac_area = copy.copy(self.calc_area)
                     self.start_calculation()
 
         super().mouseReleaseEvent(event)
@@ -447,10 +447,10 @@ class FractalWidget(QWidget):
     def set_parameters(self, frac_area, draw_dim, iter_lim, col_pal, frac_set, julia_c):
         self.log.entry("set_parameters", False)
 
-        self.frac_area = copy.deepcopy(frac_area)
-        self.draw_dim  = copy.deepcopy(draw_dim)
+        self.frac_area = copy.copy(frac_area)
+        self.draw_dim  = copy.copy(draw_dim)
         self.iter_lim  = iter_lim
-        self.cp        = copy.deepcopy(col_pal)
+        self.cp        = copy.copy(col_pal)
         self.frac_set  = frac_set
         self.julia_c   = julia_c
 

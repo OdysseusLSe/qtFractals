@@ -131,7 +131,7 @@ class MainWindow(QMainWindow):
         self.fh = FractalHistory(APP_NAME, "history.json")
         self.history_list = self.fh.load_history()
         log_string = pprint.pformat(self.history_list)
-        self.log.write(f"self.history_list=\n{log_string}", True)
+        self.log.write(f"self.history_list=\n{log_string}", False)
 
         user_cp_list = []
         for item in self.history_list:
@@ -281,24 +281,62 @@ class MainWindow(QMainWindow):
 
         # Toggle widget (toggle visibility of parameters)
 
-        self.toggle_button = QPushButton("Show details ▼")
-        self.toggle_button.setCheckable(True)
+        toggle_btn = QPushButton("Show details ▼")
+        toggle_btn.setCheckable(True)
+
+        self.toggle_extension_used = False
+        self.hide_max_width   = 0
+        self.hide_max_height  = 0
+        self.delta_max_width  = 0
+        self.delta_max_height = 0
 
         def toggle_extension(checked):
-            parameter_widget.setVisible(checked)
 
             if checked:
-                self.toggle_button.setText("Details ausblenden ▲")
+                toggle_btn.setText("Hide details ▲")
             else:
-                self.toggle_button.setText("Details anzeigen ▼")
+                toggle_btn.setText("Show details ▼")
 
-            self.setMinimumSize(0, 0)
-            main_layout.activate()
+            if not self.toggle_extension_used:
+                self.log.write("self.toggle_extension_used=False", True)
 
-            self.adjustSize()
-            self.setMinimumSize(self.sizeHint())
+                self.hide_max_width  = self.width()
+                self.hide_max_height = self.height()
+                self.log.write(f"self.width()={self.width()}", True)
+                self.log.write(f"self.height()={self.height()}", True)
 
-        self.toggle_button.clicked.connect(toggle_extension)
+                parameter_widget.setVisible(checked)
+
+                self.setMinimumSize(0, 0)
+                main_layout.activate()
+                self.adjustSize()
+                self.setMinimumSize(self.sizeHint())
+
+                self.delta_max_width  = self.width()  - self.hide_max_width
+                self.delta_max_height = self.height() - self.hide_max_height
+                self.log.write(f"delta_max_width={self.delta_max_width}", True)
+                self.log.write(f"delta_max_height={self.delta_max_height}", True)
+
+            if self.toggle_extension_used:
+                self.log.write("self.toggle_extension_used=True", True)
+
+                current_height = self.height()
+                self.log.write(f"current_height={current_height}", True)
+
+                if checked:
+                    new_height = current_height + self.delta_max_height
+                    self.log.write(f"new_height={new_height}", True)
+                else:
+                    new_height = current_height - self.delta_max_height
+                    self.log.write(f"new_height={new_height}", True)
+
+                parameter_widget.setVisible(checked)
+
+                self.resize(self.width(), new_height)
+
+            self.toggle_extension_used = True
+
+        toggle_btn.clicked.connect(toggle_extension)
 
         # First row
 
@@ -371,6 +409,14 @@ class MainWindow(QMainWindow):
         self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
 
+        stop_btn = QPushButton("Stop")
+        stop_btn.clicked.connect(self.fw.stop_calculation)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(toggle_btn)
+        btn_layout.addStretch()
+        btn_layout.addWidget(stop_btn)
+
         self.scroll_area = QScrollArea()
 
         sb_thickness = self.scroll_area.style().pixelMetric(QStyle.PM_ScrollBarExtent)
@@ -400,7 +446,7 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(xOffset, yOffset, xOffset, yOffset)
         main_layout.setSpacing(10)
 
-        main_layout.addWidget(self.toggle_button)
+        main_layout.addLayout(btn_layout)
 
         parameter_widget.setVisible(False)
         main_layout.addWidget(parameter_widget)
