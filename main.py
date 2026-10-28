@@ -83,7 +83,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.7.5"
+APP_VERSION = "0.8.0"
 
 
 #
@@ -131,7 +131,7 @@ class MainWindow(QMainWindow):
         self.fh = FractalHistory(APP_NAME, "history.json")
         self.history_list = self.fh.load_history()
         log_string = pprint.pformat(self.history_list)
-        self.log.write(f"self.history_list=\n{log_string}", True)
+        self.log.write(f"self.history_list=\n{log_string}", False)
 
         user_cp_list = []
         for item in self.history_list:
@@ -623,46 +623,6 @@ class MainWindow(QMainWindow):
             t = step / (num_of_frames - 1)
             ease_data.append(1 - ((1 - t) ** power) if zoom_in else t ** power)
 
-        # Build non-modal dialog to show progress
-
-        cr_vid_dialog = QDialog(self)
-        cr_vid_dialog.setWindowTitle("Creating video")
-
-        main_layout = QVBoxLayout(cr_vid_dialog)
-
-        thumbnail = QLabel()
-        pixmap    = QPixmap()
-        thumbnail.setMinimumSize(155, 155)
-        thumbnail.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        thumbnail.setPixmap(pixmap)
-        main_layout.addWidget(thumbnail)
-
-        frames_progress = QtWidgets.QProgressBar()
-        frames_progress.setRange(0, num_of_frames)
-        frames_progress.setValue(0)
-        main_layout.addWidget(frames_progress)
-
-        frames_per = QLabel("<b>Calculation: 0%</b>")
-        frames_per.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(frames_per)
-
-        frames_abs = QLabel(f"<b>Frames: 0/{num_of_frames}</b>")
-        frames_abs.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(frames_abs)
-
-        button_box = QDialogButtonBox(QDialogButtonBox.Abort)
-        main_layout.addWidget(button_box)
-
-        cr_vid_dialog.setMinimumSize(cr_vid_dialog.sizeHint())
-        cr_vid_dialog.show()
-        cr_vid_dialog.raise_()
-        cr_vid_dialog.activateWindow()
-
-        def button_clicked(button):
-            self.is_stopped = True
-
-        button_box.clicked.connect(button_clicked)
-
         # Create directory for video frames
         dir_time = time.time()
         dir_name = f"{self.cache_dir}/{APP_NAME}.video-{dir_time}"
@@ -685,6 +645,7 @@ class MainWindow(QMainWindow):
 
         self.ff = FractalFrame()
         image   = QImage()
+        self.progress_bar.setRange(0, num_of_frames)
 
         #
         # Start calculation of frames and rendering of video
@@ -692,7 +653,11 @@ class MainWindow(QMainWindow):
 
         for step in range(0, num_of_frames, 1):
 
+            status = f"Creating video (frame: {step+1}/{num_of_frames})"
+            self.status_bar.showMessage(status)
+
             if self.is_stopped:
+                self.status_bar.showMessage("Video creation aborted!")
                 break
 
             factor = ease_data[step]
@@ -718,11 +683,7 @@ class MainWindow(QMainWindow):
                 cp
             )
 
-            # Create thumbnail for progress window
-            thumbnail.setPixmap(QPixmap.fromImage(image.scaledToWidth(
-                150,
-                Qt.TransformationMode.FastTransformation
-            )))
+            self.progress_bar.setValue(step+1)
 
             image = image.convertToFormat(QImage.Format.Format_RGB32)
             w     = image.width()
@@ -731,33 +692,39 @@ class MainWindow(QMainWindow):
             arr   = np.frombuffer(ptr, dtype=np.uint8).reshape((h, w, 4))
             video.write(cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR))
 
-            frames_progress.setValue(step+1)
-            percent = (step+1) / num_of_frames * 100
-            frames_per.setText(f"<b>Calculation: {percent:.2f}%</b>")
+            ww = self.fw.width()
+            wh = self.fw.height()
+            self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
 
-            frames_abs.setText(f"<b>Frames: {step+1}/{num_of_frames}</b>")
+            if w > ww or h > wh:
+                fitted_image = image.scaled(
+                    ww,
+                    wh,
+                    Qt.KeepAspectRatio,
+                    Qt.TransformationMode.FastTransformation
+                )
+                self.fw.realtime_update(fitted_image)
+            else:
+                self.fw.realtime_update(image)
 
             QCoreApplication.processEvents()
 
         if self.is_stopped:
             # User stopped calculation
-
-            cr_vid_dialog.close()
-
             video.release()
             cv2.destroyAllWindows()
 
             msg = f"Aborted Video\n {video_name}\n in cache\n {dir_name}"
             QMessageBox.warning(self, "Video in cache", msg)
 
-            self.log.write("create_video")
+            self.log.exit("create_video")
             return
-
-        # Delete progress dialog for calculation and rendering
-        cr_vid_dialog.close()
 
         video.release()
         cv2.destroyAllWindows()
+
+        status = f"Video creation done ({video_name})."
+        self.status_bar.showMessage(status)
 
         # Select directory where to save the newly created video to
         folder_path = QFileDialog.getExistingDirectory(
@@ -783,8 +750,7 @@ class MainWindow(QMainWindow):
             msg = f"Video\n {video_name}\n still in cache\n {str(dir_path)}"
             QMessageBox.warning(self, "Video in cache", msg)
 
-
-        self.log.exit("create_video")
+        self.log.exit("create_video", True)
 
     #
     # -----------------------------------------------
