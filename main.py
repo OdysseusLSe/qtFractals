@@ -1271,6 +1271,15 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def stop_video_creation(self):
+        self.log.entry("stop_video_creation")
+        self.is_stopped = True
+        self.log.exit("stop_video_creation")
+
+    #
+    # -----------------------------------------------
+    #
+
     def trigger_calculation(self):
         self.log.entry("trigger_calculation")
 
