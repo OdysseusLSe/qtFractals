@@ -85,7 +85,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.7.5"
+APP_VERSION = "0.8.0"
 
 
 #
@@ -385,22 +385,25 @@ class MainWindow(QMainWindow):
             self.current_frac_set,
             self.julia_c
         )
-        self.fw.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
         self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
 
-        stop_btn = QPushButton("Stop")
-        stop_btn.clicked.connect(self.fw.stop_calculation)
-        stop_btn.clicked.connect(self.stop_video_creation)
+        self.scroll_area = QScrollArea()
 
-        self.info_lbl = QLabel("<b>Starting application!</b>")
+        sb_thickness = self.scroll_area.style().pixelMetric(QStyle.PM_ScrollBarExtent)
+        frame_margin = self.scroll_area.frameWidth() * 2
+        min_width    = self.const_draw_dim['width'] + sb_thickness + frame_margin
+        min_height   = self.const_draw_dim['height'] + sb_thickness + frame_margin
+        self.scroll_area.setMinimumSize(min_width, min_height)
 
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(toggle_btn)
-        btn_layout.addStretch()
-        btn_layout.addWidget(self.info_lbl)
-        btn_layout.addStretch()
-        btn_layout.addWidget(stop_btn)
+        log_string = f"sb_thickness,frame_margin={sb_thickness},{frame_margin}"
+        self.log.write(log_string)
+        log_string = f"min_width,min_height={min_width},{min_height}"
+        self.log.write(log_string)
+
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setWidget(self.fw)
+        self.scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Connect the progress signal from the FractalWidget to the
         # update_progress method.
@@ -410,19 +413,12 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout()
 
-        main_layout.addLayout(btn_layout)
+        # 10 pixel distance from every window frame
+        main_layout.setContentsMargins(xOffset, yOffset, xOffset, yOffset)
+        main_layout.setSpacing(10)
 
-        parameter_widget.setVisible(False)
-        main_layout.addWidget(parameter_widget)
-
-        # Only self.fw is allowed to stretch out
-        main_layout.addWidget(
-            self.fw,
-            alignment=Qt.AlignmentFlag.AlignCenter
-        )
-
-        #main_layout.addStretch(1)
-
+        main_layout.addLayout(layout_grid)
+        main_layout.addWidget(self.scroll_area)
         main_layout.addWidget(self.progress_bar)
 
         main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetNoConstraint)
@@ -702,11 +698,7 @@ class MainWindow(QMainWindow):
 
         for step in range(0, num_of_frames, 1):
 
-            info_str = f"<b>Creating video (frame: {step+1}/{num_of_frames})</b>"
-            self.info_lbl.setText(info_str)
-
             if self.is_stopped:
-                self.info_lbl.setText("<b>Video creation aborted!</b>")
                 break
 
             factor = ease_data[step]
@@ -741,18 +733,11 @@ class MainWindow(QMainWindow):
             arr   = np.frombuffer(ptr, dtype=np.uint8).reshape((h, w, 4))
             video.write(cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR))
 
-            ww = self.fw.width()
-            wh = self.fw.height()
-            self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
+            frames_progress.setValue(step+1)
+            percent = (step+1) / num_of_frames * 100
+            frames_per.setText(f"<b>Calculation: {percent:.2f}%</b>")
 
-            if w > ww or h > wh:
-                fitted_image = image.scaled(
-                    ww,
-                    wh,
-                    Qt.KeepAspectRatio,
-                    Qt.TransformationMode.FastTransformation
-                )
-                self.fw.realtime_update(fitted_image)
+            frames_abs.setText(f"<b>Frames: {step+1}/{num_of_frames}</b>")
 
             QCoreApplication.processEvents()
 
@@ -769,9 +754,6 @@ class MainWindow(QMainWindow):
 
         video.release()
         cv2.destroyAllWindows()
-
-        info_str = f"<b>Video creation done ({video_name}).</b>"
-        self.info_lbl.setText(info_str)
 
         # Select directory where to save the newly created video to
         folder_path = QFileDialog.getExistingDirectory(
