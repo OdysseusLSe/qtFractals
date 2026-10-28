@@ -62,12 +62,14 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QStatusBar,
     QStyle,
     QTextEdit,
@@ -278,6 +280,10 @@ class MainWindow(QMainWindow):
 
         parameter_widget = QWidget()
         layout_grid = QGridLayout(parameter_widget)
+        parameter_widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Fixed
+        )
 
         # Toggle widget (toggle visibility of parameters)
 
@@ -297,44 +303,17 @@ class MainWindow(QMainWindow):
             else:
                 toggle_btn.setText("Show details ▼")
 
-            if not self.toggle_extension_used:
-                self.log.write("self.toggle_extension_used=False", False)
+            parameter_widget.setVisible(checked)
 
-                self.hide_max_width  = self.width()
-                self.hide_max_height = self.height()
-                self.log.write(f"self.width()={self.width()}", False)
-                self.log.write(f"self.height()={self.height()}", False)
+            self.setMinimumSize(0, 0)
+            container.setMinimumSize(0, 0)
 
-                parameter_widget.setVisible(checked)
+            main_layout.activate()
 
-                self.setMinimumSize(0, 0)
-                main_layout.activate()
-                self.adjustSize()
-                self.setMinimumSize(self.sizeHint())
+            ziel_groesse = main_layout.sizeHint()
+            self.resize(self.width(), ziel_groesse.height())
 
-                self.delta_max_width  = self.width()  - self.hide_max_width
-                self.delta_max_height = self.height() - self.hide_max_height
-                self.log.write(f"delta_max_width={self.delta_max_width}", False)
-                self.log.write(f"delta_max_height={self.delta_max_height}", False)
-
-            if self.toggle_extension_used:
-                self.log.write("self.toggle_extension_used=True", False)
-
-                current_height = self.height()
-                self.log.write(f"current_height={current_height}", False)
-
-                if checked:
-                    new_height = current_height + self.delta_max_height
-                    self.log.write(f"new_height={new_height}", False)
-                else:
-                    new_height = current_height - self.delta_max_height
-                    self.log.write(f"new_height={new_height}", False)
-
-                parameter_widget.setVisible(checked)
-
-                self.resize(self.width(), new_height)
-
-            self.toggle_extension_used = True
+            self.setMinimumSize(self.sizeHint())
 
         toggle_btn.clicked.connect(toggle_extension)
 
@@ -431,10 +410,6 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout()
 
-        # 10 pixel distance from every window frame
-        #main_layout.setContentsMargins(xOffset, yOffset, xOffset, yOffset)
-        #main_layout.setSpacing(10)
-
         main_layout.addLayout(btn_layout)
 
         parameter_widget.setVisible(False)
@@ -443,13 +418,14 @@ class MainWindow(QMainWindow):
         # Only self.fw is allowed to stretch out
         main_layout.addWidget(
             self.fw,
-            stretch=1,
             alignment=Qt.AlignmentFlag.AlignCenter
         )
 
+        #main_layout.addStretch(1)
+
         main_layout.addWidget(self.progress_bar)
 
-        main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMinAndMaxSize)
+        main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetNoConstraint)
 
         container = QWidget()
         container.setLayout(main_layout)
@@ -457,7 +433,7 @@ class MainWindow(QMainWindow):
 
         main_layout.activate()
         self.adjustSize()
-        self.setMinimumSize(self.sizeHint())
+        #self.setMinimumSize(self.sizeHint())
 
         self.log.write("build_main_window")
 
