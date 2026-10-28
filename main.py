@@ -62,14 +62,12 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
-    QLayout,
     QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
     QPushButton,
     QScrollArea,
-    QSizePolicy,
     QStatusBar,
     QStyle,
     QTextEdit,
@@ -157,11 +155,13 @@ class MainWindow(QMainWindow):
         self.log.entry("build_main_window")
 
         # Offset of the widgets from the main window frame
-        #xOffset = 10
-        #yOffset = 10
+        xOffset = 10
+        yOffset = 10
 
         # Title of the main window
         self.setWindowTitle(APP_NAME + " " + APP_VERSION)
+
+        self.setMinimumHeight(800)
 
         # Build labels
         rp_lbl       = QLabel("<b>Origin of real part</b>:", self)
@@ -276,46 +276,7 @@ class MainWindow(QMainWindow):
         # Layout labels, line edits, fractal window, progress bar, and buttons
         #
 
-        # Widget for parameters
-
-        parameter_widget = QWidget()
-        layout_grid = QGridLayout(parameter_widget)
-        parameter_widget.setSizePolicy(
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Fixed
-        )
-
-        # Toggle widget (toggle visibility of parameters)
-
-        toggle_btn = QPushButton("Show details ▼")
-        toggle_btn.setCheckable(True)
-
-        self.toggle_extension_used = False
-        self.hide_max_width   = 0
-        self.hide_max_height  = 0
-        self.delta_max_width  = 0
-        self.delta_max_height = 0
-
-        def toggle_extension(checked):
-
-            if checked:
-                toggle_btn.setText("Hide details ▲")
-            else:
-                toggle_btn.setText("Show details ▼")
-
-            parameter_widget.setVisible(checked)
-
-            self.setMinimumSize(0, 0)
-            container.setMinimumSize(0, 0)
-
-            main_layout.activate()
-
-            ziel_groesse = main_layout.sizeHint()
-            self.resize(self.width(), ziel_groesse.height())
-
-            self.setMinimumSize(self.sizeHint())
-
-        toggle_btn.clicked.connect(toggle_extension)
+        layout_grid = QGridLayout()
 
         # First row
 
@@ -385,25 +346,10 @@ class MainWindow(QMainWindow):
             self.current_frac_set,
             self.julia_c
         )
+        self.fw.setMinimumSize(self.draw_dim['width'], self.draw_dim['height'])
+
         self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
-
-        self.scroll_area = QScrollArea()
-
-        sb_thickness = self.scroll_area.style().pixelMetric(QStyle.PM_ScrollBarExtent)
-        frame_margin = self.scroll_area.frameWidth() * 2
-        min_width    = self.const_draw_dim['width'] + sb_thickness + frame_margin
-        min_height   = self.const_draw_dim['height'] + sb_thickness + frame_margin
-        self.scroll_area.setMinimumSize(min_width, min_height)
-
-        log_string = f"sb_thickness,frame_margin={sb_thickness},{frame_margin}"
-        self.log.write(log_string)
-        log_string = f"min_width,min_height={min_width},{min_height}"
-        self.log.write(log_string)
-
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setWidget(self.fw)
-        self.scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Connect the progress signal from the FractalWidget to the
         # update_progress method.
@@ -418,18 +364,17 @@ class MainWindow(QMainWindow):
         main_layout.setSpacing(10)
 
         main_layout.addLayout(layout_grid)
-        main_layout.addWidget(self.scroll_area)
+        main_layout.addStretch()
+        main_layout.addWidget(self.fw, alignment=Qt.AlignmentFlag.AlignHCenter)
+        main_layout.addStretch()
         main_layout.addWidget(self.progress_bar)
-
-        main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetNoConstraint)
 
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
 
-        main_layout.activate()
         self.adjustSize()
-        #self.setMinimumSize(self.sizeHint())
+        self.setMinimumSize(self.sizeHint())
 
         self.log.write("build_main_window")
 
@@ -523,7 +468,7 @@ class MainWindow(QMainWindow):
             # Do not store this calculation in the history, because it is
             # either a preview for a new color palette or a frame for a video.
             self.is_interim_pic = False
-            self.log.exit("calculation_closing")
+            self.log.write("calculation_closing")
             return
 
         thumbnail_name = f"{time.time()}.png"
@@ -536,9 +481,6 @@ class MainWindow(QMainWindow):
         log_string = pprint.pformat(self.history_list)
         self.log.write(f"self.history_list=\n{log_string}")
         self.fh.save_history(self.history_list, thumbnail, thumbnail_name)
-
-        info_str = "<b>Calculation finished and stored in history.</b>"
-        self.info_lbl.setText(info_str)
 
         self.log.exit("calculation_closing")
 
@@ -624,7 +566,7 @@ class MainWindow(QMainWindow):
             fps = 10,
             sec = 1
         ):
-        self.log.entry("create_video", True)
+        self.log.entry("create_video")
 
         self.is_stopped = False
         cp = copy.copy(color_palette)
@@ -698,7 +640,11 @@ class MainWindow(QMainWindow):
 
         for step in range(0, num_of_frames, 1):
 
+            status = f"Creating video (frame: {step+1}/{num_of_frames})"
+            self.status_bar.showMessage(status)
+
             if self.is_stopped:
+                self.status_bar.showMessage("Video creation aborted!")
                 break
 
             factor = ease_data[step]
@@ -733,11 +679,20 @@ class MainWindow(QMainWindow):
             arr   = np.frombuffer(ptr, dtype=np.uint8).reshape((h, w, 4))
             video.write(cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR))
 
-            frames_progress.setValue(step+1)
-            percent = (step+1) / num_of_frames * 100
-            frames_per.setText(f"<b>Calculation: {percent:.2f}%</b>")
+            ww = self.fw.width()
+            wh = self.fw.height()
+            self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
 
-            frames_abs.setText(f"<b>Frames: {step+1}/{num_of_frames}</b>")
+            if w > ww or h > wh:
+                fitted_image = image.scaled(
+                    ww,
+                    wh,
+                    Qt.KeepAspectRatio,
+                    Qt.TransformationMode.FastTransformation
+                )
+                self.fw.realtime_update(fitted_image)
+            else:
+                self.fw.realtime_update(image)
 
             QCoreApplication.processEvents()
 
@@ -754,6 +709,9 @@ class MainWindow(QMainWindow):
 
         video.release()
         cv2.destroyAllWindows()
+
+        status = f"Video creation done ({video_name})."
+        self.status_bar.showMessage(status)
 
         # Select directory where to save the newly created video to
         folder_path = QFileDialog.getExistingDirectory(
@@ -1191,15 +1149,6 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def stop_video_creation(self):
-        self.log.entry("stop_video_creation")
-        self.is_stopped = True
-        self.log.exit("stop_video_creation")
-
-    #
-    # -----------------------------------------------
-    #
-
     def trigger_calculation(self):
         self.log.entry("trigger_calculation")
 
@@ -1298,25 +1247,21 @@ class MainWindow(QMainWindow):
             if self.current_frac_set == "Mandelbrot":
                 self.mandel_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
                 self.julia_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
-                info_str = "<b>Calculating Mandelbrot set...</b>"
-                self.info_lbl.setText(info_str)
             else:
                 self.mandel_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
                 self.julia_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
-                info_str = "<b>Calculating Julia set...</b>"
-                self.info_lbl.setText(info_str)
 
             self.mandel_btn.update()
             self.julia_btn.update()
 
-        self.log.write(f"value={value}/{self.draw_dim['height']}")
+        self.log.write("value=" + str(value) + " / " + str(self.draw_dim['height']))
 
         percent = int((value / self.progress_bar.maximum()) * 100)
         self.status_bar.showMessage(f"--- Progress: {percent}%")
 
         self.progress_bar.setValue(value)
 
-        self.log.exit("update_progress")
+        self.log.write("update_progress")
 
     #
     # -----------------------------------------------
@@ -1502,7 +1447,7 @@ class MainWindow(QMainWindow):
             self.cp = copy.copy(temp_cp)
 
         def cancel_clicked():
-            self.log.exit("zoom_video")
+            self.log.write("zoom_video")
             self.zoom_dialog.close()
 
         button_box.accepted.connect(ok_clicked)
@@ -1513,7 +1458,7 @@ class MainWindow(QMainWindow):
         self.zoom_dialog.setMinimumSize(self.zoom_dialog.sizeHint())
         self.zoom_dialog.show()
 
-        self.log.exit("zoom_video")
+        self.log.write("zoom_video")
 
     #
     # -----------------------------------------------

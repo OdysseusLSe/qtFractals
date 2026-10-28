@@ -450,7 +450,23 @@ class FractalWidget(QWidget):
             self.log.exit("realtime_update", True)
             return
 
-        self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
+        w  = image.width()
+        h  = image.height()
+        ww = self.width()
+        wh = self.height()
+        self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
+
+        if w > ww or h > wh:
+            self.image = image.scaled(
+                ww,
+                wh,
+                Qt.KeepAspectRatio,
+                Qt.TransformationMode.FastTransformation
+            )
+        else:
+            self.image = image
+
+        self.setFixedSize(ww, wh)
 
         self.update()
 
