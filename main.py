@@ -346,25 +346,10 @@ class MainWindow(QMainWindow):
             self.current_frac_set,
             self.julia_c
         )
+        self.fw.setMinimumSize(self.draw_dim['width'], self.draw_dim['height'])
+
         self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
-
-        self.scroll_area = QScrollArea()
-
-        sb_thickness = self.scroll_area.style().pixelMetric(QStyle.PM_ScrollBarExtent)
-        frame_margin = self.scroll_area.frameWidth() * 2
-        min_width    = self.const_draw_dim['width'] + sb_thickness + frame_margin
-        min_height   = self.const_draw_dim['height'] + sb_thickness + frame_margin
-        self.scroll_area.setMinimumSize(min_width, min_height)
-
-        log_string = f"sb_thickness,frame_margin={sb_thickness},{frame_margin}"
-        self.log.write(log_string)
-        log_string = f"min_width,min_height={min_width},{min_height}"
-        self.log.write(log_string)
-
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setWidget(self.fw)
-        self.scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Connect the progress signal from the FractalWidget to the
         # update_progress method.
@@ -379,7 +364,9 @@ class MainWindow(QMainWindow):
         main_layout.setSpacing(10)
 
         main_layout.addLayout(layout_grid)
-        main_layout.addWidget(self.scroll_area)
+        main_layout.addStretch()
+        main_layout.addWidget(self.fw, alignment=Qt.AlignmentFlag.AlignHCenter)
+        main_layout.addStretch()
         main_layout.addWidget(self.progress_bar)
 
         container = QWidget()
