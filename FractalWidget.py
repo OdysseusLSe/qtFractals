@@ -67,7 +67,8 @@ class FractalWidget(QWidget):
         self.frac_set  = frac_set
         self.julia_c   = julia_c
 
-        self.image = QImage()
+        self.image        = QImage()
+        self.image_2_save = QImage()
 
         # Mouse variables for mandelbrot selection
         self.selecting = False
@@ -96,26 +97,43 @@ class FractalWidget(QWidget):
     #
 
     def calculation_finished(self, image, calc_time):
-        self.log.entry("calculation_finished", False)
+        self.log.entry("calculation_finished", True)
 
-        self.image = image
-        if self.image.isNull():
+        if image.isNull():
             self.log.error("Missing image!", True)
             self.log.exit("calculation_finished", True)
             return
 
-        #self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
+        self.image_2_save = image
+
+        w  = image.width()
+        h  = image.height()
+        ww = self.width()
+        wh = self.height()
+        self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
+
+        if w > ww or h > wh:
+            self.image = image.scaled(
+                ww,
+                wh,
+                Qt.KeepAspectRatio,
+                Qt.TransformationMode.FastTransformation
+            )
+        else:
+            self.image = image
+
+        self.setFixedSize(ww, wh)
 
         self.update()
 
         # Create thumbnail of the image for history
-        self.thumbnail = self.image.scaledToWidth(
+        self.thumbnail = self.image_2_save.scaledToWidth(
             150,
             Qt.TransformationMode.SmoothTransformation
         )
         self.closing.emit(self.thumbnail, calc_time)
 
-        self.log.exit("calculation_finished", False)
+        self.log.exit("calculation_finished", True)
 
     #
     # -----------------------------------------------
@@ -203,14 +221,13 @@ class FractalWidget(QWidget):
     def get_image(self):
         self.log.entry("get_image", False)
 
-        if self.image.isNull():
+        if self.image_2_save.isNull():
             self.log.error("Missing image!", True)
             self.log.exit("get_image", True)
             return
 
         self.log.exit("get_image", False)
-
-        return self.image
+        return self.image_2_save
 
     #
     # -----------------------------------------------
@@ -426,19 +443,34 @@ class FractalWidget(QWidget):
     #
 
     def realtime_update(self, image):
-        self.log.entry("realtime_update", False)
+        self.log.entry("realtime_update", True)
 
-        self.image = image
-        if self.image.isNull():
+        if image.isNull():
             self.log.error("Missing image!", True)
             self.log.exit("realtime_update", True)
             return
 
-        self.setFixedSize(self.draw_dim['width'], self.draw_dim['height'])
+        w  = image.width()
+        h  = image.height()
+        ww = self.width()
+        wh = self.height()
+        self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
+
+        if w > ww or h > wh:
+            self.image = image.scaled(
+                ww,
+                wh,
+                Qt.KeepAspectRatio,
+                Qt.TransformationMode.FastTransformation
+            )
+        else:
+            self.image = image
+
+        self.setFixedSize(ww, wh)
 
         self.update()
 
-        self.log.exit("realtime_update", False)
+        self.log.exit("realtime_update", True)
 
     #
     # -----------------------------------------------
