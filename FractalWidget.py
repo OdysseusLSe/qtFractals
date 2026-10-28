@@ -443,7 +443,7 @@ class FractalWidget(QWidget):
     #
 
     def realtime_update(self, image):
-        self.log.entry("realtime_update", True)
+        self.log.entry("realtime_update", False)
 
         if image.isNull():
             self.log.error("Missing image!", True)
@@ -454,7 +454,7 @@ class FractalWidget(QWidget):
         h  = image.height()
         ww = self.width()
         wh = self.height()
-        self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
+        self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", False)
 
         if w > ww or h > wh:
             self.image = image.scaled(
@@ -470,7 +470,7 @@ class FractalWidget(QWidget):
 
         self.update()
 
-        self.log.exit("realtime_update", True)
+        self.log.exit("realtime_update", False)
 
     #
     # -----------------------------------------------

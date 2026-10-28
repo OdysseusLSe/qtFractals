@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
-        self.log = Logging("main::MainWindow", True)
+        self.log = Logging("MainWindow", True)
 
         self.setWindowTitle(f"{APP_NAME} {APP_VERSION}")
 
@@ -681,7 +681,7 @@ class MainWindow(QMainWindow):
 
             ww = self.fw.width()
             wh = self.fw.height()
-            self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
+            self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", False)
 
             if w > ww or h > wh:
                 fitted_image = image.scaled(
