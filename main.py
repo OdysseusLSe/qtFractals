@@ -124,7 +124,8 @@ class MainWindow(QMainWindow):
         self.set_default_values()
 
         # Build the main window with all the widgets
-        self.build_main_window()
+        self.parameter_window()
+        self.fractal_window()
 
         self.start_time = time.process_time()
 
@@ -152,8 +153,8 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def build_main_window(self):
-        self.log.entry("build_main_window")
+    def parameter_window(self):
+        self.log.entry("parameter_window")
 
         # Title of the main window
         self.setWindowTitle(APP_NAME + " " + APP_VERSION)
@@ -329,37 +330,14 @@ class MainWindow(QMainWindow):
         layout_grid.setColumnMinimumWidth(14, 30)
         layout_grid.setColumnMinimumWidth(16, 30)
 
-        #
-        # Create widget fractal ("third row") within a scrollable area
-        #
-
-        self.fw = FractalWidget(
-            self.const_frac_area,
-            self.const_draw_dim,
-            self.const_iter_lim,
-            self.cp,
-            self.current_frac_set,
-            self.julia_c
-        )
-        self.fw.setMinimumSize(self.draw_dim['width'], self.draw_dim['height'])
-        #self.fw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        self.fw.cur_rect.connect(self.sb_update_area)
-        self.fw.closing.connect(self.calculation_closing)
-
-        # Connect the progress signal from the FractalWidget to the
-        # update_progress method.
-        self.fw.progress.connect(self.update_progress)
-
-        # Build the overall layout of the main window
+        # Build the overall layout of the parameter window
 
         self.main_layout = QVBoxLayout()
 
         self.main_layout.addLayout(layout_grid)
-        self.main_layout.addStretch()
-        #self.main_layout.addWidget(self.fw, stretch=1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.main_layout.addWidget(self.fw, alignment=Qt.AlignCenter)
-        self.main_layout.addStretch()
+        #self.main_layout.addStretch()
+        #self.main_layout.addWidget(self.fw, alignment=Qt.AlignCenter)
+        #self.main_layout.addStretch()
         self.main_layout.addWidget(self.progress_bar)
 
         container = QWidget()
@@ -369,7 +347,7 @@ class MainWindow(QMainWindow):
         self.adjustSize()
         self.setMinimumSize(self.sizeHint())
 
-        self.log.write("build_main_window")
+        self.log.write("parameter_window")
 
     #
     # -----------------------------------------------
@@ -763,6 +741,36 @@ class MainWindow(QMainWindow):
         self.trigger_calculation()
 
         self.log.exit("dd_text_changed")
+
+    #
+    # -----------------------------------------------
+    # Create separate fractal window
+    # -----------------------------------------------
+    #
+
+    def fractal_window(self):
+        self.log.entry("fractal_window")
+
+        self.fw = FractalWidget(
+            self.const_frac_area,
+            self.const_draw_dim,
+            self.const_iter_lim,
+            self.cp,
+            self.current_frac_set,
+            self.julia_c
+        )
+        self.fw.setMinimumSize(self.draw_dim['width'], self.draw_dim['height'])
+
+        self.fw.cur_rect.connect(self.sb_update_area)
+        self.fw.closing.connect(self.calculation_closing)
+
+        # Connect the progress signal from the FractalWidget to the
+        # update_progress method.
+        self.fw.progress.connect(self.update_progress)
+
+        self.fw.show()
+
+        self.log.exit("fractal_window")
 
     #
     # -----------------------------------------------
