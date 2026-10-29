@@ -123,8 +123,6 @@ class FractalWidget(QWidget):
         else:
             self.image = image
 
-        #self.setFixedSize(sw, sh)
-
         self.update()
 
         # Create thumbnail of the image for history

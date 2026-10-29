@@ -47,7 +47,8 @@ from PySide6.QtGui import (
     QIcon,
     QImage,
     QIntValidator,
-    QKeySequence
+    QKeySequence,
+    QPixmap
 )
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import (
@@ -287,7 +288,7 @@ class MainWindow(QMainWindow):
 
         self.fw.start_calculation(self.is_interim_pic)
 
-        self.log.write("cp_showroom")
+        self.log.exit("cp_showroom")
 
     #
     # -----------------------------------------------
@@ -620,7 +621,7 @@ class MainWindow(QMainWindow):
         self.bg_color = QColor("black")
 
         def select_color():
-            new_bg_color = QColorDialog.getColor(parent=self, title="Select color")
+            new_bg_color = QColorDialog.getColor(parent=self.ncop_dialog, title="Select color")
             if new_bg_color.isValid():
                 self.bg_color = new_bg_color
 
@@ -630,7 +631,7 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout(self.ncop_dialog)
 
-        name_lbl   = QLabel("<b>Name of new color palette: </b>", self)
+        name_lbl   = QLabel("<b>Name of new color palette: </b>")
         name_edit  = QLineEdit(self)
         name_edit.setText("New Color Palette")
         layout = QHBoxLayout()
@@ -663,6 +664,13 @@ class MainWindow(QMainWindow):
         col_btn.clicked.connect(select_color)
         main_layout.addWidget(col_btn)
 
+        preview_label = QLabel()
+        preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        preview_label.setMinimumSize(360, 360)
+        preview_label.setStyleSheet("border: 1px dashed #999; background-color: #222; color: #888;")
+        preview_label.setText("Preview after pressing 'Preview'...")
+        main_layout.addWidget(preview_label)
+
         QBtn = (
             QDialogButtonBox.Apply | QDialogButtonBox.Save | QDialogButtonBox.Close
         )
@@ -688,12 +696,28 @@ class MainWindow(QMainWindow):
             self.cp['phaseB']      = vector[3][2]
 
         def preview_cp():
+
             vector_to_cp()
             R, G, B, A = self.bg_color.getRgb()
             self.cp['bg_R'] = R
             self.cp['bg_G'] = G
             self.cp['bg_B'] = B
-            self.cp_showroom()
+
+            ff    = FractalFrame()
+            image = QImage()
+
+            frac_area = {
+                'realOrigin' : -1.9,
+                'imagOrigin' : -1.2,
+                'realWidth'  : 2.43,
+                'imagHeight' : 2.43
+            }
+
+            image = ff.mandelbrot_frame(frac_area, 100, 360, 360, self.cp)
+            pixmap = QPixmap.fromImage(image)
+            preview_label.setStyleSheet("")
+            preview_label.setText("")
+            preview_label.setPixmap(pixmap)
 
         def save_cp():
             vector_to_cp()
