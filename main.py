@@ -47,8 +47,7 @@ from PySide6.QtGui import (
     QIcon,
     QImage,
     QIntValidator,
-    QKeySequence,
-    QPixmap
+    QKeySequence
 )
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import (
@@ -67,10 +66,8 @@ from PySide6.QtWidgets import (
     QMenu,
     QMessageBox,
     QPushButton,
-    QScrollArea,
     QSizePolicy,
     QStatusBar,
-    QStyle,
     QTextEdit,
     QVBoxLayout,
     QWidget
@@ -84,7 +81,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.8.0"
+APP_VERSION = "0.9.0"
 
 
 #
@@ -148,206 +145,6 @@ class MainWindow(QMainWindow):
                     self.cp_combo.addItem(cp_name)
 
         self.log.exit("__init__", True)
-
-    #
-    # -----------------------------------------------
-    #
-
-    def parameter_window(self):
-        self.log.entry("parameter_window")
-
-        # Title of the main window
-        self.setWindowTitle(APP_NAME + " " + APP_VERSION)
-
-        # Build labels
-        rp_lbl       = QLabel("<b>Origin of real part</b>:", self)
-        ip_lbl       = QLabel("<b>Origin of imag. part</b>:", self)
-        width_lbl    = QLabel("<b>Width</b>:", self)
-        height_lbl   = QLabel("<b>Height</b>:", self)
-        xDim_lbl     = QLabel("<b>x-Dim</b>:", self)
-        yDim_lbl     = QLabel("<b>y-Dim</b>:", self)
-        iter_lim_lbl = QLabel("<b>Iteration limit</b>:", self)
-
-        #
-        # Build line edits
-        #
-
-        bottom = self.frac_area['realOrigin']
-        top    = self.frac_area['realOrigin'] + self.frac_area['realWidth']
-        self.rp_edit = QLineEdit(self)
-        self.rp_edit.setText(str(self.const_frac_area['realOrigin']))
-        self.rp_edit.setValidator(QDoubleValidator(bottom, top, 15))
-        self.rp_edit.setFixedWidth(160)
-
-        bottom = self.frac_area['imagOrigin']
-        top    = self.frac_area['imagOrigin'] + self.frac_area['imagHeight']
-        self.ip_edit = QLineEdit(self)
-        self.ip_edit.setText(str(self.const_frac_area['imagOrigin']))
-        self.ip_edit.setValidator(QDoubleValidator(bottom, top, 15))
-        self.ip_edit.setFixedWidth(160)
-
-        bottom = 0.00000000001
-        top    = self.frac_area['realWidth']
-        self.width_edit = QLineEdit(self)
-        self.width_edit.setText(str(self.const_frac_area['realWidth']))
-        self.width_edit.setValidator(QDoubleValidator(bottom, top, 15))
-        self.width_edit.setFixedWidth(160)
-
-        bottom = 0.00000000001
-        top    = self.frac_area['imagHeight']
-        self.height_edit = QLineEdit(self)
-        self.height_edit.setText(str(self.const_frac_area['imagHeight']))
-        self.height_edit.setValidator(QDoubleValidator(bottom, top, 15))
-        self.height_edit.setFixedWidth(160)
-
-        self.x_dim_edit = QLineEdit(self)
-        self.x_dim_edit.setText(str(self.const_draw_dim['width']))
-        self.x_dim_edit.setValidator(QIntValidator(500, 10000))
-        self.x_dim_edit.setFixedWidth(50)
-
-        self.y_dim_edit = QLineEdit(self)
-        self.y_dim_edit.setText(str(self.const_draw_dim['height']))
-        self.y_dim_edit.setValidator(QIntValidator(500, 10000))
-        self.y_dim_edit.setFixedWidth(50)
-
-        self.iter_lim_edit = QLineEdit(self)
-        self.iter_lim_edit.setText(str(self.const_iter_lim))
-        self.iter_lim_edit.setValidator(QIntValidator(100, 10000))
-        self.iter_lim_edit.setFixedWidth(50)
-
-        # Build combo box for drawing dimensions
-        self.dd_combo = QComboBox()
-        for value in self.sel_draw_dim.values():
-            self.dd_combo.addItem(value)
-        self.dd_combo.currentTextChanged.connect(self.dd_text_changed)
-
-        #
-        # Indicator if Mandelbrot set or Julia set is active
-        # (default: Mandelbrot set).
-        #
-
-        self.mandel_btn = QPushButton("Mandelbrot")
-        self.mandel_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
-        self.mandel_btn.setIconSize(QSize(16, 16))
-        self.mandel_btn.setObjectName("mandelJuliaButton")
-        self.mandel_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
-
-        self.julia_btn = QPushButton("Julia")
-        self.julia_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
-        self.julia_btn.setIconSize(QSize(16, 16))
-        self.julia_btn.setObjectName("mandelJuliaButton")
-        self.julia_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
-
-        # "Reset" Button
-        self.reset_btn = QPushButton('Reset', self)
-        self.reset_btn.clicked.connect(self.reset)
-
-        # "Start" Button
-        self.start_btn = QPushButton('Start', self)
-        self.start_btn.setEnabled(False)
-        self.start_btn.clicked.connect(self.trigger_calculation)
-
-        #
-        # Build combo box for color palettes
-        #
-
-        self.cp_combo = QComboBox()
-        for element in self.cp_list:
-            self.cp_combo.addItem(element['name'])
-            if element['name'] == self.cp['name']:
-                self.cp_combo.setCurrentText(element['name'])
-        self.cp_combo.currentTextChanged.connect(self.cp_text_changed)
-
-        # Both buttons have the same width
-        btn_width = self.reset_btn.sizeHint().width()
-        self.reset_btn.setFixedWidth(btn_width)
-        self.start_btn.setFixedWidth(btn_width)
-
-        # Progress bar
-        self.progress_bar = QtWidgets.QProgressBar(self)
-        self.progress_bar.setRange(0, self.const_draw_dim['height'])
-        self.progress_bar.setValue(0)
-
-        #
-        # Layout labels, line edits, fractal window, progress bar, and buttons
-        #
-
-        layout_grid = QGridLayout()
-
-        # First row
-
-        layout_grid.addWidget(rp_lbl, 0, 0)
-        layout_grid.addWidget(self.rp_edit, 0, 1)
-
-        layout_grid.addWidget(width_lbl, 0, 3)
-        layout_grid.addWidget(self.width_edit, 0, 4)
-
-        layout_grid.addWidget(xDim_lbl, 0, 6)
-        layout_grid.addWidget(self.x_dim_edit, 0, 7)
-
-        layout_grid.addWidget(yDim_lbl, 0, 9)
-        layout_grid.addWidget(self.y_dim_edit, 0, 10)
-
-        layout_grid.addWidget(iter_lim_lbl, 0, 12)
-        layout_grid.addWidget(self.iter_lim_edit, 0, 13)
-
-        layout_grid.addWidget(self.mandel_btn, 0, 15)
-
-        layout_grid.addWidget(self.reset_btn, 0, 17)
-
-        # Second row
-
-        layout_grid.addWidget(ip_lbl, 1, 0)
-        layout_grid.addWidget(self.ip_edit, 1, 1)
-
-        layout_grid.addWidget(height_lbl, 1, 3)
-        layout_grid.addWidget(self.height_edit, 1, 4)
-
-        layout_grid.addWidget(
-            self.dd_combo, 1, 6, 1, 5,
-            Qt.AlignmentFlag.AlignHCenter
-        )
-
-        layout_grid.addWidget(
-            self.cp_combo, 1, 12, 1, 2,
-            Qt.AlignmentFlag.AlignHCenter
-        )
-
-        layout_grid.addWidget(self.julia_btn, 1, 15)
-
-        layout_grid.addWidget(self.start_btn, 1, 17)
-
-        # Space within the grid layout
-
-        layout_grid.setHorizontalSpacing(10)
-        layout_grid.setVerticalSpacing(10)
-
-        layout_grid.setColumnStretch(16, 1)
-        layout_grid.setColumnMinimumWidth(2, 30)
-        layout_grid.setColumnMinimumWidth(5, 30)
-        layout_grid.setColumnMinimumWidth(8, 1)
-        layout_grid.setColumnMinimumWidth(11, 30)
-        layout_grid.setColumnMinimumWidth(14, 30)
-        layout_grid.setColumnMinimumWidth(16, 30)
-
-        # Build the overall layout of the parameter window
-
-        self.main_layout = QVBoxLayout()
-
-        self.main_layout.addLayout(layout_grid)
-        #self.main_layout.addStretch()
-        #self.main_layout.addWidget(self.fw, alignment=Qt.AlignCenter)
-        #self.main_layout.addStretch()
-        self.main_layout.addWidget(self.progress_bar)
-
-        container = QWidget()
-        container.setLayout(self.main_layout)
-        self.setCentralWidget(container)
-
-        self.adjustSize()
-        self.setMinimumSize(self.sizeHint())
-
-        self.log.write("parameter_window")
 
     #
     # -----------------------------------------------
@@ -934,6 +731,253 @@ class MainWindow(QMainWindow):
         self.ncop_dialog.exec()
 
         self.log.write("new_color_palette")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def parameter_window(self):
+        self.log.entry("parameter_window")
+
+        # Title of the main window
+        self.setWindowTitle(APP_NAME + " " + APP_VERSION)
+
+        grid_layout = QGridLayout()
+        grid_layout.setVerticalSpacing(5)
+
+        # Space within the grid layout
+
+        grid_layout.setHorizontalSpacing(10)
+        grid_layout.setVerticalSpacing(10)
+
+        row = 0
+
+        def create_line():
+            line = QFrame()
+            line.setFrameShape(QFrame.Shape.HLine)
+            line.setStyleSheet("""
+            QFrame {
+                height: 1px;
+            }
+            """)
+            return line
+
+        label = QLabel("<b>Complex parameters</b>:", self)
+        grid_layout.addWidget(
+            label, row, 0, 1, 4,
+            Qt.AlignmentFlag.AlignHCenter
+        )
+
+        row = row + 1
+
+        label = QLabel("<b>Origin of real part</b>:", self)
+        grid_layout.addWidget(label, row, 0, 1, 2)
+
+        bottom = self.frac_area['realOrigin']
+        top    = self.frac_area['realOrigin'] + self.frac_area['realWidth']
+        self.rp_edit = QLineEdit(self)
+        self.rp_edit.setText(str(self.const_frac_area['realOrigin']))
+        self.rp_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.rp_edit.setFixedWidth(160)
+        grid_layout.addWidget(self.rp_edit, row, 2, 1, 2)
+
+        row = row + 1
+
+        label = QLabel("<b>Origin of imag. part</b>:", self)
+        grid_layout.addWidget(label, row, 0, 1, 2)
+
+        bottom = self.frac_area['imagOrigin']
+        top    = self.frac_area['imagOrigin'] + self.frac_area['imagHeight']
+        self.ip_edit = QLineEdit(self)
+        self.ip_edit.setText(str(self.const_frac_area['imagOrigin']))
+        self.ip_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.ip_edit.setFixedWidth(160)
+        grid_layout.addWidget(self.ip_edit, row, 2, 1, 2)
+
+        row = row + 1
+
+        label = QLabel("<b>Width</b>:", self)
+        grid_layout.addWidget(label, row, 0, 1, 2)
+
+        bottom = 0.00000000001
+        top    = self.frac_area['realWidth']
+        self.width_edit = QLineEdit(self)
+        self.width_edit.setText(str(self.const_frac_area['realWidth']))
+        self.width_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.width_edit.setFixedWidth(160)
+        grid_layout.addWidget(self.width_edit, row, 2, 1, 2)
+
+        row = row + 1
+
+        label = QLabel("<b>Height</b>:", self)
+        grid_layout.addWidget(label, row, 0, 1, 2)
+
+        bottom = 0.00000000001
+        top    = self.frac_area['imagHeight']
+        self.height_edit = QLineEdit(self)
+        self.height_edit.setText(str(self.const_frac_area['imagHeight']))
+        self.height_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.height_edit.setFixedWidth(160)
+        grid_layout.addWidget(self.height_edit, row, 2, 1, 2)
+
+        row = row + 1
+
+        grid_layout.addWidget(create_line(), row, 0, 1, 4)
+
+        row = row + 1
+
+        label = QLabel("<b>Resolution</b>:", self)
+        grid_layout.addWidget(
+            label, row, 0, 1, 4,
+            Qt.AlignmentFlag.AlignHCenter
+        )
+
+        row = row + 1
+
+        label = QLabel("<b>x-Dim</b>:", self)
+        grid_layout.addWidget(label, row, 0)
+
+        self.x_dim_edit = QLineEdit(self)
+        self.x_dim_edit.setText(str(self.const_draw_dim['width']))
+        self.x_dim_edit.setValidator(QIntValidator(500, 10000))
+        self.x_dim_edit.setFixedWidth(75)
+        grid_layout.addWidget(self.x_dim_edit, row, 1)
+
+        label = QLabel("<b>y-Dim</b>:", self)
+        grid_layout.addWidget(label, row, 2)
+
+        self.y_dim_edit = QLineEdit(self)
+        self.y_dim_edit.setText(str(self.const_draw_dim['height']))
+        self.y_dim_edit.setValidator(QIntValidator(500, 10000))
+        self.y_dim_edit.setFixedWidth(75)
+        grid_layout.addWidget(self.y_dim_edit, row, 3)
+
+        row = row + 1
+
+        # Build combo box for drawing dimensions
+        self.dd_combo = QComboBox()
+        for value in self.sel_draw_dim.values():
+            self.dd_combo.addItem(value)
+        self.dd_combo.currentTextChanged.connect(self.dd_text_changed)
+        grid_layout.addWidget(self.dd_combo, row, 0, 1, 4)
+        self.dd_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        row = row + 1
+
+        grid_layout.addWidget(create_line(), row, 0, 1, 4)
+
+        row = row + 1
+
+        label = QLabel("<b>Iteration limit</b>:", self)
+        grid_layout.addWidget(label, row, 0, 1, 2)
+
+        self.iter_lim_edit = QLineEdit(self)
+        self.iter_lim_edit.setText(str(self.const_iter_lim))
+        self.iter_lim_edit.setValidator(QIntValidator(100, 10000))
+        self.iter_lim_edit.setFixedWidth(50)
+        grid_layout.addWidget(self.iter_lim_edit, row, 2, 1, 2)
+
+        row = row + 1
+
+        label = QLabel("<b>Color palette</b>:", self)
+        grid_layout.addWidget(label, row, 0, 1, 2)
+
+        # Build combo box for color palettes
+        self.cp_combo = QComboBox()
+        for element in self.cp_list:
+            self.cp_combo.addItem(element['name'])
+            if element['name'] == self.cp['name']:
+                self.cp_combo.setCurrentText(element['name'])
+        self.cp_combo.currentTextChanged.connect(self.cp_text_changed)
+        grid_layout.addWidget(
+            self.cp_combo, row, 2, 1, 2,
+            Qt.AlignmentFlag.AlignHCenter
+        )
+
+        row = row + 1
+
+        grid_layout.addWidget(create_line(), row, 0, 1, 4)
+
+        row = row + 1
+
+        # Indicator if Mandelbrot set or Julia set is active
+        # (default: Mandelbrot set).
+
+        self.mandel_btn = QPushButton("Mandelbrot")
+        self.mandel_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
+        self.mandel_btn.setIconSize(QSize(16, 16))
+        self.mandel_btn.setObjectName("mandelJuliaButton")
+        self.mandel_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
+        grid_layout.addWidget(
+            self.mandel_btn, row, 0, 1, 2,
+            Qt.AlignmentFlag.AlignHCenter
+        )
+
+        self.julia_btn = QPushButton("Julia")
+        self.julia_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
+        self.julia_btn.setIconSize(QSize(16, 16))
+        self.julia_btn.setObjectName("mandelJuliaButton")
+        self.julia_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
+        grid_layout.addWidget(
+            self.julia_btn, row, 2, 1, 2,
+            Qt.AlignmentFlag.AlignHCenter
+        )
+
+        row = row + 1
+
+        grid_layout.addWidget(create_line(), row, 0, 1, 4)
+
+        row = row + 1
+
+        # "Reset" button
+        self.reset_btn = QPushButton('Reset', self)
+        self.reset_btn.clicked.connect(self.reset)
+        grid_layout.addWidget(self.reset_btn, row, 0)
+
+        # "Stop" button
+        self.stop_btn = QPushButton('Stop', self)
+        self.stop_btn.clicked.connect(self.reset)
+        grid_layout.addWidget(
+            self.stop_btn, row, 1, 1, 2,
+            Qt.AlignmentFlag.AlignHCenter
+        )
+
+        # "Start" button
+        self.start_btn = QPushButton('Start', self)
+        self.start_btn.setEnabled(False)
+        self.start_btn.clicked.connect(self.trigger_calculation)
+        grid_layout.addWidget(self.start_btn, row, 3)
+
+        # All three buttons have the same width
+        btn_width = self.reset_btn.sizeHint().width()
+        self.reset_btn.setFixedWidth(btn_width)
+        self.stop_btn.setFixedWidth(btn_width)
+        self.start_btn.setFixedWidth(btn_width)
+
+        row = row + 1
+
+        grid_layout.addWidget(create_line(), row, 0, 1, 4)
+
+        # Build the overall layout of the parameter window
+
+        self.main_layout = QVBoxLayout()
+
+        self.main_layout.addLayout(grid_layout)
+
+        # Progress bar
+        self.progress_bar = QtWidgets.QProgressBar(self)
+        self.progress_bar.setRange(0, self.const_draw_dim['height'])
+        self.progress_bar.setValue(0)
+        self.main_layout.addWidget(self.progress_bar)
+
+        container = QWidget()
+        container.setLayout(self.main_layout)
+        self.setCentralWidget(container)
+
+        self.adjustSize()
+        self.setMaximumSize(self.sizeHint())
+
+        self.log.write("parameter_window")
 
     #
     # -----------------------------------------------
