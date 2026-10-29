@@ -55,9 +55,10 @@ class FractalWidget(QWidget):
 
     def __init__(self, frac_area, draw_dim, iter_lim, col_pal, frac_set, julia_c):
         super().__init__()
-
         self.log = Logging("FractalWidget", True)
         self.log.entry("__init__", False)
+
+        #self.parent = self.parentWidget()
 
         self.calc_area = copy.copy(frac_area)
         self.frac_area = copy.copy(frac_area)
@@ -106,23 +107,23 @@ class FractalWidget(QWidget):
 
         self.image_2_save = image
 
-        w  = image.width()
-        h  = image.height()
-        ww = self.width()
-        wh = self.height()
-        self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", True)
+        iw = image.width()
+        ih = image.height()
+        sw = self.width()
+        sh = self.height()
+        self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}", True)
 
-        if w > ww or h > wh:
+        if iw > sw or ih > sh:
             self.image = image.scaled(
-                ww,
-                wh,
+                sw,
+                sh,
                 Qt.KeepAspectRatio,
                 Qt.TransformationMode.FastTransformation
             )
         else:
             self.image = image
 
-        self.setFixedSize(ww, wh)
+        #self.setFixedSize(sw, sh)
 
         self.update()
 
@@ -450,23 +451,23 @@ class FractalWidget(QWidget):
             self.log.exit("realtime_update", True)
             return
 
-        w  = image.width()
-        h  = image.height()
-        ww = self.width()
-        wh = self.height()
-        self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", False)
+        iw = image.width()
+        ih = image.height()
+        sw = self.width()
+        sh = self.height()
+        self.log.write(f"iw,ih,ww,wh={iw},{ih},{sw},{sh}", False)
 
-        if w > ww or h > wh:
+        if iw > sw or ih > sh:
             self.image = image.scaled(
-                ww,
-                wh,
+                sw,
+                sh,
                 Qt.KeepAspectRatio,
                 Qt.TransformationMode.FastTransformation
             )
         else:
             self.image = image
 
-        self.setFixedSize(ww, wh)
+        #self.setFixedSize(sw, sh)
 
         self.update()
 
@@ -493,7 +494,7 @@ class FractalWidget(QWidget):
     #
 
     def start_calculation(self, is_interim_pic=False):
-        self.log.entry("start_calculation", False)
+        self.log.entry("start_calculation", True)
         self.log.write(str(self.frac_area)+","+str(self.draw_dim), False)
 
         # Check if a thread is already running
@@ -536,8 +537,8 @@ class FractalWidget(QWidget):
         self.thread.start()
 
         log_string = f"self.thread.isRunning()={self.thread.isRunning()}"
-        self.log.write(log_string, False)
-        self.log.exit("start_calculation", False)
+        self.log.write(log_string, True)
+        self.log.exit("start_calculation", True)
 
     #
     # -----------------------------------------------

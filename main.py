@@ -68,6 +68,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QStatusBar,
     QStyle,
     QTextEdit,
@@ -99,7 +100,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f"{APP_NAME} {APP_VERSION}")
 
         self.log.write(f"--- {APP_NAME} {APP_VERSION} ---")
-        self.log.entry("__init__")
+        self.log.entry("__init__", True)
 
         # Load the stylesheet from a file
         style_file = QFile(":/ui/style.css")
@@ -145,7 +146,7 @@ class MainWindow(QMainWindow):
                     self.log.write(f"self.cp_list=\n{log_string}")
                     self.cp_combo.addItem(cp_name)
 
-        self.log.exit("__init__")
+        self.log.exit("__init__", True)
 
     #
     # -----------------------------------------------
@@ -154,14 +155,8 @@ class MainWindow(QMainWindow):
     def build_main_window(self):
         self.log.entry("build_main_window")
 
-        # Offset of the widgets from the main window frame
-        xOffset = 10
-        yOffset = 10
-
         # Title of the main window
         self.setWindowTitle(APP_NAME + " " + APP_VERSION)
-
-        self.setMinimumHeight(800)
 
         # Build labels
         rp_lbl       = QLabel("<b>Origin of real part</b>:", self)
@@ -347,6 +342,7 @@ class MainWindow(QMainWindow):
             self.julia_c
         )
         self.fw.setMinimumSize(self.draw_dim['width'], self.draw_dim['height'])
+        #self.fw.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
@@ -357,20 +353,17 @@ class MainWindow(QMainWindow):
 
         # Build the overall layout of the main window
 
-        main_layout = QVBoxLayout()
+        self.main_layout = QVBoxLayout()
 
-        # 10 pixel distance from every window frame
-        main_layout.setContentsMargins(xOffset, yOffset, xOffset, yOffset)
-        main_layout.setSpacing(10)
-
-        main_layout.addLayout(layout_grid)
-        main_layout.addStretch()
-        main_layout.addWidget(self.fw, alignment=Qt.AlignmentFlag.AlignHCenter)
-        main_layout.addStretch()
-        main_layout.addWidget(self.progress_bar)
+        self.main_layout.addLayout(layout_grid)
+        self.main_layout.addStretch()
+        #self.main_layout.addWidget(self.fw, stretch=1, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.main_layout.addWidget(self.fw, alignment=Qt.AlignCenter)
+        self.main_layout.addStretch()
+        self.main_layout.addWidget(self.progress_bar)
 
         container = QWidget()
-        container.setLayout(main_layout)
+        container.setLayout(self.main_layout)
         self.setCentralWidget(container)
 
         self.adjustSize()
@@ -1150,12 +1143,17 @@ class MainWindow(QMainWindow):
     #
 
     def trigger_calculation(self):
-        self.log.entry("trigger_calculation")
+        self.log.entry("trigger_calculation", True)
+
+        layout_rect = self.main_layout.geometry()
+        lw          = layout_rect.width()
+        lh          = layout_rect.height()
+        self.log.write(f"lw,lh={lw},{lh}", True)
 
         if self.is_interim_pic:
             self.fw.start_calculation(self.is_interim_pic)
             self.is_interim_pic = False
-            self.log.write("trigger_calculation")
+            self.log.exit("trigger_calculation")
             return
 
         self.progress_bar.setValue(0)
@@ -1189,7 +1187,7 @@ class MainWindow(QMainWindow):
 
         self.fw.start_calculation()
 
-        self.log.write("trigger_calculation")
+        self.log.exit("trigger_calculation", True)
 
     #
     # -----------------------------------------------
