@@ -668,7 +668,7 @@ class MainWindow(QMainWindow):
         preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         preview_label.setMinimumSize(360, 360)
         preview_label.setStyleSheet("border: 1px dashed #999; background-color: #222; color: #888;")
-        preview_label.setText("Preview after pressing 'Preview'...")
+        preview_label.setText("Preview after pressing 'Apply'...")
         main_layout.addWidget(preview_label)
 
         QBtn = (
