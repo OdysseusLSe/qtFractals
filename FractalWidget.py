@@ -73,6 +73,8 @@ class FractalWidget(QWidget):
         self.offset_x = 0
         self.offset_y = 0
 
+        self.shrink_factor = 1.00
+
         # Mouse variables for mandelbrot selection
         self.selecting = False
         self.sel_start = None
@@ -124,6 +126,9 @@ class FractalWidget(QWidget):
             )
         else:
             self.image = image
+
+        self.shrink_factor = self.image_2_save.width() / self.image.width()
+        self.log.write(f"self.shrink_factor={self.shrink_factor}", True)
 
         self.update()
 
@@ -179,13 +184,13 @@ class FractalWidget(QWidget):
         xStep = self.frac_area['realWidth'] / self.draw_dim['width']
         yStep = self.frac_area['imagHeight'] / self.draw_dim['height']
 
-        x_shift = rect.left() - self.offset_x
-        y_shift = rect.top()  - self.offset_y
+        x_shift = (rect.left() - self.offset_x) * self.shrink_factor
+        y_shift = (rect.top()  - self.offset_y) * self.shrink_factor
         real_orig = self.frac_area['realOrigin'] + x_shift * xStep
         imag_orig = self.frac_area['imagOrigin'] + y_shift * yStep
 
-        real_width  = rect.width()  * xStep
-        imag_height = rect.height() * yStep
+        real_width  = rect.width()  * xStep * self.shrink_factor
+        imag_height = rect.height() * yStep * self.shrink_factor
 
         self.calc_area = {
             'realOrigin' : real_orig,
@@ -508,7 +513,7 @@ class FractalWidget(QWidget):
     #
 
     def start_calculation(self):
-        self.log.entry("start_calculation", True)
+        self.log.entry("start_calculation", False)
         self.log.write(str(self.frac_area)+","+str(self.draw_dim), False)
 
         # Check if a thread is already running
@@ -550,8 +555,8 @@ class FractalWidget(QWidget):
         self.thread.start()
 
         log_string = f"self.thread.isRunning()={self.thread.isRunning()}"
-        self.log.write(log_string, True)
-        self.log.exit("start_calculation", True)
+        self.log.write(log_string, False)
+        self.log.exit("start_calculation", False)
 
     #
     # -----------------------------------------------

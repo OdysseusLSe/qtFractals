@@ -82,7 +82,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.9.0"
+APP_VERSION = "0.9.1"
 
 
 #
@@ -98,7 +98,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f"{APP_NAME} {APP_VERSION}")
 
         self.log.write(f"--- {APP_NAME} {APP_VERSION} ---")
-        self.log.entry("__init__", True)
+        self.log.entry("__init__", False)
 
         # Load the stylesheet from a file
         style_file = QFile(":/ui/style.css")
@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
                     self.log.write(f"self.cp_list=\n{log_string}")
                     self.cp_combo.addItem(cp_name)
 
-        self.log.exit("__init__", True)
+        self.log.exit("__init__", False)
 
     #
     # -----------------------------------------------
