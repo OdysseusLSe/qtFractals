@@ -506,6 +506,7 @@ class FractalWidget(QWidget):
 
         if self.starting:
             self.starting = False
+            self.log.exit("resizeEvent", True)
             return
 
         image = self.image_2_save
