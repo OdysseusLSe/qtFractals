@@ -28,25 +28,31 @@ from PySide6.QtCore import (
 from PySide6.QtGui import (
     QImage,
     QColor,
+    QFont,
     QKeySequence,
     QPainter,
     QPen,
     QResizeEvent,
     QShortcut
 )
-from PySide6.QtWidgets import QWidget
+#from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import (
+    QMainWindow,
+    QStatusBar,
+    QWidget
+)
 
 from FractalWorker import FractalWorker
 from Logging import Logging
 
 
-class FractalWidget(QWidget):
+class FractalWidget(QMainWindow):
 
     # Signal for progress of frac calculation
     progress = Signal(int)
 
     # Signal for rectangle of next fractal area
-    cur_rect = Signal(dict)
+    #cur_rect = Signal(dict)
 
     # Signal finished calculation
     closing = Signal(QImage, float)
@@ -71,28 +77,37 @@ class FractalWidget(QWidget):
         self.image        = QImage()
         self.image_2_save = QImage()
 
+        # Offset to centralize the calculated image.
         self.offset_x = 0
         self.offset_y = 0
 
-        self.starting = True
-
+        # Scaling factor in case calculated image is bigger than the window.
         self.scaling_factor = 1.00
 
-        # Mouse variables for mandelbrot selection
+        # First resize event should be ignored.
+        self.starting = True
+
+        # Initiate status bar
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        self.status_bar.setFont(QFont("Arial", 11))
+        self.status_bar.showMessage("--- Ready ---")
+
+        # Mouse variables for Mandelbrot set selection.
         self.selecting = False
         self.sel_start = None
         self.sel_end   = None
         self.setMouseTracking(True)
 
-        # Mouse variables for mandelbrot selection
+        # Mouse variables for Julia set selection.
         self.sel_point = None
 
-        # Create shortcut for ESC key (to stop calculation)
+        # Create shortcut for ESC key (to stop calculation).
         self.esc_shortcut = QShortcut(QKeySequence("Escape"), self)
         self.esc_shortcut.setContext(Qt.ShortcutContext.ApplicationShortcut)
         self.esc_shortcut.activated.connect(self.stop_calculation)
 
-        # Set start parameter for future thread check
+        # Set start parameters for future thread check.
         self.thread = None
         self.worker = None
 
@@ -331,7 +346,16 @@ class FractalWidget(QWidget):
         self.calculate_selected_area(QRect(int(x), int(y), int(abs(dx)), int(abs(dy))))
         self.log.write("frac_area=" + str(self.frac_area), False)
         self.log.write("calc_area=" + str(self.calc_area), False)
-        self.cur_rect.emit(self.calc_area)
+
+        ro = self.calc_area['realOrigin']
+        io = self.calc_area['imagOrigin']
+        rw = self.calc_area['realWidth']
+        ih = self.calc_area['imagHeight']
+        status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
+        status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
+        self.status_bar.showMessage(status)
+
+        #self.cur_rect.emit(self.calc_area)
 
         self.log.exit("get_selection_rect", False)
         return QRect(int(x), int(y), int(abs(dx)), int(abs(dy)))

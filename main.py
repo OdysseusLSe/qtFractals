@@ -214,9 +214,9 @@ class MainWindow(QMainWindow):
         help_menu.addAction(self.read_action)
 
         # MAC FIX: Connect the menu's hovered signal to a custom slots pipeline
-        file_menu.hovered.connect(self.update_mac_sb)
-        misc_menu.hovered.connect(self.update_mac_sb)
-        help_menu.hovered.connect(self.update_mac_sb)
+        file_menu.hovered.connect(self.update_mac_status_bar)
+        misc_menu.hovered.connect(self.update_mac_status_bar)
+        help_menu.hovered.connect(self.update_mac_status_bar)
 
         self.log.write("build_menu_bar")
 
@@ -369,9 +369,11 @@ class MainWindow(QMainWindow):
 
             status = f"Creating video (frame: {step+1}/{num_of_frames})"
             self.status_bar.showMessage(status)
+            self.fw.status_bar.showMessage(status)
 
             if self.is_stopped:
                 self.status_bar.showMessage("Video creation aborted!")
+                self.fw.status_bar.showMessage("Video creation aborted!")
                 break
 
             factor = ease_data[step]
@@ -439,6 +441,7 @@ class MainWindow(QMainWindow):
 
         status = f"Video creation done ({video_name})."
         self.status_bar.showMessage(status)
+        self.fw.status_bar.showMessage(status)
 
         # Select directory where to save the newly created video to
         folder_path = QFileDialog.getExistingDirectory(
@@ -517,7 +520,7 @@ class MainWindow(QMainWindow):
         )
         self.fw.setMinimumSize(self.draw_dim['width'], self.draw_dim['height'])
 
-        self.fw.cur_rect.connect(self.sb_update_area)
+        #self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
 
         # Connect the progress signal from the FractalWidget to the
@@ -1167,24 +1170,6 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def sb_update_area(self, area):
-        self.log.entry("sb_update_area")
-        self.log.write(f"area={area}")
-
-        ro = area['realOrigin']
-        io = area['imagOrigin']
-        rw = area['realWidth']
-        ih = area['imagHeight']
-        status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
-        status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
-        self.status_bar.showMessage(status)
-
-        self.log.write("sb_update_area")
-
-    #
-    # -----------------------------------------------
-    #
-
     def trigger_calculation(self):
         self.log.entry("trigger_calculation", True)
 
@@ -1230,8 +1215,8 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def update_mac_sb(self, action):
-        self.log.entry("update_mac_sb")
+    def update_mac_status_bar(self, action):
+        self.log.entry("update_mac_status_bar")
 
         if action and action.statusTip():
             self.log.write(f"action.statusTip()={action.statusTip()}")
@@ -1239,7 +1224,7 @@ class MainWindow(QMainWindow):
         else:
             self.status_bar.clearMessage()
 
-        self.log.write("update_mac_sb")
+        self.log.write("update_mac_status_bar")
 
     #
     # -----------------------------------------------
@@ -1293,6 +1278,7 @@ class MainWindow(QMainWindow):
 
         percent = int((value / self.progress_bar.maximum()) * 100)
         self.status_bar.showMessage(f"--- Progress: {percent}%")
+        self.fw.status_bar.showMessage(f"--- Progress: {percent}%")
 
         self.progress_bar.setValue(value)
 
@@ -1316,6 +1302,8 @@ class MainWindow(QMainWindow):
         width_edit  = []
         height_edit = []
         grab_btn    = []
+
+# ------------------------------------------------------------------------------
 
         def grab(item):
             frac_area, dd, iter_lim, fd, jc = self.fw.get_parameters()
@@ -1396,6 +1384,8 @@ class MainWindow(QMainWindow):
                 if text == element['name']:
                     self.cp = copy.copy(element)
 
+# ------------------------------------------------------------------------------
+
         input_area()
 
         row = QHBoxLayout()
@@ -1465,6 +1455,8 @@ class MainWindow(QMainWindow):
         button_box = QDialogButtonBox(QBtn)
         main_layout.addWidget(button_box)
 
+# ------------------------------------------------------------------------------
+
         def ok_clicked():
             self.log.write("ok_clicked")
             self.create_video(
@@ -1485,12 +1477,14 @@ class MainWindow(QMainWindow):
             self.log.write("zoom_video")
             self.zoom_dialog.close()
 
+# ------------------------------------------------------------------------------
+
         button_box.accepted.connect(ok_clicked)
         button_box.rejected.connect(cancel_clicked)
 
         # Show dialog
 
-        self.zoom_dialog.setMinimumSize(self.zoom_dialog.sizeHint())
+        self.zoom_dialog.setMaximumSize(self.zoom_dialog.sizeHint())
         self.zoom_dialog.show()
 
         self.log.write("zoom_video")
