@@ -19,6 +19,7 @@
 import copy
 
 from PySide6.QtCore import (
+    QPoint,
     QRect,
     Qt,
     QThread,
@@ -58,8 +59,6 @@ class FractalWidget(QWidget):
         self.log = Logging("FractalWidget", True)
         self.log.entry("__init__", False)
 
-        #self.parent = self.parentWidget()
-
         self.calc_area = copy.copy(frac_area)
         self.frac_area = copy.copy(frac_area)
         self.draw_dim  = copy.copy(draw_dim)
@@ -70,6 +69,9 @@ class FractalWidget(QWidget):
 
         self.image        = QImage()
         self.image_2_save = QImage()
+
+        self.offset_x = 0
+        self.offset_y = 0
 
         # Mouse variables for mandelbrot selection
         self.selecting = False
@@ -177,8 +179,10 @@ class FractalWidget(QWidget):
         xStep = self.frac_area['realWidth'] / self.draw_dim['width']
         yStep = self.frac_area['imagHeight'] / self.draw_dim['height']
 
-        real_orig = self.frac_area['realOrigin'] + rect.left() * xStep
-        imag_orig = self.frac_area['imagOrigin'] + rect.top() * yStep
+        x_shift = rect.left() - self.offset_x
+        y_shift = rect.top()  - self.offset_y
+        real_orig = self.frac_area['realOrigin'] + x_shift * xStep
+        imag_orig = self.frac_area['imagOrigin'] + y_shift * yStep
 
         real_width  = rect.width()  * xStep
         imag_height = rect.height() * yStep
@@ -189,10 +193,9 @@ class FractalWidget(QWidget):
             'realWidth'  : real_width,
             'imagHeight' : imag_height
         }
-        self.log.write("calc_area=" + str(self.calc_area), False)
+        self.log.write("self.calc_area=" + str(self.calc_area), False)
 
         self.log.exit("calculate_selected_area", False)
-
         return True
 
     #
@@ -295,17 +298,25 @@ class FractalWidget(QWidget):
 
         # Rectangle should stay within drawing area
 
-        if x < 0:
-            x = 0
+        max_bound_x = self.offset_x + self.draw_dim['width']
+        max_bound_y = self.offset_y + self.draw_dim['height']
 
-        if y < 0:
-            y = 0
+        if x < self.offset_x:
+            x = self.offset_x
 
-        if x + abs(dx) > self.draw_dim['width']:
-            x = self.draw_dim['width'] - abs(dx)
+        if y < self.offset_y:
+            y = self.offset_y
 
-        if y + abs(dy) > self.draw_dim['height']:
-            y = self.draw_dim['height'] - abs(dy)
+        if x + abs(dx) > max_bound_x:
+            x = max_bound_x - abs(dx)
+
+        if y + abs(dy) > max_bound_y:
+            y = max_bound_y - abs(dy)
+
+        if x < self.offset_x:
+            x = self.offset_x
+        if y < self.offset_y:
+            y = self.offset_y
 
         self.log.write(f"x,y,dx,dy={x},{y},{abs(dx)},{abs(dy)}", False)
 
@@ -420,7 +431,14 @@ class FractalWidget(QWidget):
             return
 
         painter = QPainter(self)
-        painter.drawImage(0, 0, self.image)
+
+        target_rect = QRect(QPoint(0, 0), self.image.size())
+        target_rect.moveCenter(self.rect().center())
+
+        self.offset_x = target_rect.x()
+        self.offset_y = target_rect.y()
+
+        painter.drawImage(target_rect, self.image)
 
         # Draw cursor of selection
 

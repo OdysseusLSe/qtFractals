@@ -51,12 +51,7 @@ class FractalFrame(QObject):
     def mandelbrot_frame(self, frac_area, iter_lim, dd_width, dd_height, cp):
         self.log.entry("mandelbrot_frame", False)
 
-        frac_area = copy.deepcopy(frac_area)
-
-        self.log.write("frac_area=" + str(frac_area), False)
-        self.log.write("iter_lim=" + str(iter_lim), False)
-        self.log.write(f"dd_width,dd_height={dd_width},{dd_height}", False)
-        self.log.write("cp=" + str(cp), False)
+        frac_area = copy.copy(frac_area)
 
         image = QImage(dd_width, dd_height, QImage.Format.Format_RGB32)
         color = QColor()
