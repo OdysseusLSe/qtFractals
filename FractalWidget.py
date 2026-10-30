@@ -31,6 +31,7 @@ from PySide6.QtGui import (
     QKeySequence,
     QPainter,
     QPen,
+    QResizeEvent,
     QShortcut
 )
 from PySide6.QtWidgets import QWidget
@@ -73,7 +74,9 @@ class FractalWidget(QWidget):
         self.offset_x = 0
         self.offset_y = 0
 
-        self.shrink_factor = 1.00
+        self.starting = True
+
+        self.scaling_factor = 1.00
 
         # Mouse variables for mandelbrot selection
         self.selecting = False
@@ -127,8 +130,8 @@ class FractalWidget(QWidget):
         else:
             self.image = image
 
-        self.shrink_factor = self.image_2_save.width() / self.image.width()
-        self.log.write(f"self.shrink_factor={self.shrink_factor}", True)
+        self.scaling_factor = self.image_2_save.width() / self.image.width()
+        self.log.write(f"self.scaling_factor={self.scaling_factor}", True)
 
         self.update()
 
@@ -184,13 +187,13 @@ class FractalWidget(QWidget):
         xStep = self.frac_area['realWidth'] / self.draw_dim['width']
         yStep = self.frac_area['imagHeight'] / self.draw_dim['height']
 
-        x_shift = (rect.left() - self.offset_x) * self.shrink_factor
-        y_shift = (rect.top()  - self.offset_y) * self.shrink_factor
+        x_shift = (rect.left() - self.offset_x) * self.scaling_factor
+        y_shift = (rect.top()  - self.offset_y) * self.scaling_factor
         real_orig = self.frac_area['realOrigin'] + x_shift * xStep
         imag_orig = self.frac_area['imagOrigin'] + y_shift * yStep
 
-        real_width  = rect.width()  * xStep * self.shrink_factor
-        imag_height = rect.height() * yStep * self.shrink_factor
+        real_width  = rect.width()  * xStep * self.scaling_factor
+        imag_height = rect.height() * yStep * self.scaling_factor
 
         self.calc_area = {
             'realOrigin' : real_orig,
@@ -491,6 +494,45 @@ class FractalWidget(QWidget):
         self.update()
 
         self.log.exit("realtime_update", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def resizeEvent(self, event: QResizeEvent):
+        self.log.entry("resizeEvent", True)
+
+        super().resizeEvent(event)
+
+        if self.starting:
+            self.starting = False
+            return
+
+        image = self.image_2_save
+
+        iw = image.width()
+        ih = image.height()
+        sw = self.width()
+        sh = self.height()
+        self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}", True)
+
+        if iw > sw or ih > sh:
+            self.image = image.scaled(
+                sw,
+                sh,
+                Qt.KeepAspectRatio,
+                Qt.TransformationMode.FastTransformation
+            )
+        else:
+            self.image = image
+
+        self.scaling_factor = self.image_2_save.width() / self.image.width()
+        self.log.write(f"self.scaling_factor={self.scaling_factor}", True)
+
+        self.update()
+
+        self.log.exit("resizeEvent", True)
+
 
     #
     # -----------------------------------------------

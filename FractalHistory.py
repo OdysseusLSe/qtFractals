@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout
 )
 
@@ -258,7 +259,7 @@ class FractalHistory():
             }
         """)
 
-        # ------------------------------------------------------------
+        # ----------------------------------------------------------------------
 
         def on_repeat_clicked():
             self.log.entry(f"on_repeat_clicked()")
@@ -334,7 +335,7 @@ class FractalHistory():
                 self.clear_history()
                 self.history_dialog.accept()
 
-        # ------------------------------------------------------------
+        # ----------------------------------------------------------------------
 
         # Connect buttons on actions
         btn_repeat.clicked.connect(on_repeat_clicked)
@@ -351,6 +352,10 @@ class FractalHistory():
 
         main_layout.addLayout(btn_layout)
 
+        self.history_dialog.setSizePolicy(
+            QSizePolicy.Policy.Fixed,
+            QSizePolicy.Policy.Expanding
+        )
         self.history_dialog.exec()
 
         self.log.exit("show_history_list")
