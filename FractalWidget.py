@@ -465,8 +465,6 @@ class FractalWidget(QWidget):
         else:
             self.image = image
 
-        #self.setFixedSize(sw, sh)
-
         self.update()
 
         self.log.exit("realtime_update", False)
@@ -491,7 +489,7 @@ class FractalWidget(QWidget):
     # -----------------------------------------------
     #
 
-    def start_calculation(self, is_interim_pic=False):
+    def start_calculation(self):
         self.log.entry("start_calculation", True)
         self.log.write(str(self.frac_area)+","+str(self.draw_dim), False)
 
@@ -509,8 +507,7 @@ class FractalWidget(QWidget):
             self.iter_lim,
             self.cp,
             self.frac_set,
-            self.julia_c,
-            is_interim_pic
+            self.julia_c
         )
 
         self.worker.moveToThread(self.thread)

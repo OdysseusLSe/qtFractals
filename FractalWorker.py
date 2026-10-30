@@ -52,8 +52,7 @@ class FractalWorker(QObject):
             iter_lim,
             col_pal,
             current_frac_set,
-            julia_c,
-            is_interim_pic
+            julia_c
         ):
         super().__init__()
 
@@ -66,14 +65,12 @@ class FractalWorker(QObject):
         self.cp               = copy.copy(col_pal)
         self.current_frac_set = current_frac_set
         self.julia_c          = julia_c
-        self.is_interim_pic   = is_interim_pic
 
         self.log.write("self.frac_area=" + str(self.frac_area), False)
         self.log.write("self.draw_dim=" + str(self.draw_dim), False)
         self.log.write("self.iter_lim=" + str(self.iter_lim), False)
         self.log.write("self.cp=" + str(self.cp), False)
         self.log.write("self.julia_c=" + str(self.julia_c), False)
-        self.log.write("self.is_interim_pic=" + str(self.is_interim_pic), False)
 
         self.is_running = True
 
@@ -189,10 +186,9 @@ class FractalWorker(QObject):
 
                     loop += 1
 
-            if not self.is_interim_pic:
-                calc_time = calc_time + time.process_time() - start_time
-                self.progress.emit(y+1)
-                self.drawing.emit(image)
+            calc_time = calc_time + time.process_time() - start_time
+            self.progress.emit(y+1)
+            self.drawing.emit(image)
 
         calc_time = calc_time + time.process_time() - start_time
 
@@ -307,10 +303,9 @@ class FractalWorker(QObject):
 
                     loop += 1
 
-            if not self.is_interim_pic:
-                calc_time = calc_time + time.process_time() - start_time
-                self.progress.emit(y+1)
-                self.drawing.emit(image)
+            calc_time = calc_time + time.process_time() - start_time
+            self.progress.emit(y+1)
+            self.drawing.emit(image)
 
         calc_time = calc_time + time.process_time() - start_time
 

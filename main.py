@@ -233,13 +233,6 @@ class MainWindow(QMainWindow):
         self.reset_btn.setEnabled(True)
         self.start_btn.setEnabled(True)
 
-        if self.is_interim_pic:
-            # Do not store this calculation in the history, because it is
-            # either a preview for a new color palette or a frame for a video.
-            self.is_interim_pic = False
-            self.log.write("calculation_closing")
-            return
-
         thumbnail_name = f"{time.time()}.png"
 
         new_history_element = self.fw.build_history_element(thumbnail_name, calc_time)
@@ -255,53 +248,18 @@ class MainWindow(QMainWindow):
 
     #
     # -----------------------------------------------
-    # Preview of new color palette.
-    # -----------------------------------------------
-    #
-
-    def cp_showroom(self):
-        self.log.entry("cp_showroom")
-
-        self.is_interim_pic = True
-
-        self.frac_area = {
-            'realOrigin' : -1.9,
-            'imagOrigin' : -1.2,
-            'realWidth'  : 2.43,
-            'imagHeight' : 2.43
-        }
-
-        self.draw_dim = {'width': 360, 'height': 360}
-        self.iter_lim = 100
-
-        self.default_frac_set = "Mandelbrot"
-        self.julia_c = complex(10.0, 10.0)
-
-        self.fw.set_parameters(
-            self.frac_area,
-            self.draw_dim,
-            self.iter_lim,
-            self.cp,
-            self.current_frac_set,
-            self.julia_c
-        )
-
-        self.fw.start_calculation(self.is_interim_pic)
-
-        self.log.exit("cp_showroom")
-
-    #
-    # -----------------------------------------------
     # User changed color palette. This triggers immediately a new calculation.
     # -----------------------------------------------
     #
 
     def cp_text_changed(self, text):
-        self.log.entry(f"cp_text_changed({text})")
+        self.log.entry(f"cp_text_changed({text})", True)
 
         if self.is_new_cp:
             self.is_new_cp = False
+            self.log.write("New color palette --> no redraw.", True)
         else:
+            self.log.write("No new color palette --> redraw.", True)
             for element in self.cp_list:
                 if text == element['name']:
                     self.cp = element
@@ -316,7 +274,7 @@ class MainWindow(QMainWindow):
             )
             self.trigger_calculation()
 
-        self.log.exit("cp_text_changed")
+        self.log.exit("cp_text_changed", True)
 
     #
     # -----------------------------------------------
@@ -620,11 +578,6 @@ class MainWindow(QMainWindow):
         temp_cp       = copy.copy(self.cp)
         self.bg_color = QColor("black")
 
-        def select_color():
-            new_bg_color = QColorDialog.getColor(parent=self.ncop_dialog, title="Select color")
-            if new_bg_color.isValid():
-                self.bg_color = new_bg_color
-
         #
         # Build the user interface
         #
@@ -661,21 +614,20 @@ class MainWindow(QMainWindow):
             self.log.write(f"spin={spin}")
 
         col_btn = QPushButton("Select background color", self)
-        col_btn.clicked.connect(select_color)
         main_layout.addWidget(col_btn)
 
         preview_label = QLabel()
         preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         preview_label.setMinimumSize(360, 360)
-        preview_label.setStyleSheet("border: 1px dashed #999; background-color: #222; color: #888;")
-        preview_label.setText("Preview after pressing 'Apply'...")
+        preview_label.setStyleSheet("border: 1px dashed #999;")
+        preview_label.setText("Preview window")
         main_layout.addWidget(preview_label)
 
-        QBtn = (
-            QDialogButtonBox.Apply | QDialogButtonBox.Save | QDialogButtonBox.Close
-        )
+        QBtn = (QDialogButtonBox.Save | QDialogButtonBox.Close)
         button_box = QDialogButtonBox(QBtn)
         main_layout.addWidget(button_box)
+
+        # ----------------------------------------------------------------------
 
         def vector_to_cp():
             self.cp['name'] = f"{name_edit.text()} (*)"
@@ -719,6 +671,15 @@ class MainWindow(QMainWindow):
             preview_label.setText("")
             preview_label.setPixmap(pixmap)
 
+        def select_color():
+            new_bg_color = QColorDialog.getColor(
+                parent=self.ncop_dialog,
+                title="Select color"
+            )
+            if new_bg_color.isValid():
+                self.bg_color = new_bg_color
+                preview_cp()
+
         def save_cp():
             vector_to_cp()
             R, G, B , A = self.bg_color.getRgb()
@@ -732,14 +693,10 @@ class MainWindow(QMainWindow):
             self.is_new_cp = True
             self.cp_combo.setCurrentText(self.cp['name'])
             self.log.write("calling self.reset()")
-            self.reset()
 
         def button_clicked(button):
             role = button_box.buttonRole(button)
-            if role == QDialogButtonBox.ApplyRole:
-                # "Apply" maps to the preview method
-                preview_cp()
-            elif role == QDialogButtonBox.ButtonRole.AcceptRole:
+            if role == QDialogButtonBox.ButtonRole.AcceptRole:
                 # "Save" maps to the save method
                 save_cp()
             if role == QDialogButtonBox.ButtonRole.RejectRole:
@@ -747,11 +704,22 @@ class MainWindow(QMainWindow):
                 self.cp = copy.copy(temp_cp)
                 self.ncop_dialog.reject()
 
+        # ----------------------------------------------------------------------
+
+        vectors = ["Brightness", "Contrast", "Frequency", "Phase"]
+        row = 0
+        for item in vectors:
+            column = 0
+            for color in ["R: ", "G: ", "B: "]:
+                spin[row][column].valueChanged.connect(preview_cp)
+                column = column + 1
+            row = row + 1
+        col_btn.clicked.connect(select_color)
         button_box.clicked.connect(button_clicked)
 
         # Exec dialog
 
-        self.ncop_dialog.setMinimumSize(self.ncop_dialog.sizeHint())
+        self.ncop_dialog.setFixedSize(self.ncop_dialog.sizeHint())
         self.ncop_dialog.exec()
 
         self.log.write("new_color_palette")
@@ -1096,8 +1064,7 @@ class MainWindow(QMainWindow):
 
         self.cache_dir = user_cache_dir(APP_NAME, "OdysseusLSe")
 
-        self.is_interim_pic = False
-        self.is_new_cp      = False
+        self.is_new_cp = False
 
         # Default coordinates of the fractal (HD ratio)
         self.frac_area = {
@@ -1225,12 +1192,6 @@ class MainWindow(QMainWindow):
         lw          = layout_rect.width()
         lh          = layout_rect.height()
         self.log.write(f"lw,lh={lw},{lh}", True)
-
-        if self.is_interim_pic:
-            self.fw.start_calculation(self.is_interim_pic)
-            self.is_interim_pic = False
-            self.log.exit("trigger_calculation")
-            return
 
         self.progress_bar.setValue(0)
         self.reset_btn.setEnabled(False)
