@@ -28,7 +28,7 @@ import logging as pylog
 import numpy as np
 
 from pathlib import Path
-from platformdirs import user_data_dir, user_config_dir, user_cache_dir
+from platformdirs import user_cache_dir
 
 from PySide6.QtCore import (
     QCoreApplication,
@@ -76,7 +76,7 @@ from PySide6.QtWidgets import (
     QWidget
 )
 
-from MandelbrotCalc import MandelbrotSignals, MandelbrotRunnable
+from MandelbrotCalc import MandelbrotRunnable
 
 from FractalFrame import FractalFrame
 from FractalHistory import FractalHistory
@@ -86,7 +86,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.9.1"
+APP_VERSION = "0.9.2"
 
 
 #
@@ -396,28 +396,26 @@ class MainWindow(QMainWindow):
                 'imagHeight': current_height
             }
 
-            # Eine lokale EventLoop blockiert die Schleife, hält aber die GUI reaktiv
             loop = QEventLoop()
             computed_image = None
+
+# ------------------------------------------------------------------------------
 
             def on_frame_calculated(img):
                 nonlocal computed_image
                 computed_image = img
-                loop.quit() # Beendet das Warten, sobald das Bild da ist
+                loop.quit()
 
-            # Runnable erstellen
+# ------------------------------------------------------------------------------
+
             runnable = MandelbrotRunnable(
                 self.ff, frac_area, iter_lim, dd_width, dd_height, cp
             )
             runnable.signals.finished.connect(on_frame_calculated)
 
-            # In den Threadpool übergeben (startet sofort im Hintergrund)
             pool.start(runnable)
-
-            # Warten, bis der Thread fertig gerechnet hat
             loop.exec()
 
-            # Das Ergebnis der Thread-Berechnung zuweisen
             image = computed_image
 
             self.progress_bar.setValue(step+1)
