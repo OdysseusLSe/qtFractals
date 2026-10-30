@@ -31,13 +31,15 @@ from pathlib import Path
 from platformdirs import user_data_dir, user_config_dir, user_cache_dir
 
 from PySide6.QtCore import (
-    Qt,
+    QCoreApplication,
+    QEventLoop,
     QFile,
     QIODevice,
     QJsonDocument,
-    QCoreApplication,
     QSize,
-    QTextStream
+    Qt,
+    QTextStream,
+    QThreadPool,
 )
 from PySide6.QtGui import (
     QAction,
@@ -73,6 +75,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget
 )
+
+from MandelbrotCalc import MandelbrotSignals, MandelbrotRunnable
 
 from FractalFrame import FractalFrame
 from FractalHistory import FractalHistory
@@ -359,6 +363,7 @@ class MainWindow(QMainWindow):
 
         self.ff = FractalFrame()
         image   = QImage()
+        pool    = QThreadPool.globalInstance()
         self.progress_bar.setRange(0, num_of_frames)
 
         #
@@ -391,13 +396,29 @@ class MainWindow(QMainWindow):
                 'imagHeight': current_height
             }
 
-            image = self.ff.mandelbrot_frame(
-                frac_area,
-                iter_lim,
-                dd_width,
-                dd_height,
-                cp
+            # Eine lokale EventLoop blockiert die Schleife, hält aber die GUI reaktiv
+            loop = QEventLoop()
+            computed_image = None
+
+            def on_frame_calculated(img):
+                nonlocal computed_image
+                computed_image = img
+                loop.quit() # Beendet das Warten, sobald das Bild da ist
+
+            # Runnable erstellen
+            runnable = MandelbrotRunnable(
+                self.ff, frac_area, iter_lim, dd_width, dd_height, cp
             )
+            runnable.signals.finished.connect(on_frame_calculated)
+
+            # In den Threadpool übergeben (startet sofort im Hintergrund)
+            pool.start(runnable)
+
+            # Warten, bis der Thread fertig gerechnet hat
+            loop.exec()
+
+            # Das Ergebnis der Thread-Berechnung zuweisen
+            image = computed_image
 
             self.progress_bar.setValue(step+1)
 
