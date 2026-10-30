@@ -76,7 +76,7 @@ from PySide6.QtWidgets import (
 
 from FractalFrame import FractalFrame
 from FractalHistory import FractalHistory
-from FractalWidget import FractalWidget
+from FractalWindow import FractalWindow
 from Logging import Logging
 
 import resources_rc
@@ -510,7 +510,7 @@ class MainWindow(QMainWindow):
     def fractal_window(self):
         self.log.entry("fractal_window")
 
-        self.fw = FractalWidget(
+        self.fw = FractalWindow(
             self.const_frac_area,
             self.const_draw_dim,
             self.const_iter_lim,
@@ -523,7 +523,7 @@ class MainWindow(QMainWindow):
         #self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
 
-        # Connect the progress signal from the FractalWidget to the
+        # Connect the progress signal from the FractalWindow to the
         # update_progress method.
         self.fw.progress.connect(self.update_progress)
 

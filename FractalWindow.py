@@ -46,7 +46,7 @@ from FractalWorker import FractalWorker
 from Logging import Logging
 
 
-class FractalWidget(QMainWindow):
+class FractalWindow(QMainWindow):
 
     # Signal for progress of frac calculation
     progress = Signal(int)
@@ -63,7 +63,7 @@ class FractalWidget(QMainWindow):
 
     def __init__(self, frac_area, draw_dim, iter_lim, col_pal, frac_set, julia_c):
         super().__init__()
-        self.log = Logging("FractalWidget", True)
+        self.log = Logging("FractalWindow", True)
         self.log.entry("__init__", False)
 
         self.calc_area = copy.copy(frac_area)
