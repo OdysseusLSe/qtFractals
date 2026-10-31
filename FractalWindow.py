@@ -83,13 +83,6 @@ class FractalWindow(QMainWindow):
         # First resize event should be ignored.
         self.starting = True
 
-        # Initiate status bar
-        self.status_bar = QStatusBar()
-        self.setStatusBar(self.status_bar)
-        self.status_lbl = QLabel("--- Ready ---")
-        self.status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_bar.addWidget(self.status_lbl, 1)
-
         # Mouse variables for Mandelbrot set selection.
         self.selecting = False
         self.sel_start = None
@@ -117,7 +110,7 @@ class FractalWindow(QMainWindow):
     #
 
     def calculation_finished(self, image, calc_time):
-        self.log.entry("calculation_finished", True)
+        self.log.entry("calculation_finished", False)
 
         if image.isNull():
             self.log.error("Missing image!", True)
@@ -130,7 +123,7 @@ class FractalWindow(QMainWindow):
         ih = image.height()
         sw = self.width()
         sh = self.height()
-        self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}", True)
+        self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}", False)
 
         if iw > sw or ih > sh:
             self.image = image.scaled(
@@ -143,7 +136,7 @@ class FractalWindow(QMainWindow):
             self.image = image
 
         self.scaling_factor = self.image_2_save.width() / self.image.width()
-        self.log.write(f"self.scaling_factor={self.scaling_factor}", True)
+        self.log.write(f"self.scaling_factor={self.scaling_factor}", False)
 
         self.update()
 
@@ -154,7 +147,7 @@ class FractalWindow(QMainWindow):
         )
         self.closing.emit(self.thumbnail, calc_time)
 
-        self.log.exit("calculation_finished", True)
+        self.log.exit("calculation_finished", False)
 
     #
     # -----------------------------------------------
@@ -350,7 +343,6 @@ class FractalWindow(QMainWindow):
         ih = self.calc_area['imagHeight']
         status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
         status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
-        self.status_lbl.setText(status)
 
         #self.cur_rect.emit(self.calc_area)
 
@@ -521,13 +513,13 @@ class FractalWindow(QMainWindow):
     #
 
     def resizeEvent(self, event: QResizeEvent):
-        self.log.entry("resizeEvent", True)
+        self.log.entry("resizeEvent", False)
 
         super().resizeEvent(event)
 
         if self.starting:
             self.starting = False
-            self.log.exit("resizeEvent", True)
+            self.log.exit("resizeEvent", False)
             return
 
         image = self.image_2_save
@@ -536,7 +528,8 @@ class FractalWindow(QMainWindow):
         ih = image.height()
         sw = self.width()
         sh = self.height()
-        self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}", True)
+        sh = self.height()
+        self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}", False)
 
         if iw > sw or ih > sh:
             self.image = image.scaled(
@@ -549,11 +542,11 @@ class FractalWindow(QMainWindow):
             self.image = image
 
         self.scaling_factor = self.image_2_save.width() / self.image.width()
-        self.log.write(f"self.scaling_factor={self.scaling_factor}", True)
+        self.log.write(f"self.scaling_factor={self.scaling_factor}", False)
 
         self.update()
 
-        self.log.exit("resizeEvent", True)
+        self.log.exit(False)
 
 
     #

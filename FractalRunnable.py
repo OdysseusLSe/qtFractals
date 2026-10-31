@@ -19,12 +19,19 @@
 from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 from PySide6.QtGui import QImage
 
+#
+# Custom signals can only be defined on objects derived from QObject. Since
+# QRunnable is not derived from QObject I can’t define the signal there
+# directly. A custom QObject to hold the signal is the simplest solution.
+#
 
-class MandelbrotSignals(QObject):
+
+class FractalSignals(QObject):
+    # When thread has finished send result (calculated image) back.
     finished = Signal(QImage)
 
 
-class MandelbrotRunnable(QRunnable):
+class FractalRunnable(QRunnable):
     def __init__(self, ff, frac_area, iter_lim, dd_width, dd_height, cp, mw):
         super().__init__()
 
@@ -35,7 +42,7 @@ class MandelbrotRunnable(QRunnable):
         self.dd_height   = dd_height
         self.cp          = cp
         self.main_window = mw
-        self.signals     = MandelbrotSignals()
+        self.signals     = FractalSignals()
 
     @Slot()
     def run(self):
@@ -50,7 +57,6 @@ class MandelbrotRunnable(QRunnable):
             self.dd_height,
             self.cp
         )
-        self.signals.finished.emit(image)
 
         if self.main_window.stop_video_creation:
             self.signals.finished.emit(None)

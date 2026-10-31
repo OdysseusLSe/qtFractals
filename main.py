@@ -45,7 +45,6 @@ from PySide6.QtGui import (
     QAction,
     QColor,
     QDoubleValidator,
-    QFont,
     QIcon,
     QImage,
     QIntValidator,
@@ -76,10 +75,10 @@ from PySide6.QtWidgets import (
     QWidget
 )
 
-from MandelbrotCalc import MandelbrotRunnable
 
 from FractalFrame import FractalFrame
 from FractalHistory import FractalHistory
+from FractalRunnable import FractalRunnable
 from FractalWindow import FractalWindow
 from Logging import Logging
 
@@ -130,7 +129,7 @@ class MainWindow(QMainWindow):
         self.parameter_window()
         self.fractal_window()
 
-        self.start_time = time.process_time()
+        #self.start_time = time.process_time()
 
         self.history_list = []
         self.fh = FractalHistory(APP_NAME, "history.json")
@@ -365,6 +364,7 @@ class MainWindow(QMainWindow):
             (dd_width, dd_height)
         )
 
+        # Preparations for the forthcoming for-loop
         self.ff = FractalFrame()
         image   = QImage()
         pool    = QThreadPool.globalInstance()
@@ -378,7 +378,6 @@ class MainWindow(QMainWindow):
 
             status = f"Creating video (frame: {step+1}/{num_of_frames})"
             self.status_lbl.setText(status)
-            self.fw.status_lbl.setText(status)
 
             factor = ease_data[step]
 
@@ -401,13 +400,14 @@ class MainWindow(QMainWindow):
 # ------------------------------------------------------------------------------
 
             def on_frame_calculated(img):
+                # When thread has finished get result (calculated image) back.
                 nonlocal computed_image
                 computed_image = img
                 loop.quit()
 
 # ------------------------------------------------------------------------------
 
-            runnable = MandelbrotRunnable(
+            runnable = FractalRunnable(
                 self.ff, frac_area, iter_lim, dd_width, dd_height, cp, self
             )
             runnable.signals.finished.connect(on_frame_calculated)
@@ -417,7 +417,6 @@ class MainWindow(QMainWindow):
 
             if self.stop_video_creation or computed_image is None:
                 self.status_lbl.setText("Video creation aborted!")
-                self.fw.status_lbl.setText("Video creation aborted!")
                 self.stop_video_creation = True
                 break
 
@@ -468,7 +467,6 @@ class MainWindow(QMainWindow):
 
         status = f"Video creation done ({video_name})"
         self.status_lbl.setText(status)
-        self.fw.status_lbl.setText(status)
 
         # Select directory where to save the newly created video to
         folder_path = QFileDialog.getExistingDirectory(
@@ -538,7 +536,7 @@ class MainWindow(QMainWindow):
     #
 
     def fractal_window(self):
-        self.log.entry("fractal_window")
+        self.log.entry("fractal_window", False)
 
         self.fw = FractalWindow(
             self.const_frac_area,
@@ -550,7 +548,6 @@ class MainWindow(QMainWindow):
         )
         self.fw.setMinimumSize(self.draw_dim['width'], self.draw_dim['height'])
 
-        #self.fw.cur_rect.connect(self.sb_update_area)
         self.fw.closing.connect(self.calculation_closing)
 
         # Connect the progress signal from the FractalWindow to the
@@ -559,7 +556,7 @@ class MainWindow(QMainWindow):
 
         self.fw.show()
 
-        self.log.exit("fractal_window")
+        self.log.exit("fractal_window", False)
 
     #
     # -----------------------------------------------
@@ -1330,7 +1327,6 @@ class MainWindow(QMainWindow):
 
         percent = int((value / self.progress_bar.maximum()) * 100)
         self.status_lbl.setText(f"Progress: {percent}%")
-        self.fw.status_lbl.setText(f"Progress: {percent}%")
 
         self.progress_bar.setValue(value)
 
