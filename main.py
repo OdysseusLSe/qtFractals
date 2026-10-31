@@ -115,8 +115,9 @@ class MainWindow(QMainWindow):
         # Initiate status bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
-        self.status_bar.setFont(QFont("Arial", 11))
-        self.status_bar.showMessage("--- Ready ---")
+        self.status_lbl = QLabel("Ready")
+        self.status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_bar.addWidget(self.status_lbl, 1)
 
         # Build the menu bar with all the menus and actions
         self.build_menu_bar()
@@ -158,7 +159,7 @@ class MainWindow(QMainWindow):
     def build_menu_bar(self):
         self.log.entry("build_menu_bar")
 
-        self.status_bar.showMessage("--- Ready ---")
+        self.status_lbl.setText("Ready")
 
         # Create the menu bar
         menu_bar = self.menuBar()
@@ -231,11 +232,8 @@ class MainWindow(QMainWindow):
     def calculation_closing(self, thumbnail, calc_time):
         self.log.entry("calculation_closing")
 
-        status = f" --- Process time: {calc_time} seconds ---"
-        self.status_bar.showMessage(status)
-
-        self.reset_btn.setEnabled(True)
-        self.start_btn.setEnabled(True)
+        status = f"Process time: {calc_time} seconds"
+        self.status_lbl.setText(status)
 
         thumbnail_name = f"{time.time()}.png"
 
@@ -247,6 +245,9 @@ class MainWindow(QMainWindow):
         log_string = pprint.pformat(self.history_list)
         self.log.write(f"self.history_list=\n{log_string}")
         self.fh.save_history(self.history_list, thumbnail, thumbnail_name)
+
+        self.fractal_calculation = False
+        self.enable_widgets()
 
         self.log.exit("calculation_closing")
 
@@ -298,6 +299,9 @@ class MainWindow(QMainWindow):
             sec = 1
         ):
         self.log.entry("create_video")
+
+        self.video_creation = True
+        self.enable_widgets(False)
 
         self.is_stopped = False
         cp = copy.copy(color_palette)
@@ -373,12 +377,12 @@ class MainWindow(QMainWindow):
         for step in range(0, num_of_frames, 1):
 
             status = f"Creating video (frame: {step+1}/{num_of_frames})"
-            self.status_bar.showMessage(status)
-            self.fw.status_bar.showMessage(status)
+            self.status_lbl.setText(status)
+            self.fw.status_lbl.setText(status)
 
             if self.is_stopped:
-                self.status_bar.showMessage("Video creation aborted!")
-                self.fw.status_bar.showMessage("Video creation aborted!")
+                self.status_lbl.setText("Video creation aborted!")
+                self.fw.status_lbl.setText("Video creation aborted!")
                 break
 
             factor = ease_data[step]
@@ -452,15 +456,18 @@ class MainWindow(QMainWindow):
             msg = f"Aborted Video\n {video_name}\n in cache\n {dir_name}"
             QMessageBox.warning(self, "Video in cache", msg)
 
+            self.enable_widgets(True)
+            self.video_creation = False
+
             self.log.exit("create_video")
             return
 
         video.release()
         cv2.destroyAllWindows()
 
-        status = f"Video creation done ({video_name})."
-        self.status_bar.showMessage(status)
-        self.fw.status_bar.showMessage(status)
+        status = f"Video creation done ({video_name})"
+        self.status_lbl.setText(status)
+        self.fw.status_lbl.setText(status)
 
         # Select directory where to save the newly created video to
         folder_path = QFileDialog.getExistingDirectory(
@@ -485,6 +492,9 @@ class MainWindow(QMainWindow):
 
             msg = f"Video\n {video_name}\n still in cache\n {str(dir_path)}"
             QMessageBox.warning(self, "Video in cache", msg)
+
+        self.enable_widgets(True)
+        self.video_creation = False
 
         self.log.exit("create_video", True)
 
@@ -766,6 +776,8 @@ class MainWindow(QMainWindow):
 
         row = 0
 
+        # ----------------------------------------------------------------------
+
         def create_line():
             line = QFrame()
             line.setFrameShape(QFrame.Shape.HLine)
@@ -775,6 +787,8 @@ class MainWindow(QMainWindow):
             }
             """)
             return line
+
+        # ----------------------------------------------------------------------
 
         label = QLabel("<b>Complex parameters</b>:", self)
         grid_layout.addWidget(
@@ -950,7 +964,7 @@ class MainWindow(QMainWindow):
 
         # "Stop" button
         self.stop_btn = QPushButton('Stop', self)
-        self.stop_btn.clicked.connect(self.reset)
+        self.stop_btn.clicked.connect(self.stop_calculation)
         grid_layout.addWidget(
             self.stop_btn, row, 1, 1, 2,
             Qt.AlignmentFlag.AlignHCenter
@@ -1086,7 +1100,9 @@ class MainWindow(QMainWindow):
 
         self.cache_dir = user_cache_dir(APP_NAME, "OdysseusLSe")
 
-        self.is_new_cp = False
+        self.is_new_cp           = False
+        self.fractal_calculation = False
+        self.video_creation      = False
 
         # Default coordinates of the fractal (HD ratio)
         self.frac_area = {
@@ -1183,23 +1199,39 @@ class MainWindow(QMainWindow):
         self.read_dialog.setMinimumSize(self.read_dialog.sizeHint())
         self.read_dialog.exec()
 
-        self.log.write("show_readme")
+        self.log.exit("show_readme")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def stop_calculation(self):
+        self.log.entry("stop_calculation", False)
+
+        if self.fractal_calculation:
+            self.fw.stop_calculation()
+
+        if self.video_creation:
+            pass
+
+        self.log.exit("stop_calculation", False)
 
     #
     # -----------------------------------------------
     #
 
     def trigger_calculation(self):
-        self.log.entry("trigger_calculation", True)
+        self.log.entry("trigger_calculation", False)
+
+        self.fractal_calculation = True
+        self.enable_widgets(False)
 
         layout_rect = self.main_layout.geometry()
         lw          = layout_rect.width()
         lh          = layout_rect.height()
-        self.log.write(f"lw,lh={lw},{lh}", True)
+        self.log.write(f"lw,lh={lw},{lh}", False)
 
         self.progress_bar.setValue(0)
-        self.reset_btn.setEnabled(False)
-        self.start_btn.setEnabled(False)
         self.frac_area = {
             'realOrigin': float(self.rp_edit.text()),
             'imagOrigin': float(self.ip_edit.text()),
@@ -1228,7 +1260,7 @@ class MainWindow(QMainWindow):
 
         self.fw.start_calculation()
 
-        self.log.exit("trigger_calculation", True)
+        self.log.exit("trigger_calculation", False)
 
     #
     # -----------------------------------------------
@@ -1239,7 +1271,7 @@ class MainWindow(QMainWindow):
 
         if action and action.statusTip():
             self.log.write(f"action.statusTip()={action.statusTip()}")
-            self.status_bar.showMessage(action.statusTip())
+            self.status_lbl.setText(action.statusTip())
         else:
             self.status_bar.clearMessage()
 
@@ -1261,8 +1293,8 @@ class MainWindow(QMainWindow):
 
             frac_area, draw_dim, iter_lim, frac_set, julia_c = self.fw.get_parameters()
 
-            self.frac_area        = copy.deepcopy(frac_area)
-            self.draw_dim         = copy.deepcopy(draw_dim)
+            self.frac_area        = copy.copy(frac_area)
+            self.draw_dim         = copy.copy(draw_dim)
             self.iter_lim         = iter_lim
             self.current_frac_set = frac_set
             self.julia_c          = julia_c
@@ -1293,15 +1325,15 @@ class MainWindow(QMainWindow):
             self.mandel_btn.update()
             self.julia_btn.update()
 
-        self.log.write("value=" + str(value) + " / " + str(self.draw_dim['height']))
+        self.log.write(f"value={value} / {self.draw_dim['height']}")
 
         percent = int((value / self.progress_bar.maximum()) * 100)
-        self.status_bar.showMessage(f"--- Progress: {percent}%")
-        self.fw.status_bar.showMessage(f"--- Progress: {percent}%")
+        self.status_lbl.setText(f"Progress: {percent}%")
+        self.fw.status_lbl.setText(f"Progress: {percent}%")
 
         self.progress_bar.setValue(value)
 
-        self.log.write("update_progress")
+        self.log.exit("update_progress")
 
     #
     # -----------------------------------------------
@@ -1507,6 +1539,20 @@ class MainWindow(QMainWindow):
         self.zoom_dialog.show()
 
         self.log.write("zoom_video")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def enable_widgets(self, flag=True):
+        self.log.entry(f"enable_widgets({flag})")
+
+        self.reset_btn.setEnabled(flag)
+        self.start_btn.setEnabled(flag)
+        self.dd_combo.setEnabled(flag)
+        self.cp_combo.setEnabled(flag)
+
+        self.log.exit("enable_widgets")
 
     #
     # -----------------------------------------------

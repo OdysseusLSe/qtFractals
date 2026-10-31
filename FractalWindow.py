@@ -35,11 +35,10 @@ from PySide6.QtGui import (
     QResizeEvent,
     QShortcut
 )
-#from PySide6.QtWidgets import QWidget
 from PySide6.QtWidgets import (
+    QLabel,
     QMainWindow,
-    QStatusBar,
-    QWidget
+    QStatusBar
 )
 
 from FractalWorker import FractalWorker
@@ -50,9 +49,6 @@ class FractalWindow(QMainWindow):
 
     # Signal for progress of frac calculation
     progress = Signal(int)
-
-    # Signal for rectangle of next fractal area
-    #cur_rect = Signal(dict)
 
     # Signal finished calculation
     closing = Signal(QImage, float)
@@ -90,8 +86,9 @@ class FractalWindow(QMainWindow):
         # Initiate status bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
-        self.status_bar.setFont(QFont("Arial", 11))
-        self.status_bar.showMessage("--- Ready ---")
+        self.status_lbl = QLabel("--- Ready ---")
+        self.status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_bar.addWidget(self.status_lbl, 1)
 
         # Mouse variables for Mandelbrot set selection.
         self.selecting = False
@@ -353,7 +350,7 @@ class FractalWindow(QMainWindow):
         ih = self.calc_area['imagHeight']
         status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
         status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
-        self.status_bar.showMessage(status)
+        self.status_lbl.setText(status)
 
         #self.cur_rect.emit(self.calc_area)
 
