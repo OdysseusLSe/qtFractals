@@ -86,7 +86,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.9.2"
+APP_VERSION = "0.9.3"
 
 
 #
@@ -303,7 +303,7 @@ class MainWindow(QMainWindow):
         self.video_creation = True
         self.enable_widgets(False)
 
-        self.is_stopped = False
+        self.stop_video_creation = False
         cp = copy.copy(color_palette)
 
         # From string to float
@@ -380,11 +380,6 @@ class MainWindow(QMainWindow):
             self.status_lbl.setText(status)
             self.fw.status_lbl.setText(status)
 
-            if self.is_stopped:
-                self.status_lbl.setText("Video creation aborted!")
-                self.fw.status_lbl.setText("Video creation aborted!")
-                break
-
             factor = ease_data[step]
 
             current_width  = width[0]  + (width[1]  - width[0])  * factor
@@ -394,7 +389,7 @@ class MainWindow(QMainWindow):
             current_ci = ci_start + (ci_end - ci_start) * factor
 
             frac_area = {
-                'realOrigin': current_cr - current_width / 2,
+                'realOrigin': current_cr - current_width  / 2,
                 'imagOrigin': current_ci - current_height / 2,
                 'realWidth' : current_width,
                 'imagHeight': current_height
@@ -413,12 +408,18 @@ class MainWindow(QMainWindow):
 # ------------------------------------------------------------------------------
 
             runnable = MandelbrotRunnable(
-                self.ff, frac_area, iter_lim, dd_width, dd_height, cp
+                self.ff, frac_area, iter_lim, dd_width, dd_height, cp, self
             )
             runnable.signals.finished.connect(on_frame_calculated)
 
             pool.start(runnable)
             loop.exec()
+
+            if self.stop_video_creation or computed_image is None:
+                self.status_lbl.setText("Video creation aborted!")
+                self.fw.status_lbl.setText("Video creation aborted!")
+                self.stop_video_creation = True
+                break
 
             image = computed_image
 
@@ -448,7 +449,7 @@ class MainWindow(QMainWindow):
 
             QCoreApplication.processEvents()
 
-        if self.is_stopped:
+        if self.stop_video_creation:
             # User stopped calculation
             video.release()
             cv2.destroyAllWindows()
@@ -1212,7 +1213,7 @@ class MainWindow(QMainWindow):
             self.fw.stop_calculation()
 
         if self.video_creation:
-            pass
+            self.stop_video_creation = True
 
         self.log.exit("stop_calculation", False)
 
