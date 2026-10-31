@@ -28,18 +28,13 @@ from PySide6.QtCore import (
 from PySide6.QtGui import (
     QImage,
     QColor,
-    QFont,
     QKeySequence,
     QPainter,
     QPen,
     QResizeEvent,
     QShortcut
 )
-from PySide6.QtWidgets import (
-    QLabel,
-    QMainWindow,
-    QStatusBar
-)
+from PySide6.QtWidgets import QMainWindow
 
 from FractalWorker import FractalWorker
 from Logging import Logging

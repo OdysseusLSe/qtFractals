@@ -19,13 +19,8 @@
 import copy
 import math
 
-from PySide6.QtCore import (
-    QObject
-)
-from PySide6.QtGui import (
-    QImage,
-    QColor
-)
+from PySide6.QtCore import QObject
+from PySide6.QtGui import QImage, QColor
 
 from Logging import Logging
 
