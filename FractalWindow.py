@@ -34,7 +34,7 @@ from PySide6.QtGui import (
     QResizeEvent,
     QShortcut
 )
-from PySide6.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QLabel, QMainWindow
 
 from FractalWorker import FractalWorker
 from Logging import Logging
@@ -99,6 +99,22 @@ class FractalWindow(QMainWindow):
         # Set start parameters for future thread check.
         self.thread = None
         self.worker = None
+
+        self.coord_label = QLabel(self)
+        self.coord_label.setStyleSheet(
+            """
+            background-color: rgba(0, 0, 0, 180);
+            color: white;
+            border: 1px solid #ffffff;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 11px;
+        """
+        )
+        # Wichtig: Klicks durch das Label hindurchlassen, damit die Selektion nicht unterbrochen wird
+        self.coord_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.coord_label.hide()
 
         self.start_calculation()
 
@@ -332,7 +348,12 @@ class FractalWindow(QMainWindow):
 
         self.log.write(f"x,y,dx,dy={x},{y},{abs(dx)},{abs(dy)}", False)
 
-        self.calculate_selected_area(QRect(int(x), int(y), int(abs(dx)), int(abs(dy))))
+        self.calculate_selected_area(QRect(
+            int(x),
+            int(y),
+            int(abs(dx)),
+            int(abs(dy))
+        ))
         self.log.write("frac_area=" + str(self.frac_area), False)
         self.log.write("calc_area=" + str(self.calc_area), False)
 
@@ -342,8 +363,6 @@ class FractalWindow(QMainWindow):
         ih = self.calc_area['imagHeight']
         status = f"--- Rectangle: Real part: {ro:.15f}, Imag part: {io:.15f}, "
         status = status + f"Width: {rw:.15f}, Height: {ih:.15f}"
-
-        #self.cur_rect.emit(self.calc_area)
 
         self.log.exit("get_selection_rect", False)
         return QRect(int(x), int(y), int(abs(dx)), int(abs(dy)))
@@ -425,11 +444,13 @@ class FractalWindow(QMainWindow):
         if event.button() == Qt.MouseButton.LeftButton:
             if self.selecting:
                 self.sel_end = event.position().toPoint()
+                self.coord_label.hide()
                 rect = self.get_selection_rect()
                 self.selecting = False
                 self.update()
                 # Calculate new fractal area
                 if self.calculate_selected_area(rect):
+                    # Selected area is not to small
                     self.log.write("frac_area=" + str(self.frac_area), False)
                     self.frac_area = copy.copy(self.calc_area)
                     self.start_calculation()
@@ -462,7 +483,11 @@ class FractalWindow(QMainWindow):
 
         # Draw cursor of selection
 
-        if (self.selecting and self.sel_start is not None and self.sel_end is not None):
+        if (
+            self.selecting
+            and self.sel_start is not None
+            and self.sel_end is not None
+        ):
             rect = self.get_selection_rect()
 
             pen = QPen(QColor(255, 255, 255))
@@ -472,6 +497,24 @@ class FractalWindow(QMainWindow):
             painter.setPen(pen)
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRect(rect)
+
+            ro = self.calc_area['realOrigin']
+            io = self.calc_area['imagOrigin']
+            rw = self.calc_area['realWidth']
+            ih = self.calc_area['imagHeight']
+            self.coord_label.setText(
+                f"Real: {ro}, Imag: {io} <br> Width: {rw}, Height: {ih}"
+            )
+            self.coord_label.adjustSize()
+            lbl_x = rect.x()
+            lbl_y = rect.y() - self.coord_label.height() - 5
+            if lbl_y < 0:
+                lbl_y = rect.y() + 5
+            self.coord_label.move(lbl_x, lbl_y)
+            self.coord_label.show()
+        else:
+            if hasattr(self, "coord_label"):
+                self.coord_label.hide()
 
         self.log.exit("paintEvent", False)
 
