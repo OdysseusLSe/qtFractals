@@ -38,12 +38,12 @@ from PySide6.QtWidgets import (
 
 from Logging import Logging
 
+#
+# -----------------------------------------------
+#
+
 
 class FractalHistory():
-
-    #
-    # Constructor
-    #
 
     def __init__(self, app_name, file_name):
         super().__init__()

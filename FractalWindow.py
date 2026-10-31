@@ -44,6 +44,10 @@ from PySide6.QtWidgets import (
 from FractalWorker import FractalWorker
 from Logging import Logging
 
+#
+# -----------------------------------------------
+#
+
 
 class FractalWindow(QMainWindow):
 
@@ -54,7 +58,7 @@ class FractalWindow(QMainWindow):
     closing = Signal(QImage, float)
 
     #
-    # Constructor
+    # -----------------------------------------------
     #
 
     def __init__(self, frac_area, draw_dim, iter_lim, col_pal, frac_set, julia_c):

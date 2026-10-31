@@ -87,10 +87,10 @@ import resources_rc
 APP_NAME    = "qtFractals"
 APP_VERSION = "0.9.3"
 
+#
+# -----------------------------------------------
+#
 
-#
-#
-#
 
 class MainWindow(QMainWindow):
 

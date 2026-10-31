@@ -29,6 +29,10 @@ from PySide6.QtGui import (
 
 from Logging import Logging
 
+#
+# -----------------------------------------------
+#
+
 
 class FractalFrame(QObject):
 

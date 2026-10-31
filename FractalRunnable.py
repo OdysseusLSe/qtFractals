@@ -25,6 +25,10 @@ from PySide6.QtGui import QImage
 # directly. A custom QObject to hold the signal is the simplest solution.
 #
 
+#
+# -----------------------------------------------
+#
+
 
 class FractalSignals(QObject):
     # When thread has finished send result (calculated image) back.
