@@ -85,7 +85,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.9.4"
+APP_VERSION = "0.9.5"
 
 #
 # -----------------------------------------------

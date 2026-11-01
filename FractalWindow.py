@@ -17,6 +17,7 @@
 #
 
 import copy
+import random
 
 from PySide6.QtCore import (
     QPoint,
@@ -26,6 +27,7 @@ from PySide6.QtCore import (
     Signal
 )
 from PySide6.QtGui import (
+    QBrush,
     QImage,
     QColor,
     QKeySequence,
@@ -108,7 +110,6 @@ class FractalWindow(QMainWindow):
             border: 1px solid #ffffff;
             border-radius: 3px;
             padding: 2px 6px;
-            font-family: monospace;
             font-size: 11px;
         """
         )
@@ -490,12 +491,25 @@ class FractalWindow(QMainWindow):
         ):
             rect = self.get_selection_rect()
 
-            pen = QPen(QColor(255, 255, 255))
+            self.selection_color = QColor(
+                random.randint(0, 255),
+                random.randint(0, 255),
+                random.randint(0, 255)
+            )
+
+            pen = QPen(self.selection_color)
             pen.setWidth(2)
             pen.setStyle(Qt.PenStyle.DashLine)
 
             painter.setPen(pen)
-            painter.setBrush(Qt.BrushStyle.NoBrush)
+            fill_color = QColor(
+                self.selection_color.red(),
+                self.selection_color.green(),
+                self.selection_color.blue(),
+                100,
+            )
+            painter.setBrush(QBrush(fill_color))
+            #painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRect(rect)
 
             ro = self.calc_area['realOrigin']
@@ -503,7 +517,7 @@ class FractalWindow(QMainWindow):
             rw = self.calc_area['realWidth']
             ih = self.calc_area['imagHeight']
             self.coord_label.setText(
-                f"Real: {ro}, Imag: {io} <br> Width: {rw}, Height: {ih}"
+                f"Real: {ro}, Imag: {io}<br>Width: {rw}, Height: {ih}"
             )
             self.coord_label.adjustSize()
             lbl_x = rect.x()
