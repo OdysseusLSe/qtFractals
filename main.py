@@ -85,7 +85,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.9.5"
+APP_VERSION = "0.9.6"
 
 #
 # -----------------------------------------------
@@ -290,7 +290,7 @@ class MainWindow(QMainWindow):
             ip_edit,
             width_edit,
             height_edit,
-            iter_lim,
+            max_iter_edit,
             dd_width,
             dd_height,
             color_palette,
@@ -305,7 +305,7 @@ class MainWindow(QMainWindow):
         self.stop_video_creation = False
         cp = copy.copy(color_palette)
 
-        # From string to float
+        # From string to float/int
 
         real_part = []
         real_part.append(float(rp_edit[0].text()))
@@ -322,6 +322,10 @@ class MainWindow(QMainWindow):
         height = []
         height.append(float(height_edit[0].text()))
         height.append(float(height_edit[1].text()))
+
+        iter_lim = []
+        iter_lim.append(int(max_iter_edit[0].text()))
+        iter_lim.append(int(max_iter_edit[1].text()))
 
         # Close zoom dialog of method "zoom_video"
         self.log.write("ok_clicked")
@@ -344,7 +348,7 @@ class MainWindow(QMainWindow):
             t = step / (num_of_frames - 1)
             ease_data.append(1 - ((1 - t) ** power) if zoom_in else t ** power)
 
-        # Create directory for video frames
+        # Create cache directory for video
         dir_time = time.time()
         dir_name = f"{self.cache_dir}/{APP_NAME}.video-{dir_time}"
         dir_path = Path(dir_name)
@@ -387,6 +391,8 @@ class MainWindow(QMainWindow):
             current_cr = cr_start + (cr_end - cr_start) * factor
             current_ci = ci_start + (ci_end - ci_start) * factor
 
+            current_il = iter_lim[0] + int((iter_lim[1] - iter_lim[0]) * factor)
+
             frac_area = {
                 'realOrigin': current_cr - current_width  / 2,
                 'imagOrigin': current_ci - current_height / 2,
@@ -408,7 +414,7 @@ class MainWindow(QMainWindow):
 # ------------------------------------------------------------------------------
 
             runnable = FractalRunnable(
-                self.ff, frac_area, iter_lim, dd_width, dd_height, cp, self
+                self.ff, frac_area, current_il, dd_width, dd_height, cp, self
             )
             runnable.signals.finished.connect(on_frame_calculated)
 
@@ -779,11 +785,7 @@ class MainWindow(QMainWindow):
         def create_line():
             line = QFrame()
             line.setFrameShape(QFrame.Shape.HLine)
-            line.setStyleSheet("""
-            QFrame {
-                height: 1px;
-            }
-            """)
+            line.setStyleSheet(" QFrame { height: 1px; } ")
             return line
 
         # ----------------------------------------------------------------------
@@ -1109,14 +1111,14 @@ class MainWindow(QMainWindow):
             'realWidth'  : 4.33,
             'imagHeight' : 2.43
         }
-        self.const_frac_area = copy.deepcopy(self.frac_area)
+        self.const_frac_area = copy.copy(self.frac_area)
 
         # c for Julia set
         self.julia_c = complex(10.0, 10.0)
 
         # Default dimensions of the fractal window (HD:)
         self.draw_dim = {'width': 1280, 'height': 720}
-        self.const_draw_dim = copy.deepcopy(self.draw_dim)
+        self.const_draw_dim = copy.copy(self.draw_dim)
 
         # Default iteration limit
         self.iter_lim = 100
@@ -1344,14 +1346,21 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout(self.zoom_dialog)
 
-        title       = []
-        rp_edit     = []
-        ip_edit     = []
-        width_edit  = []
-        height_edit = []
-        grab_btn    = []
+        title         = []
+        rp_edit       = []
+        ip_edit       = []
+        width_edit    = []
+        height_edit   = []
+        max_iter_edit = []
+        grab_btn      = []
 
-# ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+
+        def create_line():
+            line = QFrame()
+            line.setFrameShape(QFrame.Shape.HLine)
+            line.setStyleSheet(" QFrame { height: 1px; } ")
+            return line
 
         def grab(item):
             frac_area, dd, iter_lim, fd, jc = self.fw.get_parameters()
@@ -1359,8 +1368,8 @@ class MainWindow(QMainWindow):
             ip_edit[item].setText(str(frac_area['imagOrigin']))
             width_edit[item].setText(str(frac_area['realWidth']))
             height_edit[item].setText(str(frac_area['imagHeight']))
+            max_iter_edit[item].setText(str(iter_lim))
 
-            iter_lim_edit.setText(str(iter_lim))
             dd_width.setText(str(dd['width']))
             dd_height.setText(str(dd['height']))
 
@@ -1413,6 +1422,15 @@ class MainWindow(QMainWindow):
                 grid.addWidget(label, 3, 0)
                 grid.addWidget(height_edit[loop], 3, 1)
 
+                label = QLabel("<b>Maximum iterations</b>:", self)
+                bottom = 100
+                top    = 5000
+                max_iter_edit.append(QLineEdit(self))
+                max_iter_edit[loop].setText(str(self.const_iter_lim))
+                max_iter_edit[loop].setValidator(QIntValidator(bottom, top))
+                grid.addWidget(label, 4, 0)
+                grid.addWidget(max_iter_edit[loop], 4, 1)
+
                 main_layout.addLayout(grid)
 
                 # "Grab" Button
@@ -1421,18 +1439,14 @@ class MainWindow(QMainWindow):
                 main_layout.addWidget(grab_btn[loop])
 
                 # Separation line
-                line = QFrame()
-                line.setFrameShape(QFrame.Shape.HLine)
-                line.setFrameShadow(QFrame.Shadow.Sunken)
-                line.setStyleSheet("background-color: #c0c0c0; max-height: 1px;")
-                main_layout.addWidget(line)
+                main_layout.addWidget(create_line())
 
         def cp_changed(text):
             for element in self.cp_list:
                 if text == element['name']:
                     self.cp = copy.copy(element)
 
-# ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
         input_area()
 
@@ -1503,7 +1517,7 @@ class MainWindow(QMainWindow):
         button_box = QDialogButtonBox(QBtn)
         main_layout.addWidget(button_box)
 
-# ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
         def ok_clicked():
             self.log.write("ok_clicked")
@@ -1512,7 +1526,7 @@ class MainWindow(QMainWindow):
                 ip_edit,
                 width_edit,
                 height_edit,
-                int(iter_lim_edit.text()),
+                max_iter_edit,
                 int(dd_width.text()),
                 int(dd_height.text()),
                 self.cp,
@@ -1525,7 +1539,7 @@ class MainWindow(QMainWindow):
             self.log.write("zoom_video")
             self.zoom_dialog.close()
 
-# ------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
         button_box.accepted.connect(ok_clicked)
         button_box.rejected.connect(cancel_clicked)
