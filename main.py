@@ -380,9 +380,6 @@ class MainWindow(QMainWindow):
 
         for step in range(0, num_of_frames, 1):
 
-            status = f"Creating video (frame: {step+1}/{num_of_frames})"
-            self.status_lbl.setText(status)
-
             factor = ease_data[step]
 
             current_width  = width[0]  + (width[1]  - width[0])  * factor
@@ -399,6 +396,10 @@ class MainWindow(QMainWindow):
                 'realWidth' : current_width,
                 'imagHeight': current_height
             }
+
+            status = f"Creating video (frame: {step+1}/{num_of_frames})"
+            status = status + f"  |  Iteration limit: {current_il}"
+            self.status_lbl.setText(status)
 
             loop = QEventLoop()
             computed_image = None
@@ -1451,15 +1452,10 @@ class MainWindow(QMainWindow):
         input_area()
 
         row = QHBoxLayout()
-        label  = QLabel("<b>Iterations</b>:", self)
-        iter_lim_edit = QLineEdit(self)
-        iter_lim_edit.setText(str(self.const_iter_lim))
-        iter_lim_edit.setValidator(QIntValidator(100, 5000))
-        iter_lim_edit.setFixedWidth(50)
+        label  = QLabel("<b>Resolution</b>:", self)
         row.addWidget(label)
-        row.addWidget(iter_lim_edit)
 
-        label  = QLabel("<b>Width x Height</b>:", self)
+        label  = QLabel("Width:", self)
         row.addWidget(label)
 
         dd_width = QLineEdit(self)
@@ -1468,7 +1464,7 @@ class MainWindow(QMainWindow):
         dd_width.setFixedWidth(50)
         row.addWidget(dd_width)
 
-        label  = QLabel("<b>x</b>", self)
+        label  = QLabel("x   Height:", self)
         row.addWidget(label)
 
         dd_height = QLineEdit(self)
@@ -1498,15 +1494,15 @@ class MainWindow(QMainWindow):
         label  = QLabel("<b>FPS</b>:", self)
         fps_edit = QLineEdit(self)
         fps_edit.setText("10")
-        fps_edit.setValidator(QIntValidator(10, 90))
+        fps_edit.setValidator(QIntValidator(10, 150))
         fps_edit.setFixedWidth(50)
         row.addWidget(label)
         row.addWidget(fps_edit)
 
-        label  = QLabel("<b>Seconds</b>:", self)
+        label  = QLabel("<b>Duration (seconds)</b>:", self)
         sec_edit = QLineEdit(self)
         sec_edit.setText("1")
-        sec_edit.setValidator(QIntValidator(1, 600))
+        sec_edit.setValidator(QIntValidator(1, 99999))
         sec_edit.setFixedWidth(50)
         row.addWidget(label)
         row.addWidget(sec_edit)

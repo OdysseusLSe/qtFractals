@@ -509,7 +509,6 @@ class FractalWindow(QMainWindow):
                 100,
             )
             painter.setBrush(QBrush(fill_color))
-            #painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRect(rect)
 
             ro = self.calc_area['realOrigin']
