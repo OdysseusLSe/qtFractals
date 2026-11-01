@@ -87,8 +87,6 @@ class FractalFrame(QObject):
 
             imag_part = imag_origin + y * y_step
 
-            self.line = []
-
             for x in range(dd_width):
 
                 real_part = real_origin + x * x_step

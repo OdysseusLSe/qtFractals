@@ -965,6 +965,8 @@ class MainWindow(QMainWindow):
 
         # "Stop" button
         self.stop_btn = QPushButton('Stop', self)
+        style_str = "background-color: red; color: white; font-weight: bold;"
+        self.stop_btn.setStyleSheet(style_str)
         self.stop_btn.clicked.connect(self.stop_calculation)
         grid_layout.addWidget(
             self.stop_btn, row, 1, 1, 2,
@@ -973,6 +975,8 @@ class MainWindow(QMainWindow):
 
         # "Start" button
         self.start_btn = QPushButton('Start', self)
+        style_str = "background-color: green; color: white; font-weight: bold;"
+        self.start_btn.setStyleSheet(style_str)
         self.start_btn.setEnabled(False)
         self.start_btn.clicked.connect(self.trigger_calculation)
         grid_layout.addWidget(self.start_btn, row, 3)
