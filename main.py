@@ -369,9 +369,10 @@ class MainWindow(QMainWindow):
         )
 
         # Preparations for the forthcoming for-loop
-        self.ff = FractalFrame()
-        image   = QImage()
-        pool    = QThreadPool.globalInstance()
+        self.ff   = FractalFrame()
+        image     = QImage()
+        pool      = QThreadPool.globalInstance()
+        calc_time = 0.0
         self.progress_bar.setRange(0, num_of_frames)
 
         #
@@ -379,6 +380,8 @@ class MainWindow(QMainWindow):
         #
 
         for step in range(0, num_of_frames, 1):
+
+            start_time = time.process_time()
 
             factor = ease_data[step]
 
@@ -455,6 +458,8 @@ class MainWindow(QMainWindow):
 
             QCoreApplication.processEvents()
 
+        calc_time = time.process_time() - start_time
+
         if self.stop_video_creation:
             # User stopped calculation
             video.release()
@@ -466,13 +471,18 @@ class MainWindow(QMainWindow):
             self.enable_widgets(True)
             self.video_creation = False
 
+            status = f"Video creation time: {calc_time:.2f} seconds"
+            self.status_lbl.setText(status)
+
             self.log.exit("create_video")
             return
 
         video.release()
         cv2.destroyAllWindows()
 
-        status = f"Video creation done ({video_name})"
+        calc_time = time.process_time() - start_time
+
+        status = f"Video creation time: {calc_time:.2f} seconds"
         self.status_lbl.setText(status)
 
         # Select directory where to save the newly created video to
