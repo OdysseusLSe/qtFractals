@@ -85,7 +85,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.0"
+APP_VERSION = "1.1"
 
 #
 # -----------------------------------------------
@@ -972,34 +972,93 @@ class MainWindow(QMainWindow):
 
         row = row + 1
 
+        btn_layout = QHBoxLayout()
+
         # "Reset" button
         self.reset_btn = QPushButton('Reset', self)
+        self.reset_btn.setStyleSheet("""
+            QPushButton {
+                background-color: blue;
+                color: white;
+                font-weight: bold;
+                border: 1px solid black;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: darkblue;
+            }
+            QPushButton:pressed {
+                background-color: darkblue;
+            }
+            QPushButton:disabled {
+                background-color: rgba(0, 0, 255, 0.3);
+                color: rgba(255, 255, 255, 0.5);
+                border: 1px solid rgba(41, 128, 185, 0.4);
+            }
+        """)
         self.reset_btn.clicked.connect(self.reset)
-        grid_layout.addWidget(self.reset_btn, row, 0)
+        btn_layout.addWidget(self.reset_btn, alignment=Qt.AlignLeft)
 
         # "Stop" button
         self.stop_btn = QPushButton('Stop', self)
-        style_str = "background-color: red; color: white; font-weight: bold;"
-        self.stop_btn.setStyleSheet(style_str)
+        self.stop_btn.setStyleSheet("""
+            QPushButton {
+                background-color: red;
+                color: white;
+                font-weight: bold;
+                border: 1px solid black;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: darkred;
+            }
+            QPushButton:pressed {
+                background-color: darkred;
+            }
+            QPushButton:disabled {
+                background-color: rgba(255, 0, 0, 0.3);
+                color: rgba(255, 255, 255, 0.5);
+                border: 1px solid rgba(41, 128, 185, 0.4);
+            }
+        """)
         self.stop_btn.clicked.connect(self.stop_calculation)
-        grid_layout.addWidget(
-            self.stop_btn, row, 1, 1, 2,
-            Qt.AlignmentFlag.AlignHCenter
+        btn_layout.addWidget(
+            self.stop_btn, alignment=Qt.AlignCenter
         )
 
         # "Start" button
         self.start_btn = QPushButton('Start', self)
-        style_str = "background-color: green; color: white; font-weight: bold;"
-        self.start_btn.setStyleSheet(style_str)
+        self.start_btn.setStyleSheet("""
+            QPushButton {
+                background-color: green;
+                color: white;
+                font-weight: bold;
+                border: 1px solid black;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: darkgreen;
+            }
+            QPushButton:pressed {
+                background-color: darkgreen;
+            }
+            QPushButton:disabled {
+                background-color: rgba(0, 255, 0, 0.3);
+                color: rgba(255, 255, 255, 0.5);
+                border: 1px solid rgba(41, 128, 185, 0.4);
+            }
+        """)
         self.start_btn.setEnabled(False)
         self.start_btn.clicked.connect(self.trigger_calculation)
-        grid_layout.addWidget(self.start_btn, row, 3)
+        btn_layout.addWidget(self.start_btn, alignment=Qt.AlignRight)
 
         # All three buttons have the same width
         btn_width = self.reset_btn.sizeHint().width()
         self.reset_btn.setFixedWidth(btn_width)
         self.stop_btn.setFixedWidth(btn_width)
         self.start_btn.setFixedWidth(btn_width)
+
+        grid_layout.addLayout(btn_layout, row, 0, 1, grid_layout.columnCount())
 
         row = row + 1
 
@@ -1303,8 +1362,7 @@ class MainWindow(QMainWindow):
 
             self.log.write(f"Calculation started (value={value})")
 
-            self.reset_btn.setEnabled(False)
-            self.start_btn.setEnabled(False)
+            self.enable_widgets(False)
 
             frac_area, draw_dim, iter_lim, frac_set, julia_c = self.fw.get_parameters()
 
