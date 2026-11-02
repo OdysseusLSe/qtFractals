@@ -984,79 +984,19 @@ class MainWindow(QMainWindow):
         btn_layout = QHBoxLayout()
 
         # "Reset" button
-        self.reset_btn = QPushButton('Reset', self)
-        self.reset_btn.setStyleSheet("""
-            QPushButton {
-                background-color: blue;
-                color: white;
-                font-weight: bold;
-                border: 1px solid black;
-                padding: 5px;
-            }
-            QPushButton:hover {
-                background-color: darkblue;
-            }
-            QPushButton:pressed {
-                background-color: darkblue;
-            }
-            QPushButton:disabled {
-                background-color: rgba(0, 0, 255, 0.3);
-                color: rgba(255, 255, 255, 0.5);
-                border: 1px solid rgba(41, 128, 185, 0.4);
-            }
-        """)
+        self.reset_btn = QPushButton(QIcon(":/ui/reset.png"), "Reset")
         self.reset_btn.clicked.connect(self.reset)
         btn_layout.addWidget(self.reset_btn, alignment=Qt.AlignLeft)
 
         # "Stop" button
-        self.stop_btn = QPushButton('Stop', self)
-        self.stop_btn.setStyleSheet("""
-            QPushButton {
-                background-color: red;
-                color: white;
-                font-weight: bold;
-                border: 1px solid black;
-                padding: 5px;
-            }
-            QPushButton:hover {
-                background-color: darkred;
-            }
-            QPushButton:pressed {
-                background-color: darkred;
-            }
-            QPushButton:disabled {
-                background-color: rgba(255, 0, 0, 0.3);
-                color: rgba(255, 255, 255, 0.5);
-                border: 1px solid rgba(41, 128, 185, 0.4);
-            }
-        """)
+        self.stop_btn = QPushButton(QIcon(":/ui/stop.png"), "Stop")
         self.stop_btn.clicked.connect(self.stop_calculation)
         btn_layout.addWidget(
             self.stop_btn, alignment=Qt.AlignCenter
         )
 
         # "Start" button
-        self.start_btn = QPushButton('Start', self)
-        self.start_btn.setStyleSheet("""
-            QPushButton {
-                background-color: green;
-                color: white;
-                font-weight: bold;
-                border: 1px solid black;
-                padding: 5px;
-            }
-            QPushButton:hover {
-                background-color: darkgreen;
-            }
-            QPushButton:pressed {
-                background-color: darkgreen;
-            }
-            QPushButton:disabled {
-                background-color: rgba(0, 255, 0, 0.3);
-                color: rgba(255, 255, 255, 0.5);
-                border: 1px solid rgba(41, 128, 185, 0.4);
-            }
-        """)
+        self.start_btn = QPushButton(QIcon(":/ui/start.png"), "Start")
         self.start_btn.setEnabled(False)
         self.start_btn.clicked.connect(self.trigger_calculation)
         btn_layout.addWidget(self.start_btn, alignment=Qt.AlignRight)

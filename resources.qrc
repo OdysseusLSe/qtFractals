@@ -5,6 +5,9 @@
     <!-- Icons -->
     <file>ui/LED_small_green.png</file>
     <file>ui/LED_small_red.png</file>
+    <file>ui/reset.png</file>
+    <file>ui/start.png</file>
+    <file>ui/stop.png</file>
     <!-- Color palettes -->
     <file>ui/color_palettes.json</file>
     <!-- Documentation -->
