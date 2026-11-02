@@ -955,8 +955,10 @@ class MainWindow(QMainWindow):
         # Indicator if Mandelbrot set or Julia set is active
         # (default: Mandelbrot set).
 
-        self.mandel_btn = QPushButton("Mandelbrot")
-        self.mandel_btn.setIcon(QIcon(":/ui/LED_small_green.png"))
+        self.mandel_btn = QPushButton(
+            QIcon(":/ui/LED_small_green.png"),
+            "Mandelbrot"
+        )
         self.mandel_btn.setIconSize(QSize(16, 16))
         self.mandel_btn.setObjectName("mandelJuliaButton")
         self.mandel_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
@@ -965,8 +967,10 @@ class MainWindow(QMainWindow):
             Qt.AlignmentFlag.AlignHCenter
         )
 
-        self.julia_btn = QPushButton("Julia")
-        self.julia_btn.setIcon(QIcon(":/ui/LED_small_red.png"))
+        self.julia_btn = QPushButton(
+            QIcon(":/ui/LED_small_red.png"),
+            "Julia"
+        )
         self.julia_btn.setIconSize(QSize(16, 16))
         self.julia_btn.setObjectName("mandelJuliaButton")
         self.julia_btn.setAttribute(Qt.WA_TransparentForMouseEvents)

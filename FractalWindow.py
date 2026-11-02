@@ -125,50 +125,6 @@ class FractalWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def calculation_finished(self, image, calc_time):
-        self.log.entry("calculation_finished", False)
-
-        if image.isNull():
-            self.log.error("Missing image!", True)
-            self.log.exit("calculation_finished", True)
-            return
-
-        self.image_2_save = image
-
-        iw = image.width()
-        ih = image.height()
-        sw = self.width()
-        sh = self.height()
-        self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}", False)
-
-        if iw > sw or ih > sh:
-            self.image = image.scaled(
-                sw,
-                sh,
-                Qt.KeepAspectRatio,
-                Qt.TransformationMode.FastTransformation
-            )
-        else:
-            self.image = image
-
-        self.scaling_factor = self.image_2_save.width() / self.image.width()
-        self.log.write(f"self.scaling_factor={self.scaling_factor}", False)
-
-        self.update()
-
-        # Create thumbnail of the image for history
-        self.thumbnail = self.image_2_save.scaledToWidth(
-            150,
-            Qt.TransformationMode.SmoothTransformation
-        )
-        self.closing.emit(self.thumbnail, calc_time)
-
-        self.log.exit("calculation_finished", False)
-
-    #
-    # -----------------------------------------------
-    #
-
     def build_history_element(self, thumbnail_name, calc_time):
         self.log.entry("build_history_element", False)
 
@@ -226,6 +182,50 @@ class FractalWindow(QMainWindow):
 
         self.log.exit("calculate_selected_area", False)
         return True
+
+    #
+    # -----------------------------------------------
+    #
+
+    def calculation_finished(self, image, calc_time):
+        self.log.entry("calculation_finished", False)
+
+        if image.isNull():
+            self.log.error("Missing image!", True)
+            self.log.exit("calculation_finished", True)
+            return
+
+        self.image_2_save = image
+
+        iw = image.width()
+        ih = image.height()
+        sw = self.width()
+        sh = self.height()
+        self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}", False)
+
+        if iw > sw or ih > sh:
+            self.image = image.scaled(
+                sw,
+                sh,
+                Qt.KeepAspectRatio,
+                Qt.TransformationMode.FastTransformation
+            )
+        else:
+            self.image = image
+
+        self.scaling_factor = self.image_2_save.width() / self.image.width()
+        self.log.write(f"self.scaling_factor={self.scaling_factor}", False)
+
+        self.update()
+
+        # Create thumbnail of the image for history
+        self.thumbnail = self.image_2_save.scaledToWidth(
+            150,
+            Qt.TransformationMode.SmoothTransformation
+        )
+        self.closing.emit(self.thumbnail, calc_time)
+
+        self.log.exit("calculation_finished", False)
 
     #
     # -----------------------------------------------
