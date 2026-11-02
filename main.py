@@ -71,7 +71,6 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QStatusBar,
-    QTextEdit,
     QVBoxLayout,
     QWidget
 )
@@ -713,7 +712,11 @@ class MainWindow(QMainWindow):
                 'imagHeight' : 2.43
             }
 
-            image = ff.mandelbrot_frame(frac_area, 100, 360, 360, self.cp)
+            orig_image = ff.mandelbrot_frame(frac_area, 100, 250, 250, self.cp)
+            image = orig_image.scaledToWidth(
+                360,
+                Qt.TransformationMode.SmoothTransformation
+            )
             pixmap = QPixmap.fromImage(image)
             preview_label.setStyleSheet("")
             preview_label.setText("")
