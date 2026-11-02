@@ -6,7 +6,7 @@
 from PySide6 import QtCore
 
 qt_resource_data = b"\
-\x00\x00\x1f\xb0\
+\x00\x00\x1f\xa9\
 #\
  qtFractals\x0aApp \
 to calculate fra\
@@ -397,124 +397,124 @@ ee item 5 above)\
 \x0aswitches accord\
 ingly.\x0a\x0a### Menu\
  actions\x0a\x0a- [CTR\
-L]+[M] (Windows/\
+L]+[Q] (Windows/\
 Linux) or [Cmd(\xe2\
-\x8c\x98)]+[N] (Apple)\
-: Show \x22Zoom vid\
-eo\x22 window\x0a- [CT\
-RL]+[N] (Windows\
-/Linux) or [Cmd(\
-\xe2\x8c\x98)]+[N] (Apple\
-): Show \x22New col\
-or palette\x22 wind\
-ow\x0a- [CTRL]+[Q] \
-(Windows/Linux) \
-or [Cmd(\xe2\x8c\x98)]+[Q\
-] (Apple): Quit \
-the application\x0a\
-- [CTRL]+[S] (Wi\
-ndows/Linux) or \
-[Cmd(\xe2\x8c\x98)]+[S] (\
-Apple): Save the\
- current image\x0a-\
- [CTRL]+[T] (Win\
+\x8c\x98)]+[Q] (Apple)\
+: Quit the appli\
+cation\x0a- [CTRL]+\
+[S] (Windows/Lin\
+ux) or [Cmd(\xe2\x8c\x98)\
+]+[S] (Apple): S\
+ave the current \
+image\x0a\x0a- [CTRL]+\
+[Shift]+[H] (Win\
 dows/Linux) or [\
-Cmd(\xe2\x8c\x98)]+[T] (A\
-pple): Show the \
-\x22History\x22 window\
-\x0a\x0a### Stop runni\
-ng calculation\x0a\x0a\
-To stop a (long)\
- running calcula\
-tion you may pre\
-ss the key [ESC]\
-, RMB or the\x0a\x22St\
-op\x22 button on th\
-e \x22Main\x22 window.\
-\x0a\x0a### Zoom-in\x0a\x0aB\
-y pressing the L\
-MB only you may \
-draw an rectangl\
-e with the curso\
-r (based on the\x0a\
-current ratio, s\
-ee item 3) which\
- defines the are\
-a you want to zo\
-om in. As soon\x0aa\
-s the calculatio\
-n starts (immedi\
-ately after rele\
-ase of the LMB),\
- the new values\x0a\
-(see items 1, 2,\
- and 3 of the \x22M\
-ain\x22) will be ad\
-apted accordingl\
-y.\x0a\x0a## Developme\
-nt recommendatio\
-ns\x0a\x0aThe app is w\
-ritten in Python\
-3 (**version 3.1\
-4** and newer) a\
-nd PySide6 (6.2 \
-and\x0anewer).\x0a\x0a###\
- Resources\x0a\x0aTo i\
-clude all necess\
-ary resources yo\
-u need the Qt re\
-source system (`\
-.qrc`)\x0aprovided \
-by PySide6 from \
-Qt: \x22pyside6-rcc\
-\x22 (included alre\
-ady in the \x22pysi\
-de6\x22\x0apackage):\x0a\x0a\
-`pyside6-rcc res\
-ources.qrc -o re\
-sources_rc.py`\x0a\x0a\
-This file contai\
-ns all \x22styles\x22 \
-as text and the \
-images as binary\
- code.\x0a\x0a### Buil\
-d\x0a\x0aTo build a st\
-andalone app you\
- need \x22pyinstall\
-er\x22. You have to\
- install it firs\
-t:\x0a\x0a`pip install\
- pyinstaller`\x0a\x0aI\
-n the next step \
-you have to chan\
-ge in the direct\
-ory where \x22main.\
-py\x22 is and\x0aexecu\
-te the following\
- line in a termi\
-nal:\x0a\x0amacOS:\x5c\x0a`p\
-yinstaller --noc\
-onsole --onefile\
- --icon=ui/Mande\
-lbrot.icns main.\
-py`\x0a\x0aWindows 11:\
-\x5c\x0a`pyinstaller -\
--noconsole --one\
-file --icon=ui/M\
-andelbrot.ico ma\
-in.py`\x0a\x0a## Forth\
-coming features\x0a\
-\x0aThese are the a\
-ddional features\
- for the future \
-(arbitrary order\
-):\x0a\x0a- Improve pe\
-rformance of cal\
-culation.\x0a- Prov\
-ide the ability \
-to switch the cu\
-rrent theme (dar\
-k/light).\x0a- ...\
+Cmd(\xe2\x8c\x98)]+[Shift\
+]+[T] (Apple):\x0a \
+ Show the \x22Histo\
+ry\x22 window\x0a- [CT\
+RL]+[Shift]+[N] \
+(Windows/Linux) \
+or [Cmd(\xe2\x8c\x98)]+[S\
+hift]+[N] (Apple\
+):\x0a  Show \x22New c\
+olor palette\x22 wi\
+ndow\x0a- [CTRL]+[S\
+hift]+[V] (Windo\
+ws/Linux) or [Cm\
+d(\xe2\x8c\x98)]+[Shift]+\
+[N] (Apple):\x0a  S\
+how \x22Zoom video\x22\
+ window\x0a\x0a- [CTRL\
+]+[Shift]+[T] (W\
+indows/Linux) or\
+ [Cmd(\xe2\x8c\x98)]+[Shi\
+ft]+[T] (Apple):\
+\x0a  Toggle betwee\
+n light mode the\
+me and dark mode\
+ theme of the OS\
+.\x0a\x0a### Stop runn\
+ing calculation\x0a\
+\x0aTo stop a (long\
+) running calcul\
+ation you may pr\
+ess the key [ESC\
+], RMB or the\x0a\x22S\
+top\x22 button on t\
+he \x22Main\x22 window\
+.\x0a\x0a### Zoom-in\x0a\x0a\
+By pressing the \
+LMB only you may\
+ draw an rectang\
+le with the curs\
+or (based on the\
+\x0acurrent ratio, \
+see item 3) whic\
+h defines the ar\
+ea you want to z\
+oom in. As soon\x0a\
+as the calculati\
+on starts (immed\
+iately after rel\
+ease of the LMB)\
+, the new values\
+\x0a(see items 1, 2\
+, and 3 of the \x22\
+Main\x22) will be a\
+dapted according\
+ly.\x0a\x0a## Developm\
+ent recommendati\
+ons\x0a\x0aThe app is \
+written in Pytho\
+n3 (**version 3.\
+14** and newer) \
+and PySide6 (6.2\
+ and\x0anewer).\x0a\x0a##\
+# Resources\x0a\x0aTo \
+iclude all neces\
+sary resources y\
+ou need the Qt r\
+esource system (\
+`.qrc`)\x0aprovided\
+ by PySide6 from\
+ Qt: \x22pyside6-rc\
+c\x22 (included alr\
+eady in the \x22pys\
+ide6\x22\x0apackage):\x0a\
+\x0a`pyside6-rcc re\
+sources.qrc -o r\
+esources_rc.py`\x0a\
+\x0aThis file conta\
+ins all \x22styles\x22\
+ as text and the\
+ images as binar\
+y code.\x0a\x0a### Bui\
+ld\x0a\x0aTo build a s\
+tandalone app yo\
+u need \x22pyinstal\
+ler\x22. You have t\
+o install it fir\
+st:\x0a\x0a`pip instal\
+l pyinstaller`\x0a\x0a\
+In the next step\
+ you have to cha\
+nge in the direc\
+tory where \x22main\
+.py\x22 is and\x0aexec\
+ute the followin\
+g line in a term\
+inal:\x0a\x0amacOS:\x5c\x0a`\
+pyinstaller --no\
+console --onefil\
+e --icon=ui/Mand\
+elbrot.icns main\
+.py`\x0a\x0aWindows 11\
+:\x5c\x0a`pyinstaller \
+--noconsole --on\
+efile --icon=ui/\
+Mandelbrot.ico m\
+ain.py`\x0a\
 \x00\x00\x18\xd8\
 \x89\
 PNG\x0d\x0a\x1a\x0a\x00\x00\x00\x0dIHDR\x00\
@@ -332839,20 +332839,20 @@ qt_resource_struct = b"\
 \x00\x00\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x0e\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
-\x00\x00\x01\xa1\x9b\xdb\x8b\xac\
-\x00\x00\x00\xc8\x00\x00\x00\x00\x00\x01\x00\x00TJ\
+\x00\x00\x01\xa1\x9c\xbfo\x8c\
+\x00\x00\x00\xc8\x00\x00\x00\x00\x00\x01\x00\x00TC\
 \x00\x00\x01\xa1\x9b\xcc7u\
-\x00\x00\x00\xfc\x00\x00\x00\x00\x00\x01\x00\x12:\xf5\
+\x00\x00\x00\xfc\x00\x00\x00\x00\x00\x01\x00\x12:\xee\
 \x00\x00\x01\xa1\x9b\xb0\xb1-\
-\x00\x00\x01.\x00\x00\x00\x00\x00\x01\x00=\x18\xaf\
+\x00\x00\x01.\x00\x00\x00\x00\x00\x01\x00=\x18\xa8\
 \x00\x00\x01\xa1\x9b\xc8'q\
-\x00\x00\x00\xb0\x00\x00\x00\x00\x00\x01\x00\x00S\x11\
+\x00\x00\x00\xb0\x00\x00\x00\x00\x00\x01\x00\x00S\x0a\
 \x00\x00\x01\xa1\x12\x04\x9b\x95\
-\x00\x00\x000\x00\x00\x00\x00\x00\x01\x00\x00\x1f\xb4\
+\x00\x00\x000\x00\x00\x00\x00\x00\x01\x00\x00\x1f\xad\
 \x00\x00\x01\xa1_Y\x8f\xe1\
-\x00\x00\x00\x84\x00\x01\x00\x00\x00\x01\x00\x00QH\
+\x00\x00\x00\x84\x00\x01\x00\x00\x00\x01\x00\x00QA\
 \x00\x00\x01\xa1r\x8f\xf0<\
-\x00\x00\x00\x5c\x00\x00\x00\x00\x00\x01\x00\x008\x90\
+\x00\x00\x00\x5c\x00\x00\x00\x00\x00\x01\x00\x008\x89\
 \x00\x00\x01\xa1_Y\x8f\xe1\
 "
 

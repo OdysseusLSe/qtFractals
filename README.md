@@ -127,11 +127,18 @@ switches accordingly.
 
 ### Menu actions
 
-- [CTRL]+[M] (Windows/Linux) or [Cmd(⌘)]+[N] (Apple): Show "Zoom video" window
-- [CTRL]+[N] (Windows/Linux) or [Cmd(⌘)]+[N] (Apple): Show "New color palette" window
 - [CTRL]+[Q] (Windows/Linux) or [Cmd(⌘)]+[Q] (Apple): Quit the application
 - [CTRL]+[S] (Windows/Linux) or [Cmd(⌘)]+[S] (Apple): Save the current image
-- [CTRL]+[T] (Windows/Linux) or [Cmd(⌘)]+[T] (Apple): Show the "History" window
+
+- [CTRL]+[Shift]+[H] (Windows/Linux) or [Cmd(⌘)]+[Shift]+[T] (Apple):
+  Show the "History" window
+- [CTRL]+[Shift]+[N] (Windows/Linux) or [Cmd(⌘)]+[Shift]+[N] (Apple):
+  Show "New color palette" window
+- [CTRL]+[Shift]+[V] (Windows/Linux) or [Cmd(⌘)]+[Shift]+[N] (Apple):
+  Show "Zoom video" window
+
+- [CTRL]+[Shift]+[T] (Windows/Linux) or [Cmd(⌘)]+[Shift]+[T] (Apple):
+  Toggle between light mode theme and dark mode theme of the OS.
 
 ### Stop running calculation
 
@@ -174,11 +181,3 @@ macOS:\
 
 Windows 11:\
 `pyinstaller --noconsole --onefile --icon=ui/Mandelbrot.ico main.py`
-
-## Forthcoming features
-
-These are the addional features for the future (arbitrary order):
-
-- Improve performance of calculation.
-- Provide the ability to switch the current theme (dark/light).
-- ...

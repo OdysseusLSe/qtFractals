@@ -186,25 +186,34 @@ class MainWindow(QMainWindow):
         menu_bar.addMenu(misc_menu)
 
         # Create the "Show history" action
-        self.shis_action = QAction("Show his&tory", self)
-        self.shis_action.setShortcut(QKeySequence("Ctrl+T"))
+        self.shis_action = QAction("Show &history", self)
+        self.shis_action.setShortcut(QKeySequence("Ctrl+Shift+H"))
         self.shis_action.setStatusTip("Show history")
         self.shis_action.triggered.connect(self.show_history)
         misc_menu.addAction(self.shis_action)
 
         # Create the "New color palette" action
         self.ncop_action = QAction("&New color palette", self)
-        self.ncop_action.setShortcut(QKeySequence("Ctrl+N"))
+        self.ncop_action.setShortcut(QKeySequence("Ctrl+Shift+N"))
         self.ncop_action.setStatusTip("New color palette")
         self.ncop_action.triggered.connect(self.new_color_palette)
         misc_menu.addAction(self.ncop_action)
 
         # Create the "Zoom video" action
-        self.zoom_action = QAction("Zoo&m video", self)
-        self.zoom_action.setShortcut(QKeySequence("Ctrl+M"))
+        self.zoom_action = QAction("Zoom &video", self)
+        self.zoom_action.setShortcut(QKeySequence("Ctrl+Shift+V"))
         self.zoom_action.setStatusTip("Create zoom video")
         self.zoom_action.triggered.connect(self.zoom_video)
         misc_menu.addAction(self.zoom_action)
+
+        misc_menu.addSeparator()
+
+        # Create the "Toggle theme" action
+        self.tt_action = QAction("Toggle &theme", self)
+        self.tt_action.setShortcut(QKeySequence("Ctrl+Shift+T"))
+        self.tt_action.setStatusTip("Toggle theme")
+        self.tt_action.triggered.connect(self.toggle_theme)
+        misc_menu.addAction(self.tt_action)
 
         # Create the "Help" menu
         help_menu = QMenu("&Help", self)
@@ -1289,6 +1298,22 @@ class MainWindow(QMainWindow):
             self.stop_video_creation = True
 
         self.log.exit("stop_calculation", False)
+
+    #
+    # -----------------------------------------------
+    #
+
+    def toggle_theme(self):
+        self.log.entry("toggle_theme")
+
+        current_theme = app.styleHints().colorScheme()
+
+        if current_theme == Qt.ColorScheme.Light:
+            app.styleHints().setColorScheme(Qt.ColorScheme.Dark)
+        else:
+            app.styleHints().setColorScheme(Qt.ColorScheme.Light)
+
+        self.log.exit("toggle_theme")
 
     #
     # -----------------------------------------------
