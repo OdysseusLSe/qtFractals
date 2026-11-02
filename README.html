@@ -19,57 +19,41 @@
 it under the terms of the
 <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a> as
 published.</p>
-<h2>Main window</h2>
-<p>In this section I describe the main window and its controls:</p>
+<h2>"Main" window, "Drawing" window, and "New color palette" window</h2>
 <!-- ![Main window](docs/main_window_legend.png) -->
 <p><img src="docs/main_window_legend.png" alt="Main window" style="width:100%; height:auto;"></p>
+<p>The left window with the application name as title is the "Main" window:</p>
 <ol>
 <li><strong>Origin coordinates of the complex area</strong> separated by the real part
-    and complex part.</li>
-<li><strong>Width and height of the complex area</strong></li>
+    and complex part and <strong>Width and height of the complex area</strong>.</li>
 <li><strong>Width and height of the drawing area (resolution)</strong>. Additionally to the
-    manual input you may select a few predefined resolutions. Relevant for the
-    next calculation are the values in the input/edit fields. Take care that
-    the ratio of the complex area and the drawing area have the same value!
+    manual input you may select one of the predefined resolutions. Relevant for
+    the next calculation are the values in the input/edit fields. Take care that
+    the ratio of the complex area and the drawing area have the same value! As
+    soon as you change the resolution, the fractal set will be recalculated.
     (Tip: defining areas to zoom in with the cursor takes into account the
     ratio by default.)</li>
 <li><strong>Itration limit</strong> for the fractal formula. Good values are from 100 to<ol>
 <li>The bigger the value, the time consuming the calculation (more
-detailled results).</li>
+detailled results). Additionally a <strong>Color palettes</strong> provides a few
+predefined color palettes. As soon as you change the current color palette
+the current fractal set will be recalculated with the new selected colours.</li>
 </ol>
 </li>
-<li><strong>Color palettes</strong> provides a few predefined color palettes. As soon as
-   you change the current color palette the current fractal set will be
-   recalculated with the new selected colours.</li>
 <li><strong>Fractal indicator</strong> that shows what kind of set (Mandelbrot or Julia)
-    currently is active.</li>
-<li><strong>"Reset" and "Start" button</strong>: The "Reset" button resets all values to
-    the values at the initial phase of the app. The "Start" button starts a
-    new calculation with the values in (1), (2), (3), (4), and (5).</li>
-<li><strong>The drawing area</strong></li>
-<li><strong>The progress bar</strong> indicates how much of the fractal has been calculated.
-    The fractal set will be shown at the end of the progrss bar.</li>
-<li><strong>Status bar</strong>, which show progress in percentage and consumed process time
-    to calculate the fractal set.</li>
+    currently is active. Below you see three buttons: <strong>"Reset", "Stop", and
+    "Start"</strong>: The "Reset" button resets all values to the values at the initial
+    phase of the app. The "Stop" button stops any caclculation of the app,
+    either of one set or the whole video creation prcess. The "Start" button
+    starts a new calculation with the values in (1), (2), and (3).</li>
+<li><strong>The progress bar</strong> indicates how much of the fractal has been calculated
+    or how much of the video creation has been done. The <strong>Status bar</strong> below,
+    shows progress in percentage, consumed process time to calculate the fractal
+    set and other information.</li>
 </ol>
-<h2>History window</h2>
-<!-- ![History window](docs/app_screenshot_history.png) -->
-<p><img src="docs/app_screenshot_history.png" alt="History window" style="width:100%; height:auto;"></p>
-<p>The history window shows all past calculations since starting the app the first
-time. The entries are sorted by time. You can delete single entries (at the
-moment one by one only) or delete the whole history. On the other side you may
-repeat a specific calculation. The repeated one generates a new history entry!</p>
-<p><strong>Attention</strong>:</p>
-<p>Deleting a history item deletes a possibly associated user defined color paette
-defintion too! As long as this user defined color palette is associated with
-another history item the color palete is safe.</p>
-<h2>New color palette window</h2>
-<!-- ![New color palette window](docs/app_screenshot_new_cp.png) -->
-<p><img src="docs/app_screenshot_new_cp.png" alt="New color palette window" style="width:100%; height:auto;"></p>
-<p>With this window you may define a new color palette. At the top of the window
-you can provide a name for the new color palette. Pressing "Apply" shows a small
-Mandelbrot fractal set with new parameters as a preview. Pressing "Save" saves
-the new defined color palette by re-calculating a default Mandelbrot fractal set
+<p>The right window shows the "<strong>New color palette</strong>" window. With this window you
+may define a new color palette. At the top of the window you can provide a name
+for the new color palette. Pressing "Save" saves the new defined color palette
 and adding it to the history list. Pressing "Close" closes the window.</p>
 <p>For the theoretical background of this specific color palette calculation and
 the meaning of these parameters you may follow these two links (the mastermind
@@ -79,10 +63,22 @@ of this is <a href="https://iquilezles.org/">Inigo Quilez</a>):</p>
 <li><a href="https://www.youtube.com/shorts/TH3OTy5fTog">A simple formula to create beautiful color palettes</a></li>
 </ul>
 <p>Additionally you are able to change the background color (default black). The
-background color ist the color of the origin fractal set!</p>
+background color is the color of the origin fractal set!</p>
 <p><strong>Attention</strong>:
 User defined color palettes are stored in the history list only. If you delete
 the specific history item the user defined color palette will be lost!</p>
+<h2>"History" window</h2>
+<!-- ![History window](docs/app_screenshot_history.png) -->
+<p><img src="docs/app_screenshot_history.png" alt="History window" style="width:100%; height:auto;"></p>
+<p>The "History" window (the right window in the picture above) shows all past
+calculations since starting the app the first time. The entries are sorted by
+time. You can delete single entries (at the moment one by one only) or delete
+the whole history. On the other side you may repeat a specific calculation. The
+repeated one generates a new history entry!</p>
+<p><strong>Attention</strong>:</p>
+<p>Deleting a history item deletes a possibly associated user defined color paette
+defintion too! As long as this user defined color palette is associated with
+another history item the color palete is safe.</p>
 <h2>Create a zoom video</h2>
 <!-- ![Zoom video parameters window](docs/app_screenshot_zoom.png) -->
 <p><img src="docs/app_screenshot_zoom.png" alt="Zoom video parameters window" style="width:100%; height:auto;"></p>
@@ -94,10 +90,10 @@ Additionally you may select the resolution (width and height), frames per
 second, and duration (seconds) of the video.</p>
 <p>Of course you are able to select an existing color palette from a list.</p>
 <p>At the end of the rendering process you may select the directory the video will
-be stored. It replaces an existing file! During calculation and rendering a
-progress window will be shown. The progress window shows the current set
-calculated/rendered as thumbnail. You may abort the whole video creation!</p>
-<p><img src="docs/app_screenshot_progress.png" alt="Progress window" style="width:100%; height:auto;"></p>
+be stored. It replaces an existing file! During calculation and rendering the
+"Main" window shows the progress (see item 5 of the first picture). The
+"Drawing" window shows the current frame of calculation/rendering. You may abort
+the whole video creation via the "Stop" button on the "Main" window!</p>
 <p><strong>Attention</strong>:</p>
 <ul>
 <li>Please take care, that the fractal set ratio (width x height) is the same as
@@ -119,14 +115,16 @@ switches accordingly.</p>
 <li>[CTRL]+[T] (Windows/Linux) or [Cmd(⌘)]+[T] (Apple): Show the "History" window</li>
 </ul>
 <h3>Stop running calculation</h3>
-<p>To stop a (long) running calculation you may press the key [ESC] or the RMB.</p>
+<p>To stop a (long) running calculation you may press the key [ESC], RMB or the
+"Stop" button on the "Main" window.</p>
 <h3>Zoom-in</h3>
 <p>By pressing the LMB only you may draw an rectangle with the cursor (based on the
 current ratio, see item 3) which defines the area you want to zoom in. As soon
 as the calculation starts (immediately after release of the LMB), the new values
-(see item 1 and 2 above) will be adapted accordingly.</p>
+(see items 1, 2, and 3 of the "Main") will be adapted accordingly.</p>
 <h2>Development recommendations</h2>
-<p>The app is written in Python3 (<strong>version 3.14</strong> and newer) and PySide6.</p>
+<p>The app is written in Python3 (<strong>version 3.14</strong> and newer) and PySide6 (6.2 and
+newer).</p>
 <h3>Resources</h3>
 <p>To iclude all necessary resources you need the Qt resource system (<code>.qrc</code>)
 provided by PySide6 from Qt: "pyside6-rcc" (included already in the "pyside6"
@@ -145,6 +143,7 @@ execute the following line in a terminal:</p>
 <h2>Forthcoming features</h2>
 <p>These are the addional features for the future (arbitrary order):</p>
 <ul>
-<li>Provide the ability to change the current default theme.</li>
+<li>Improve performance of calculation.</li>
+<li>Provide the ability to switch the current theme (dark/light).</li>
 <li>...</li>
 </ul>

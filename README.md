@@ -21,64 +21,41 @@ it under the terms of the
 [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0) as
 published.
 
-## Main window
-
-In this section I describe the main window and its controls:
+## "Main" window, "Drawing" window, and "New color palette" window
 
 <!-- ![Main window](docs/main_window_legend.png) -->
 <img src="docs/main_window_legend.png" alt="Main window" style="width:100%; height:auto;">
 
+The left window with the application name as title is the "Main" window:
+
 1.  **Origin coordinates of the complex area** separated by the real part
-    and complex part.
-2.  **Width and height of the complex area**
-3.  **Width and height of the drawing area (resolution)**. Additionally to the
-    manual input you may select a few predefined resolutions. Relevant for the
-    next calculation are the values in the input/edit fields. Take care that
-    the ratio of the complex area and the drawing area have the same value!
+    and complex part and **Width and height of the complex area**.
+2.  **Width and height of the drawing area (resolution)**. Additionally to the
+    manual input you may select one of the predefined resolutions. Relevant for
+    the next calculation are the values in the input/edit fields. Take care that
+    the ratio of the complex area and the drawing area have the same value! As
+    soon as you change the resolution, the fractal set will be recalculated.
     (Tip: defining areas to zoom in with the cursor takes into account the
     ratio by default.)
-4.  **Itration limit** for the fractal formula. Good values are from 100 to
-    1000. The bigger the value, the time consuming the calculation (more
-    detailled results).
-5. **Color palettes** provides a few predefined color palettes. As soon as
-   you change the current color palette the current fractal set will be
-   recalculated with the new selected colours.
-6.  **Fractal indicator** that shows what kind of set (Mandelbrot or Julia)
-    currently is active.
-7.  **"Reset" and "Start" button**: The "Reset" button resets all values to
-    the values at the initial phase of the app. The "Start" button starts a
-    new calculation with the values in (1), (2), (3), (4), and (5).
-8.  **The drawing area**
-9.  **The progress bar** indicates how much of the fractal has been calculated.
-    The fractal set will be shown at the end of the progrss bar.
-10. **Status bar**, which show progress in percentage and consumed process time
-    to calculate the fractal set.
+3.  **Itration limit** for the fractal formula. Good values are from 100 to
+    2500. The bigger the value, the time consuming the calculation (more
+    detailled results). Additionally a **Color palettes** provides a few
+    predefined color palettes. As soon as you change the current color palette
+    the current fractal set will be recalculated with the new selected colours.
+4.  **Fractal indicator** that shows what kind of set (Mandelbrot or Julia)
+    currently is active. Below you see three buttons: **"Reset", "Stop", and
+    "Start"**: The "Reset" button resets all values to the values at the initial
+    phase of the app. The "Stop" button stops any caclculation of the app,
+    either of one set or the whole video creation prcess. The "Start" button
+    starts a new calculation with the values in (1), (2), and (3).
+5.  **The progress bar** indicates how much of the fractal has been calculated
+    or how much of the video creation has been done. The **Status bar** below,
+    shows progress in percentage, consumed process time to calculate the fractal
+    set and other information.
 
-## History window
-
-<!-- ![History window](docs/app_screenshot_history.png) -->
-<img src="docs/app_screenshot_history.png" alt="History window" style="width:100%; height:auto;">
-
-The history window shows all past calculations since starting the app the first
-time. The entries are sorted by time. You can delete single entries (at the
-moment one by one only) or delete the whole history. On the other side you may
-repeat a specific calculation. The repeated one generates a new history entry!
-
-**Attention**:
-
-Deleting a history item deletes a possibly associated user defined color paette
-defintion too! As long as this user defined color palette is associated with
-another history item the color palete is safe.
-
-## New color palette window
-
-<!-- ![New color palette window](docs/app_screenshot_new_cp.png) -->
-<img src="docs/app_screenshot_new_cp.png" alt="New color palette window" style="width:100%; height:auto;">
-
-With this window you may define a new color palette. At the top of the window
-you can provide a name for the new color palette. Pressing "Apply" shows a small
-Mandelbrot fractal set with new parameters as a preview. Pressing "Save" saves
-the new defined color palette by re-calculating a default Mandelbrot fractal set
+The right window shows the "**New color palette**" window. With this window you
+may define a new color palette. At the top of the window you can provide a name
+for the new color palette. Pressing "Save" saves the new defined color palette
 and adding it to the history list. Pressing "Close" closes the window.
 
 For the theoretical background of this specific color palette calculation and
@@ -89,11 +66,29 @@ of this is [Inigo Quilez](https://iquilezles.org/)):
 - [A simple formula to create beautiful color palettes](https://www.youtube.com/shorts/TH3OTy5fTog)
 
 Additionally you are able to change the background color (default black). The
-background color ist the color of the origin fractal set!
+background color is the color of the origin fractal set!
 
 **Attention**:
 User defined color palettes are stored in the history list only. If you delete
 the specific history item the user defined color palette will be lost!
+
+
+## "History" window
+
+<!-- ![History window](docs/app_screenshot_history.png) -->
+<img src="docs/app_screenshot_history.png" alt="History window" style="width:100%; height:auto;">
+
+The "History" window (the right window in the picture above) shows all past
+calculations since starting the app the first time. The entries are sorted by
+time. You can delete single entries (at the moment one by one only) or delete
+the whole history. On the other side you may repeat a specific calculation. The
+repeated one generates a new history entry!
+
+**Attention**:
+
+Deleting a history item deletes a possibly associated user defined color paette
+defintion too! As long as this user defined color palette is associated with
+another history item the color palete is safe.
 
 ## Create a zoom video
 
@@ -110,17 +105,15 @@ second, and duration (seconds) of the video.
 Of course you are able to select an existing color palette from a list.
 
 At the end of the rendering process you may select the directory the video will
-be stored. It replaces an existing file! During calculation and rendering a
-progress window will be shown. The progress window shows the current set
-calculated/rendered as thumbnail. You may abort the whole video creation!
-
-<img src="docs/app_screenshot_progress.png" alt="Progress window" style="width:100%; height:auto;">
+be stored. It replaces an existing file! During calculation and rendering the
+"Main" window shows the progress (see item 5 of the first picture). The
+"Drawing" window shows the current frame of calculation/rendering. You may abort
+the whole video creation via the "Stop" button on the "Main" window!
 
 **Attention**:
 
 - Please take care, that the fractal set ratio (width x height) is the same as
   the ratio of the resolution (width x height)!
-
 
 ## Mouse and keyboard actions
 
@@ -142,18 +135,20 @@ switches accordingly.
 
 ### Stop running calculation
 
-To stop a (long) running calculation you may press the key [ESC] or the RMB.
+To stop a (long) running calculation you may press the key [ESC], RMB or the
+"Stop" button on the "Main" window.
 
 ### Zoom-in
 
 By pressing the LMB only you may draw an rectangle with the cursor (based on the
 current ratio, see item 3) which defines the area you want to zoom in. As soon
 as the calculation starts (immediately after release of the LMB), the new values
-(see item 1 and 2 above) will be adapted accordingly.
+(see items 1, 2, and 3 of the "Main") will be adapted accordingly.
 
 ## Development recommendations
 
-The app is written in Python3 (**version 3.14** and newer) and PySide6.
+The app is written in Python3 (**version 3.14** and newer) and PySide6 (6.2 and
+newer).
 
 ### Resources
 
@@ -184,5 +179,6 @@ Windows 11:\
 
 These are the addional features for the future (arbitrary order):
 
-- Provide the ability to change the current default theme.
+- Improve performance of calculation.
+- Provide the ability to switch the current theme (dark/light).
 - ...

@@ -11,5 +11,6 @@
     <file>README.md</file>
     <file>docs/main_window_legend.png</file>
     <file>docs/app_screenshot_history.png</file>
+    <file>docs/app_screenshot_zoom.png</file>
 </qresource>
 </RCC>

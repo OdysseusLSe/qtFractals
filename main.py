@@ -40,6 +40,7 @@ from PySide6.QtCore import (
     Qt,
     QTextStream,
     QThreadPool,
+    QUrl
 )
 from PySide6.QtGui import (
     QAction,
@@ -74,7 +75,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget
 )
-
+from PySide6.QtWebEngineWidgets import QWebEngineView
 
 from FractalFrame import FractalFrame
 from FractalHistory import FractalHistory
@@ -85,7 +86,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "0.9.6"
+APP_VERSION = "1.0"
 
 #
 # -----------------------------------------------
@@ -1192,17 +1193,13 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout(self.read_dialog)
 
-        self.text_edit = QTextEdit(self.read_dialog)
-        self.text_edit.setReadOnly(True)
+        self.browser = QWebEngineView()
+        layout.addWidget(self.browser)
 
-        layout.addWidget(self.text_edit)
+        html_path = Path(__file__).resolve().parent / "README.html"
 
-        path = Path("README.md")
-        if path.exists():
-            content = path.read_text(encoding="utf-8")
-            self.text_edit.setMarkdown(content)
-        else:
-            self.log.error("Readme file not found!", True)
+        local_url = QUrl.fromLocalFile(str(html_path))
+        self.browser.load(local_url)
 
         QBtn = (QDialogButtonBox.Ok)
         button_box = QDialogButtonBox(QBtn)
