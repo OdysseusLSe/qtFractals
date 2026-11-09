@@ -6,6 +6,563 @@
 from PySide6 import QtCore
 
 qt_resource_data = b"\
+\x00\x00\x22\xaa\
+<\
+h1>qtFractals</h\
+1>\x0a<p>App to cal\
+culate fractals \
+with Python &amp\
+; Qt (PySide6)</\
+p>\x0a<h2>Introduct\
+ion</h2>\x0a<p>This\
+ app calculates \
+fractal sets. It\
+ provides a few \
+features like</p\
+>\x0a<ul>\x0a<li>\x22zoom\
+-in\x22 in a fracta\
+l via cursor,</l\
+i>\x0a<li>\x22zoom-in\x22\
+ / \x22zoom-out\x22 vi\
+a specific input\
+ coordinates,</l\
+i>\x0a<li>define th\
+e area of the ca\
+lculated set,</l\
+i>\x0a<li>define th\
+e value of itera\
+tion for the fra\
+ctal formula,</l\
+i>\x0a<li>create zo\
+om-in video</li>\
+\x0a<li>history: ev\
+ery fractal calc\
+ulation will be \
+stored</li>\x0a<li>\
+providing pre-de\
+fined drawing di\
+mensions,</li>\x0a<\
+li>switching fro\
+m Mandelbrot set\
+ to Julia set,</\
+li>\x0a<li>saving t\
+he calculated re\
+sult in a file,<\
+/li>\x0a<li>change \
+the color palett\
+e (providing pre\
+-defined color p\
+alettes)</li>\x0a<l\
+i>...</li>\x0a</ul>\
+\x0a<p>This program\
+ is free softwar\
+e: you can redis\
+tribute it and/o\
+r modify\x0ait unde\
+r the terms of t\
+he\x0a<a href=\x22http\
+://www.apache.or\
+g/licenses/LICEN\
+SE-2.0\x22>Apache 2\
+.0 license</a> a\
+s\x0apublished.</p>\
+\x0a<h2>\x22Main\x22 wind\
+ow, \x22Drawing\x22 wi\
+ndow, and \x22New c\
+olor palette\x22 wi\
+ndow</h2>\x0a<!-- !\
+[Main window](do\
+cs/main_window_l\
+egend.png) -->\x0a<\
+p><img src=\x22docs\
+/main_window_leg\
+end.png\x22 alt=\x22Ma\
+in window\x22 style\
+=\x22width:100%; he\
+ight:auto;\x22></p>\
+\x0a<p>The left win\
+dow with the app\
+lication name as\
+ title is the \x22M\
+ain\x22 window:</p>\
+\x0a<ol>\x0a<li><stron\
+g>Origin coordin\
+ates of the comp\
+lex area</strong\
+> separated by t\
+he real part\x0a   \
+ and complex par\
+t and <strong>Wi\
+dth and height o\
+f the complex ar\
+ea</strong>.</li\
+>\x0a<li><strong>Wi\
+dth and height o\
+f the drawing ar\
+ea (resolution)<\
+/strong>. Additi\
+onally to the\x0a  \
+  manual input y\
+ou may select on\
+e of the predefi\
+ned resolutions.\
+ Relevant for\x0a  \
+  the next calcu\
+lation are the v\
+alues in the inp\
+ut/edit fields. \
+Take care that\x0a \
+   the ratio of \
+the complex area\
+ and the drawing\
+ area have the s\
+ame value! As\x0a  \
+  soon as you ch\
+ange the resolut\
+ion, the fractal\
+ set will be rec\
+alculated.\x0a    (\
+Tip: defining ar\
+eas to zoom in w\
+ith the cursor t\
+akes into accoun\
+t the\x0a    ratio \
+by default.)</li\
+>\x0a<li><strong>It\
+ration limit</st\
+rong> for the fr\
+actal formula. G\
+ood values are f\
+rom 100 to<ol>\x0a<\
+li>The bigger th\
+e value, the tim\
+e consuming the \
+calculation (mor\
+e\x0adetailled resu\
+lts). Additional\
+ly a <strong>Col\
+or palettes</str\
+ong> provides a \
+few\x0apredefined c\
+olor palettes. A\
+s soon as you ch\
+ange the current\
+ color palette\x0at\
+he current fract\
+al set will be r\
+ecalculated with\
+ the new selecte\
+d colours.</li>\x0a\
+</ol>\x0a</li>\x0a<li>\
+<strong>Fractal \
+indicator</stron\
+g> that shows wh\
+at kind of set (\
+Mandelbrot or Ju\
+lia)\x0a    current\
+ly is active. Be\
+low you see thre\
+e buttons: <stro\
+ng>\x22Reset\x22, \x22Sto\
+p\x22, and\x0a    \x22Sta\
+rt\x22</strong>: Th\
+e \x22Reset\x22 button\
+ resets all valu\
+es to the values\
+ at the initial\x0a\
+    phase of the\
+ app. The \x22Stop\x22\
+ button stops an\
+y caclculation o\
+f the app,\x0a    e\
+ither of one set\
+ or the whole vi\
+deo creation prc\
+ess. The \x22Start\x22\
+ button\x0a    star\
+ts a new calcula\
+tion with the va\
+lues in (1), (2)\
+, and (3).</li>\x0a\
+<li><strong>The \
+progress bar</st\
+rong> indicates \
+how much of the \
+fractal has been\
+ calculated\x0a    \
+or how much of t\
+he video creatio\
+n has been done.\
+ The <strong>Sta\
+tus bar</strong>\
+ below,\x0a    show\
+s progress in pe\
+rcentage, consum\
+ed process time \
+to calculate the\
+ fractal\x0a    set\
+ and other infor\
+mation.</li>\x0a</o\
+l>\x0a<p>The right \
+window shows the\
+ \x22<strong>New co\
+lor palette</str\
+ong>\x22 window. Wi\
+th this window y\
+ou\x0amay define a \
+new color palett\
+e. At the top of\
+ the window you \
+can provide a na\
+me\x0afor the new c\
+olor palette. Pr\
+essing \x22Save\x22 sa\
+ves the new defi\
+ned color palett\
+e\x0aand adding it \
+to the history l\
+ist. Pressing \x22C\
+lose\x22 closes the\
+ window.</p>\x0a<p>\
+For the theoreti\
+cal background o\
+f this specific \
+color palette ca\
+lculation and\x0ath\
+e meaning of the\
+se parameters yo\
+u may follow the\
+se two links (th\
+e mastermind\x0aof \
+this is <a href=\
+\x22https://iquilez\
+les.org/\x22>Inigo \
+Quilez</a>):</p>\
+\x0a<ul>\x0a<li><a hre\
+f=\x22https://iquil\
+ezles.org/articl\
+es/palettes/\x22>Pr\
+ocedural Color P\
+alette</a></li>\x0a\
+<li><a href=\x22htt\
+ps://www.youtube\
+.com/shorts/TH3O\
+Ty5fTog\x22>A simpl\
+e formula to cre\
+ate beautiful co\
+lor palettes</a>\
+</li>\x0a</ul>\x0a<p>A\
+dditionally you \
+are able to chan\
+ge the backgroun\
+d color (default\
+ black). The\x0abac\
+kground color is\
+ the color of th\
+e origin fractal\
+ set!</p>\x0a<p><st\
+rong>Attention</\
+strong>:\x0aUser de\
+fined color pale\
+ttes are stored \
+in the history l\
+ist only. If you\
+ delete\x0athe spec\
+ific history ite\
+m the user defin\
+ed color palette\
+ will be lost!</\
+p>\x0a<h2>\x22History\x22\
+ window</h2>\x0a<!-\
+- ![History wind\
+ow](docs/app_scr\
+eenshot_history.\
+png) -->\x0a<p><img\
+ src=\x22docs/app_s\
+creenshot_histor\
+y.png\x22 alt=\x22Hist\
+ory window\x22 styl\
+e=\x22width:100%; h\
+eight:auto;\x22></p\
+>\x0a<p>The \x22Histor\
+y\x22 window (the r\
+ight window in t\
+he picture above\
+) shows all past\
+\x0acalculations si\
+nce starting the\
+ app the first t\
+ime. The entries\
+ are sorted by\x0at\
+ime. You can del\
+ete single entri\
+es (at the momen\
+t one by one onl\
+y) or delete\x0athe\
+ whole history. \
+On the other sid\
+e you may repeat\
+ a specific calc\
+ulation. The\x0arep\
+eated one genera\
+tes a new histor\
+y entry!</p>\x0a<p>\
+<strong>Attentio\
+n</strong>:</p>\x0a\
+<p>Deleting a hi\
+story item delet\
+es a possibly as\
+sociated user de\
+fined color paet\
+te\x0adefintion too\
+! As long as thi\
+s user defined c\
+olor palette is \
+associated with\x0a\
+another history \
+item the color p\
+alete is safe.</\
+p>\x0a<h2>Create a \
+zoom video</h2>\x0a\
+<!-- ![Zoom vide\
+o parameters win\
+dow](docs/app_sc\
+reenshot_zoom.pn\
+g) -->\x0a<p><img s\
+rc=\x22docs/app_scr\
+eenshot_zoom.png\
+\x22 alt=\x22Zoom vide\
+o parameters win\
+dow\x22 style=\x22widt\
+h:100%; height:a\
+uto;\x22></p>\x0a<p>To\
+ build a zoom vi\
+deo you have to \
+provide the para\
+meters of two Ma\
+ndelbrot\x0afractal\
+ sets: starting \
+point and ending\
+ point. You may \
+provide the data\
+ manually\x0aor gra\
+b it from the cu\
+rrent Mandelbrot\
+ fractal set (pr\
+eferred method).\
+ Depending\x0awhich\
+ of the set is s\
+maller or bigger\
+ the video will \
+zoom-in or zoom-\
+out.\x0aAdditionall\
+y you may select\
+ the resolution \
+(width and heigh\
+t), frames per\x0as\
+econd, and durat\
+ion (seconds) of\
+ the video.</p>\x0a\
+<p>Of course you\
+ are able to sel\
+ect an existing \
+color palette fr\
+om a list.</p>\x0a<\
+p>At the end of \
+the rendering pr\
+ocess you may se\
+lect the directo\
+ry the video wil\
+l\x0abe stored. It \
+replaces an exis\
+ting file! Durin\
+g calculation an\
+d rendering the\x0a\
+\x22Main\x22 window sh\
+ows the progress\
+ (see item 5 of \
+the first pictur\
+e). The\x0a\x22Drawing\
+\x22 window shows t\
+he current frame\
+ of calculation/\
+rendering. You m\
+ay abort\x0athe who\
+le video creatio\
+n via the \x22Stop\x22\
+ button on the \x22\
+Main\x22 window!</p\
+>\x0a<p><strong>Att\
+ention</strong>:\
+</p>\x0a<ul>\x0a<li>Pl\
+ease take care, \
+that the fractal\
+ set ratio (widt\
+h x height) is t\
+he same as\x0a  the\
+ ratio of the re\
+solution (width \
+x height)!</li>\x0a\
+</ul>\x0a<h2>Mouse \
+and keyboard act\
+ions</h2>\x0a<h3>Ju\
+lia set</h3>\x0a<p>\
+You may switch f\
+rom the Mandelbr\
+ot set to the Ju\
+lia set by press\
+ing [CTRL]+LMB\x0a(\
+Windows/Linux) o\
+r [Cmd(\xe2\x8c\x98)]+LMB\
+ (Apple) on any \
+point of the cal\
+culated set.\x0aImm\
+ediatly the calc\
+ulation starts f\
+or the Julia set\
+ at this point. \
+Of course\x0ayou ma\
+y zoom-in in the\
+ Julia set, too.\
+ The fractal ind\
+icator (see item\
+ 5 above)\x0aswitch\
+es accordingly.<\
+/p>\x0a<h3>Menu act\
+ions</h3>\x0a<ul>\x0a<\
+li>[CTRL]+[Q] (W\
+indows/Linux) or\
+ [Cmd(\xe2\x8c\x98)]+[Q] \
+(Apple): Quit th\
+e application</l\
+i>\x0a<li>\x0a<p>[CTRL\
+]+[S] (Windows/L\
+inux) or [Cmd(\xe2\x8c\
+\x98)]+[S] (Apple):\
+ Save the curren\
+t image</p>\x0a</li\
+>\x0a<li>\x0a<p>[CTRL]\
++[Shift]+[H] (Wi\
+ndows/Linux) or \
+[Cmd(\xe2\x8c\x98)]+[Shif\
+t]+[T] (Apple):\x0a\
+  Show the \x22Hist\
+ory\x22 window</p>\x0a\
+</li>\x0a<li>[CTRL]\
++[Shift]+[N] (Wi\
+ndows/Linux) or \
+[Cmd(\xe2\x8c\x98)]+[Shif\
+t]+[N] (Apple):\x0a\
+  Show \x22New colo\
+r palette\x22 windo\
+w</li>\x0a<li>\x0a<p>[\
+CTRL]+[Shift]+[V\
+] (Windows/Linux\
+) or [Cmd(\xe2\x8c\x98)]+\
+[Shift]+[N] (App\
+le):\x0a  Show \x22Zoo\
+m video\x22 window<\
+/p>\x0a</li>\x0a<li>\x0a<\
+p>[CTRL]+[Shift]\
++[T] (Windows/Li\
+nux) or [Cmd(\xe2\x8c\x98\
+)]+[Shift]+[T] (\
+Apple):\x0a  Toggle\
+ between light m\
+ode theme and da\
+rk mode theme of\
+ the OS.</p>\x0a</l\
+i>\x0a</ul>\x0a<h3>Sto\
+p running calcul\
+ation</h3>\x0a<p>To\
+ stop a (long) r\
+unning calculati\
+on you may press\
+ the key [ESC], \
+RMB or the\x0a\x22Stop\
+\x22 button on the \
+\x22Main\x22 window.</\
+p>\x0a<h3>Zoom-in</\
+h3>\x0a<p>By pressi\
+ng the LMB only \
+you may draw an \
+rectangle with t\
+he cursor (based\
+ on the\x0acurrent \
+ratio, see item \
+3) which defines\
+ the area you wa\
+nt to zoom in. A\
+s soon\x0aas the ca\
+lculation starts\
+ (immediately af\
+ter release of t\
+he LMB), the new\
+ values\x0a(see ite\
+ms 1, 2, and 3 o\
+f the \x22Main\x22) wi\
+ll be adapted ac\
+cordingly.</p>\x0a<\
+h2>Development r\
+ecommendations</\
+h2>\x0a<p>The app i\
+s written in Pyt\
+hon3 (<strong>ve\
+rsion 3.14</stro\
+ng> and newer) a\
+nd PySide6 (6.2 \
+and\x0anewer).</p>\x0a\
+<h3>Resources</h\
+3>\x0a<p>To iclude \
+all necessary re\
+sources you need\
+ the Qt resource\
+ system (<code>.\
+qrc</code>)\x0aprov\
+ided by PySide6 \
+from Qt: \x22pyside\
+6-rcc\x22 (included\
+ already in the \
+\x22pyside6\x22\x0apackag\
+e):</p>\x0a<p><code\
+>pyside6-rcc res\
+ources.qrc -o re\
+sources_rc.py</c\
+ode></p>\x0a<p>This\
+ file contains a\
+ll \x22styles\x22 as t\
+ext and the imag\
+es as binary cod\
+e.</p>\x0a<h3>Build\
+</h3>\x0a<p>To buil\
+d a standalone a\
+pp you need \x22pyi\
+nstaller\x22. You h\
+ave to install i\
+t first:</p>\x0a<p>\
+<code>pip instal\
+l pyinstaller</c\
+ode></p>\x0a<p>In t\
+he next step you\
+ have to change \
+in the directory\
+ where \x22main.py\x22\
+ is and\x0aexecute \
+the following li\
+ne in a terminal\
+:</p>\x0a<p>macOS:\x5c\
+\x0a<code>pyinstall\
+er --noconsole -\
+-onefile --icon=\
+ui/Mandelbrot.ic\
+ns main.py</code\
+></p>\x0a<p>Windows\
+ 11:\x5c\x0a<code>pyin\
+staller --nocons\
+ole --onefile --\
+icon=ui/Mandelbr\
+ot.ico main.py</\
+code></p>\
 \x00\x00\x1f\xa9\
 #\
  qtFractals\x0aApp \
@@ -336013,6 +336570,10 @@ qt_resource_name = b"\
 \x00\x06\xb5\xa3\
 \x00d\
 \x00o\x00c\x00s\
+\x00\x0b\
+\x01\xe9\xd0\x1c\
+\x00R\
+\x00E\x00A\x00D\x00M\x00E\x00.\x00h\x00t\x00m\x00l\
 \x00\x09\
 \x05\x91\xe8\x14\
 \x00R\
@@ -336070,33 +336631,35 @@ qt_resource_name = b"\
 "
 
 qt_resource_struct = b"\
-\x00\x00\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x01\
+\x00\x00\x00\x00\x00\x02\x00\x00\x00\x04\x00\x00\x00\x01\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00&\x00\x02\x00\x00\x00\x07\x00\x00\x00\x07\
+\x00\x00\x00B\x00\x02\x00\x00\x00\x07\x00\x00\x00\x08\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\
+\x00\x00\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x05\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x0e\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
-\x00\x00\x01\xa1\x9c\xbfo\x8c\
-\x00\x00\x01\x0e\x00\x00\x00\x00\x00\x01\x00\x01\x1dx\
+\x00\x00\x01\xa1\x9d\x0aK\xac\
+\x00\x00\x00*\x00\x00\x00\x00\x00\x01\x00\x00\x22\xae\
+\x00\x00\x01\xa1\x9d\x0aK\xac\
+\x00\x00\x01*\x00\x00\x00\x00\x00\x01\x00\x01@&\
 \x00\x00\x01\xa1\x9b\xcc7u\
-\x00\x00\x01B\x00\x00\x00\x00\x00\x01\x00\x13\x04#\
+\x00\x00\x01^\x00\x00\x00\x00\x00\x01\x00\x13&\xd1\
 \x00\x00\x01\xa1\x9b\xb0\xb1-\
-\x00\x00\x01t\x00\x00\x00\x00\x00\x01\x00=\xe1\xdd\
+\x00\x00\x01\x90\x00\x00\x00\x00\x00\x01\x00>\x04\x8b\
 \x00\x00\x01\xa1\x9b\xc8'q\
-\x00\x00\x00\xf6\x00\x00\x00\x00\x00\x01\x00\x01\x1c?\
+\x00\x00\x01\x12\x00\x00\x00\x00\x00\x01\x00\x01>\xed\
 \x00\x00\x01\xa1\x12\x04\x9b\x95\
-\x00\x00\x000\x00\x00\x00\x00\x00\x01\x00\x00\x1f\xad\
-\x00\x00\x01\xa1\x9c\xde\xe4^\
-\x00\x00\x00\xde\x00\x00\x00\x00\x00\x01\x00\x00\xc8\xf4\
-\x00\x00\x01\xa1\x9c\xe0\xffZ\
-\x00\x00\x00H\x00\x00\x00\x00\x00\x01\x00\x00Yu\
+\x00\x00\x00L\x00\x00\x00\x00\x00\x01\x00\x00B[\
+\x00\x00\x01\xa1\x9d\x0aK\xd3\
+\x00\x00\x00\xfa\x00\x00\x00\x00\x00\x01\x00\x00\xeb\xa2\
+\x00\x00\x01\xa1\x9d\x0aK\xd2\
+\x00\x00\x00d\x00\x00\x00\x00\x00\x01\x00\x00|#\
 \x00\x00\x01\xa1_Y\x8f\xe1\
-\x00\x00\x00\xb2\x00\x01\x00\x00\x00\x01\x00\x00\xc7+\
+\x00\x00\x00\xce\x00\x01\x00\x00\x00\x01\x00\x00\xe9\xd9\
 \x00\x00\x01\xa1r\x8f\xf0<\
-\x00\x00\x00t\x00\x00\x00\x00\x00\x01\x00\x00rQ\
-\x00\x00\x01\xa1\x9c\xdc\xf4\x92\
-\x00\x00\x00\x8a\x00\x00\x00\x00\x00\x01\x00\x00\xaes\
+\x00\x00\x00\x90\x00\x00\x00\x00\x00\x01\x00\x00\x94\xff\
+\x00\x00\x01\xa1\x9d\x0aK\xd3\
+\x00\x00\x00\xa6\x00\x00\x00\x00\x00\x01\x00\x00\xd1!\
 \x00\x00\x01\xa1_Y\x8f\xe1\
 "
 
