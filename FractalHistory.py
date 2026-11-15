@@ -67,7 +67,7 @@ class FractalHistory():
         try:
             self.dir.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
-            self.log.error(f"Directory for history ({error})!")
+            self.log.error(f"Directory for history ({error})!", True)
 
         self.repeat_item = False
         self.history_clr = False
@@ -167,7 +167,7 @@ class FractalHistory():
             with open(self.file_name, 'r', encoding="utf-8") as f:
                 history_data = json.load(f)
         except BaseException as error:
-            self.log.warning(f"Warning ({error}) with reading history!")
+            self.log.warning(f"Warning ({error}) with reading history!", True)
 
         self.log.exit("load_history")
         return history_data
@@ -184,7 +184,7 @@ class FractalHistory():
     #
 
     def save_history(self, history_data, thumbnail=None, thumbnail_name=None):
-        self.log.entry("save_history(history_data, thumbnail, thumbnail_name)")
+        self.log.entry("save_history(history_data, thumbnail=None, thumbnail_name=None)")
 
         self.log.write(f"history_data={history_data}")
 
@@ -196,13 +196,13 @@ class FractalHistory():
             if result:
                 self.log.write("Thumbnail successful saved.")
             else:
-                self.log.error("Thumbnail not saved!")
+                self.log.error("Thumbnail not saved!", True)
 
         try:
             with open(self.file_name, 'w', encoding="utf-8") as f:
                 json.dump(history_data, f, ensure_ascii=False, indent=4)
         except BaseException as error:
-            self.log.error(f"Error ({error}) with saving history!")
+            self.log.error(f"Error ({error}) with saving history!", True)
 
         self.history_clr = False
 
@@ -248,11 +248,6 @@ class FractalHistory():
         btn_close  = QPushButton("Close", self.history_dialog)
 
         btn_clear.setStyleSheet("""
-            QPushButton {
-                border: 2px solid black;
-                border-radius: 12px;
-                padding: 10px;
-            }
             QPushButton:hover {
                 color: white;
                 background-color: red;

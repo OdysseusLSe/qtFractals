@@ -1655,18 +1655,10 @@ else:
     )
 
 app = QtWidgets.QApplication([])
-
-pylog.basicConfig(
-    filename=f"{APP_NAME}.log",
-    filemode="w",
-    level=pylog.DEBUG,
-    style="{",
-    format="{asctime} [{levelname:8}] {message}"
-)
-
-#load_stylesheet(":/ui/style.css")
+app.setStyle('Fusion')
 
 win = MainWindow()
 win.show()
+win.setFocus()
 
 sys.exit(app.exec())
