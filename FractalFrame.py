@@ -34,12 +34,12 @@ class FractalFrame(QObject):
     def __init__(self):
         super().__init__()
 
-        self.log = Logging("FractalFrame", True)
-        self.log.entry("__init__", False)
+        self.log = Logging("FractalFrame")
+        self.log.entry("__init__")
 
         self.is_running = True
 
-        self.log.exit("__init__", False)
+        self.log.exit("__init__")
 
     #
     # -----------------------------------------------
@@ -48,7 +48,7 @@ class FractalFrame(QObject):
     #
 
     def mandelbrot_frame(self, frac_area, iter_lim, dd_width, dd_height, cp):
-        self.log.entry("mandelbrot_frame", False)
+        self.log.entry("mandelbrot_frame")
 
         frac_area = copy.copy(frac_area)
 
@@ -80,9 +80,9 @@ class FractalFrame(QObject):
 
             if not self.is_running:
                 # Boolean flag to stop the thread (initiated by the user)
-                self.log.write("Thread stopped by user.", False)
+                self.log.write("Thread stopped by user.")
                 self.progress.emit(self.draw_dim['height'])
-                self.log.exit("calculate_mandelbrot", False)
+                self.log.exit("calculate_mandelbrot")
                 break
 
             imag_part = imag_origin + y * y_step
@@ -110,7 +110,7 @@ class FractalFrame(QObject):
                         try:
                             smoothed = loop + 1 - local_log(local_log(value)) / log_2
                         except ValueError:
-                            self.log.error(f"ValueError: loop,value={loop},{value}", True)
+                            self.log.error(f"ValueError: loop,value={loop},{value}")
                             smoothed = loop
 
                         # Normed value between 0.0 and 1.0 (the higher value the
@@ -141,7 +141,7 @@ class FractalFrame(QObject):
 
                     loop += 1
 
-        self.log.exit("mandelbrot_frame", False)
+        self.log.exit("mandelbrot_frame")
 
         return image
 
@@ -152,6 +152,6 @@ class FractalFrame(QObject):
     #
 
     def stop(self):
-        self.log.entry("stop", False)
+        self.log.entry("stop")
         self.is_running = False
-        self.log.exit("stop", False)
+        self.log.exit("stop")

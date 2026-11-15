@@ -48,7 +48,7 @@ class FractalHistory():
     def __init__(self, app_name, file_name):
         super().__init__()
 
-        self.log = Logging("FractalHistory", True)
+        self.log = Logging("FractalHistory")
         self.log.entry("__init__")
 
         # 1. Für Benutzerdaten (z. B. Datenbanken, Speicherstände)
@@ -67,7 +67,7 @@ class FractalHistory():
         try:
             self.dir.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
-            self.log.error(f"Directory for history ({error})!", True)
+            self.log.error(f"Directory for history ({error})!")
 
         self.repeat_item = False
         self.history_clr = False
@@ -167,7 +167,7 @@ class FractalHistory():
             with open(self.file_name, 'r', encoding="utf-8") as f:
                 history_data = json.load(f)
         except BaseException as error:
-            self.log.warning(f"Warning ({error}) with reading history!", True)
+            self.log.warning(f"Warning ({error}) with reading history!")
 
         self.log.exit("load_history")
         return history_data
@@ -184,7 +184,7 @@ class FractalHistory():
     #
 
     def save_history(self, history_data, thumbnail=None, thumbnail_name=None):
-        self.log.entry("save_history(history_data, thumbnail=None, thumbnail_name=None)")
+        self.log.entry("save_history(history_data, thumbnail, thumbnail_name)")
 
         self.log.write(f"history_data={history_data}")
 
@@ -196,13 +196,13 @@ class FractalHistory():
             if result:
                 self.log.write("Thumbnail successful saved.")
             else:
-                self.log.error("Thumbnail not saved!", True)
+                self.log.error("Thumbnail not saved!")
 
         try:
             with open(self.file_name, 'w', encoding="utf-8") as f:
                 json.dump(history_data, f, ensure_ascii=False, indent=4)
         except BaseException as error:
-            self.log.error(f"Error ({error}) with saving history!", True)
+            self.log.error(f"Error ({error}) with saving history!")
 
         self.history_clr = False
 

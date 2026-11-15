@@ -18,6 +18,7 @@
 
 from pickle import TRUE
 
+import argparse
 import cv2
 import copy
 import pprint
@@ -85,7 +86,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.1"
+APP_VERSION = "1.2"
 
 #
 # -----------------------------------------------
@@ -96,12 +97,12 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
-        self.log = Logging("MainWindow", True)
+        self.log = Logging("MainWindow")
 
         self.setWindowTitle(f"{APP_NAME} {APP_VERSION}")
 
         self.log.write(f"--- {APP_NAME} {APP_VERSION} ---")
-        self.log.entry("__init__", False)
+        self.log.entry("__init__")
 
         # Load the stylesheet from a file
         style_file = QFile(":/ui/style.css")
@@ -109,7 +110,7 @@ class MainWindow(QMainWindow):
             stream = QTextStream(style_file)
             self.setStyleSheet(stream.readAll())
         else:
-            self.log.error('Stylesheet ":/ui/style.css" not found!', True)
+            self.log.error('Stylesheet ":/ui/style.css" not found!')
 
         # Initiate status bar
         self.status_bar = QStatusBar()
@@ -135,7 +136,7 @@ class MainWindow(QMainWindow):
         self.fh = FractalHistory(APP_NAME, "history.json")
         self.history_list = self.fh.load_history()
         log_string = pprint.pformat(self.history_list)
-        self.log.write(f"self.history_list=\n{log_string}", False)
+        self.log.write(f"self.history_list=\n{log_string}")
 
         user_cp_list = []
         for item in self.history_list:
@@ -149,7 +150,7 @@ class MainWindow(QMainWindow):
                     self.log.write(f"self.cp_list=\n{log_string}")
                     self.cp_combo.addItem(cp_name)
 
-        self.log.exit("__init__", False)
+        self.log.exit("__init__")
 
     #
     # -----------------------------------------------
@@ -266,13 +267,13 @@ class MainWindow(QMainWindow):
     #
 
     def cp_text_changed(self, text):
-        self.log.entry(f"cp_text_changed({text})", True)
+        self.log.entry(f"cp_text_changed({text})")
 
         if self.is_new_cp:
             self.is_new_cp = False
-            self.log.write("New color palette --> no redraw.", True)
+            self.log.write("New color palette --> no redraw.")
         else:
-            self.log.write("No new color palette --> redraw.", True)
+            self.log.write("No new color palette --> redraw.")
             for element in self.cp_list:
                 if text == element['name']:
                     self.cp = element
@@ -287,7 +288,7 @@ class MainWindow(QMainWindow):
             )
             self.trigger_calculation()
 
-        self.log.exit("cp_text_changed", True)
+        self.log.exit("cp_text_changed")
 
     #
     # -----------------------------------------------
@@ -364,7 +365,7 @@ class MainWindow(QMainWindow):
         try:
             dir_path.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
-            self.log.error(f"Directory for video frames ({error})!", True)
+            self.log.error(f"Directory for video frames ({error})!")
 
         # Define compression and file name for rendering
         video_name = f"{APP_NAME}-{dir_time}.mp4"
@@ -452,7 +453,7 @@ class MainWindow(QMainWindow):
 
             ww = self.fw.width()
             wh = self.fw.height()
-            self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}", False)
+            self.log.write(f"w,h,ww,wh={w},{h},{ww},{wh}")
 
             if w > ww or h > wh:
                 fitted_image = image.scaled(
@@ -503,9 +504,9 @@ class MainWindow(QMainWindow):
         )
         if folder_path:
 
-            self.log.write(f"video_name={video_name}", False)
-            self.log.write(f"video_full_path={video_full_path}", False)
-            self.log.write(f"folder_path={folder_path}", False)
+            self.log.write(f"video_name={video_name}")
+            self.log.write(f"video_full_path={video_full_path}")
+            self.log.write(f"folder_path={folder_path}")
 
             video_full_path.move_into(folder_path)
             dir_path.rmdir()
@@ -521,7 +522,7 @@ class MainWindow(QMainWindow):
         self.enable_widgets(True)
         self.video_creation = False
 
-        self.log.exit("create_video", True)
+        self.log.exit("create_video")
 
     #
     # -----------------------------------------------
@@ -562,7 +563,7 @@ class MainWindow(QMainWindow):
     #
 
     def fractal_window(self):
-        self.log.entry("fractal_window", False)
+        self.log.entry("fractal_window")
 
         self.fw = FractalWindow(
             self.const_frac_area,
@@ -582,7 +583,7 @@ class MainWindow(QMainWindow):
 
         self.fw.show()
 
-        self.log.exit("fractal_window", False)
+        self.log.exit("fractal_window")
 
     #
     # -----------------------------------------------
@@ -1052,7 +1053,10 @@ class MainWindow(QMainWindow):
         il = history_item['iter_lim']
         cp = history_item['col_pal']
         fs = history_item['frac_set']
-        jc = complex(history_item['real_julia_c'], history_item['imag_julia_c'])
+        jc = complex(
+            history_item['real_julia_c'],
+            history_item['imag_julia_c']
+        )
 
         self.fw.set_parameters(fa, dd, il, cp, fs, jc)
 
@@ -1118,7 +1122,7 @@ class MainWindow(QMainWindow):
         if result:
             self.log.write("Image successful saved.")
         else:
-            self.log.error("Image not saved!", True)
+            self.log.error("Image not saved!")
 
         self.log.write("save_image")
 
@@ -1233,7 +1237,7 @@ class MainWindow(QMainWindow):
     #
 
     def stop_calculation(self):
-        self.log.entry("stop_calculation", False)
+        self.log.entry("stop_calculation")
 
         if self.fractal_calculation:
             self.fw.stop_calculation()
@@ -1241,7 +1245,7 @@ class MainWindow(QMainWindow):
         if self.video_creation:
             self.stop_video_creation = True
 
-        self.log.exit("stop_calculation", False)
+        self.log.exit("stop_calculation")
 
     #
     # -----------------------------------------------
@@ -1264,7 +1268,7 @@ class MainWindow(QMainWindow):
     #
 
     def trigger_calculation(self):
-        self.log.entry("trigger_calculation", False)
+        self.log.entry("trigger_calculation")
 
         self.fractal_calculation = True
         self.enable_widgets(False)
@@ -1272,7 +1276,7 @@ class MainWindow(QMainWindow):
         layout_rect = self.main_layout.geometry()
         lw          = layout_rect.width()
         lh          = layout_rect.height()
-        self.log.write(f"lw,lh={lw},{lh}", False)
+        self.log.write(f"lw,lh={lw},{lh}")
 
         self.progress_bar.setValue(0)
         self.frac_area = {
@@ -1303,7 +1307,7 @@ class MainWindow(QMainWindow):
 
         self.fw.start_calculation()
 
-        self.log.exit("trigger_calculation", False)
+        self.log.exit("trigger_calculation")
 
     #
     # -----------------------------------------------
@@ -1625,9 +1629,30 @@ class MainWindow(QMainWindow):
 
 #
 # -----------------------------------------------
+# The application runs until the window will be closed
+# -----------------------------------------------
 #
 
-# The application runs until the window will be closed
+welcome_string = f"Welcome to {APP_NAME}-{APP_VERSION}"
+parser = argparse.ArgumentParser(description=welcome_string)
+parser.add_argument(
+    "-d", "--debug", type=int, default=0,
+    help="Write debug information"
+)
+args = parser.parse_args()
+
+if args.debug == 0:
+    print("No debug information!")
+    pylog.basicConfig(level=pylog.ERROR)
+else:
+    print(f"Debug information is written in '{APP_NAME}-{APP_VERSION}.log'")
+    pylog.basicConfig(
+        filename=f"{APP_NAME}-{APP_VERSION}.log",
+        filemode="w",
+        level=pylog.DEBUG,
+        style="{",
+        format="{asctime} [{levelname:8}] {message}"
+    )
 
 app = QtWidgets.QApplication([])
 

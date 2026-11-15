@@ -56,8 +56,8 @@ class FractalWorker(QObject):
         ):
         super().__init__()
 
-        self.log = Logging("FractalWorker", True)
-        self.log.entry("__init__", False)
+        self.log = Logging("FractalWorker")
+        self.log.entry("__init__")
 
         self.frac_area        = copy.copy(frac_area)
         self.draw_dim         = copy.copy(draw_dim)
@@ -66,17 +66,17 @@ class FractalWorker(QObject):
         self.current_frac_set = current_frac_set
         self.julia_c          = julia_c
 
-        self.log.write("self.frac_area=" + str(self.frac_area), False)
-        self.log.write("self.draw_dim=" + str(self.draw_dim), False)
-        self.log.write("self.iter_lim=" + str(self.iter_lim), False)
-        self.log.write("self.cp=" + str(self.cp), False)
-        self.log.write("self.julia_c=" + str(self.julia_c), False)
+        self.log.write("self.frac_area=" + str(self.frac_area))
+        self.log.write("self.draw_dim=" + str(self.draw_dim))
+        self.log.write("self.iter_lim=" + str(self.iter_lim))
+        self.log.write("self.cp=" + str(self.cp))
+        self.log.write("self.julia_c=" + str(self.julia_c))
 
         self.is_running = True
 
         self.line = []
 
-        self.log.exit("__init__", False)
+        self.log.exit("__init__")
 
     #
     # -----------------------------------------------
@@ -87,7 +87,7 @@ class FractalWorker(QObject):
     @Slot()
     def calculate_julia(self):
 
-        self.log.entry("calculate_julia", False)
+        self.log.entry("calculate_julia")
 
         image = QImage(
             self.draw_dim['width'],
@@ -125,9 +125,9 @@ class FractalWorker(QObject):
 
             if not self.is_running:
                 # Boolean flag to stop the thread (initiated by the user)
-                self.log.write("Thread stopped by user.", False)
+                self.log.write("Thread stopped by user.")
                 self.progress.emit(self.draw_dim['height'])
-                self.log.exit("calculate_julia", False)
+                self.log.exit("calculate_julia")
                 break
 
             imag_part = imag_origin + y * y_step
@@ -155,7 +155,7 @@ class FractalWorker(QObject):
                         try:
                             smoothed = loop + 1 - local_log(local_log(value)) / log_2
                         except ValueError:
-                            self.log.error(f"ValueError: loop,value={loop},{value}", True)
+                            self.log.error(f"ValueError: loop,value={loop},{value}")
                             smoothed = loop
 
                         # Normed value between 0.0 and 1.0 (the higher value the
@@ -192,7 +192,7 @@ class FractalWorker(QObject):
 
         calc_time = calc_time + time.process_time() - start_time
 
-        self.log.exit("calculate_julia", False)
+        self.log.exit("calculate_julia")
         self.finished.emit(image, calc_time)
 
     #
@@ -203,7 +203,7 @@ class FractalWorker(QObject):
 
     @Slot()
     def calculate_mandelbrot(self):
-        self.log.entry("calculate_mandelbrot", False)
+        self.log.entry("calculate_mandelbrot")
 
         image = QImage(
             self.draw_dim['width'],
@@ -241,9 +241,9 @@ class FractalWorker(QObject):
 
             if not self.is_running:
                 # Boolean flag to stop the thread (initiated by the user)
-                self.log.write("Thread stopped by user.", False)
+                self.log.write("Thread stopped by user.")
                 self.progress.emit(self.draw_dim['height'])
-                self.log.exit("calculate_mandelbrot", False)
+                self.log.exit("calculate_mandelbrot")
                 break
 
             imag_part = imag_origin + y * y_step
@@ -272,7 +272,7 @@ class FractalWorker(QObject):
                         try:
                             smoothed = loop + 1 - local_log(local_log(value)) / log_2
                         except ValueError:
-                            self.log.error(f"ValueError: loop,value={loop},{value}", True)
+                            self.log.error(f"ValueError: loop,value={loop},{value}")
                             smoothed = loop
 
                         # Normed value between 0.0 and 1.0 (the higher value the
@@ -309,7 +309,7 @@ class FractalWorker(QObject):
 
         calc_time = calc_time + time.process_time() - start_time
 
-        self.log.exit("calculate_julia", False)
+        self.log.exit("calculate_julia")
 
         self.finished.emit(image, calc_time)
     #
@@ -319,6 +319,6 @@ class FractalWorker(QObject):
     #
 
     def stop(self):
-        self.log.entry("stop", False)
+        self.log.entry("stop")
         self.is_running = False
-        self.log.exit("stop", False)
+        self.log.exit("stop")
