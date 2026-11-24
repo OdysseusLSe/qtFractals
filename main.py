@@ -87,7 +87,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.1.1"
+APP_VERSION = "1.2"
 APP_L_ICON  = ""
 APP_M_ICON  = ":/ui/icon.icns"
 APP_W_ICON  = ":/ui/icon.ico"
@@ -402,9 +402,8 @@ class MainWindow(QMainWindow):
         # Start calculation of frames and rendering of video
         #
 
+        start_time = time.time()
         for step in range(0, num_of_frames, 1):
-
-            start_time = time.process_time()
 
             factor = ease_data[step]
 
@@ -481,7 +480,7 @@ class MainWindow(QMainWindow):
 
             QCoreApplication.processEvents()
 
-        calc_time = time.process_time() - start_time
+        calc_time = time.time() - start_time
 
         if self.stop_video_creation:
             # User stopped calculation
@@ -503,7 +502,7 @@ class MainWindow(QMainWindow):
         video.release()
         cv2.destroyAllWindows()
 
-        calc_time = time.process_time() - start_time
+        calc_time = time.time() - start_time
 
         status = f"Video creation time: {calc_time:.2f} seconds"
         self.status_lbl.setText(status)
