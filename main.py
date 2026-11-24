@@ -317,8 +317,8 @@ class MainWindow(QMainWindow):
             dd_width,
             dd_height,
             color_palette,
-            fps = 10,
-            sec = 1
+            fps=10,
+            sec=1
         ):
         self.log.entry("create_video")
 
@@ -542,9 +542,7 @@ class MainWindow(QMainWindow):
     #
 
     def dd_text_changed(self, text):
-        self.log.entry("dd_text_changed")
-
-        self.log.write(f"text={text}")
+        self.log.entry(f"dd_text_changed(text='{text}')")
 
         if text == self.sel_draw_dim['HD']:
             self.x_dim_edit.setText("1280")
@@ -568,6 +566,40 @@ class MainWindow(QMainWindow):
         self.trigger_calculation()
 
         self.log.exit("dd_text_changed")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def enable_widgets(self, flag=True):
+        self.log.entry(f"enable_widgets(flag={flag})")
+
+        self.reset_btn.setEnabled(flag)
+        self.start_btn.setEnabled(flag)
+        self.dd_combo.setEnabled(flag)
+        self.cp_combo.setEnabled(flag)
+
+        self.log.exit("enable_widgets")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def end_app(self):
+        self.log.entry("end_app")
+
+        end_app_dlg = QMessageBox(self)
+        end_app_dlg.setWindowTitle("Quit the application")
+        end_app_dlg.setText("Quit the application?")
+        end_app_dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        end_app_dlg.setIcon(QMessageBox.Question)
+        button = end_app_dlg.exec()
+
+        if button == QMessageBox.No:
+            self.log.write("end_app")
+            return
+
+        app.quit()
 
     #
     # -----------------------------------------------
@@ -1413,7 +1445,7 @@ class MainWindow(QMainWindow):
         max_iter_edit = []
         grab_btn      = []
 
-    # --------------------------------------------------------------------------
+        # ----------------------------------------------------------------------
 
         def create_line():
             line = QFrame()
@@ -1505,7 +1537,7 @@ class MainWindow(QMainWindow):
                 if text == element['name']:
                     self.cp = copy.copy(element)
 
-    # --------------------------------------------------------------------------
+        # ----------------------------------------------------------------------
 
         input_area()
 
@@ -1571,7 +1603,7 @@ class MainWindow(QMainWindow):
         button_box = QDialogButtonBox(QBtn)
         main_layout.addWidget(button_box)
 
-    # --------------------------------------------------------------------------
+        # ----------------------------------------------------------------------
 
         def ok_clicked():
             self.log.write("ok_clicked")
@@ -1593,7 +1625,7 @@ class MainWindow(QMainWindow):
             self.log.write("zoom_video")
             self.zoom_dialog.close()
 
-    # --------------------------------------------------------------------------
+        # ----------------------------------------------------------------------
 
         button_box.accepted.connect(ok_clicked)
         button_box.rejected.connect(cancel_clicked)
@@ -1604,40 +1636,6 @@ class MainWindow(QMainWindow):
         self.zoom_dialog.show()
 
         self.log.write("zoom_video")
-
-    #
-    # -----------------------------------------------
-    #
-
-    def enable_widgets(self, flag=True):
-        self.log.entry(f"enable_widgets({flag})")
-
-        self.reset_btn.setEnabled(flag)
-        self.start_btn.setEnabled(flag)
-        self.dd_combo.setEnabled(flag)
-        self.cp_combo.setEnabled(flag)
-
-        self.log.exit("enable_widgets")
-
-    #
-    # -----------------------------------------------
-    #
-
-    def end_app(self):
-        self.log.entry("end_app")
-
-        end_app_dlg = QMessageBox(self)
-        end_app_dlg.setWindowTitle("Quit the application")
-        end_app_dlg.setText("Quit the application?")
-        end_app_dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        end_app_dlg.setIcon(QMessageBox.Question)
-        button = end_app_dlg.exec()
-
-        if button == QMessageBox.No:
-            self.log.write("end_app")
-            return
-
-        app.quit()
 
 
 #
