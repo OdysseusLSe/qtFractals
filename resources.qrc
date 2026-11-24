@@ -3,6 +3,7 @@
     <!-- Styles -->
     <file>ui/style.css</file>
     <!-- Icons -->
+    <file>ui/icon.icns</file>
     <file>ui/LED_small_green.png</file>
     <file>ui/LED_small_red.png</file>
     <file>ui/reset.png</file>

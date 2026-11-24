@@ -21,6 +21,7 @@ from pickle import TRUE
 import argparse
 import cv2
 import copy
+import platform
 import pprint
 import sys
 import time
@@ -86,7 +87,11 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.2"
+APP_VERSION = "1.1.1"
+APP_L_ICON  = ""
+APP_M_ICON  = ":/ui/icon.icns"
+APP_W_ICON  = ":/ui/icon.ico"
+OS_NAME     = platform.system()
 
 #
 # -----------------------------------------------
@@ -95,14 +100,22 @@ APP_VERSION = "1.2"
 
 class MainWindow(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, path_2_icon):
         QMainWindow.__init__(self)
         self.log = Logging("MainWindow")
 
         self.setWindowTitle(f"{APP_NAME} {APP_VERSION}")
 
         self.log.write(f"--- {APP_NAME} {APP_VERSION} ---")
-        self.log.entry("__init__")
+        self.log.entry(f"__init__('{path_2_icon}')")
+
+        try:
+            self.setWindowIcon(QIcon(path_2_icon))
+        except Exception:
+            self.status_lbl.setText("Cannot load window icon!")
+            self.log.warning("Cannot load window icon!")
+
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         # Load the stylesheet from a file
         style_file = QFile(":/ui/style.css")
@@ -1633,32 +1646,48 @@ class MainWindow(QMainWindow):
 # -----------------------------------------------
 #
 
-welcome_string = f"Welcome to {APP_NAME}-{APP_VERSION}"
-parser = argparse.ArgumentParser(description=welcome_string)
-parser.add_argument(
-    "-d", "--debug", type=int, default=0,
-    help="Write debug information"
-)
-args = parser.parse_args()
+if __name__ == "__main__":
 
-if args.debug == 0:
-    print("No debug information!")
-    pylog.basicConfig(level=pylog.ERROR)
-else:
-    print(f"Debug information is written in '{APP_NAME}-{APP_VERSION}.log'")
-    pylog.basicConfig(
-        filename=f"{APP_NAME}-{APP_VERSION}.log",
-        filemode="w",
-        level=pylog.DEBUG,
-        style="{",
-        format="{asctime} [{levelname:8}] {message}"
+    welcome_string = f"Welcome to '{APP_NAME}-{APP_VERSION}'"
+    parser = argparse.ArgumentParser(description=welcome_string)
+    parser.add_argument(
+        "-d", "--debug", type=int, default=0,
+        help="Write debug information"
     )
+    args = parser.parse_args()
 
-app = QtWidgets.QApplication([])
-app.setStyle('Fusion')
+    if args.debug == 0:
+        print("No debug information!")
+        pylog.basicConfig(level=pylog.ERROR)
+    else:
+        print(f"Debug information is written in '{APP_NAME}-{APP_VERSION}.log'")
+        pylog.basicConfig(
+            filename=f"{APP_NAME}-{APP_VERSION}.log",
+            filemode="w",
+            level=pylog.DEBUG,
+            style="{",
+            format="{asctime} [{levelname:8}] {message}"
+        )
 
-win = MainWindow()
-win.show()
-win.setFocus()
+    app = QtWidgets.QApplication([])
+
+    app.setStyle('Fusion')
+    app.setApplicationName(APP_NAME)
+
+    if OS_NAME == "Darwin":
+        path_2_icon = APP_M_ICON
+    elif OS_NAME == "Windows":
+        path_2_icon = APP_W_ICON
+    elif OS_NAME == "Linux":
+        path_2_icon = APP_L_ICON
+
+    try:
+        app.setWindowIcon(QIcon(path_2_icon))
+    except Exception:
+        print("Cannot load application icon!")
+
+    win = MainWindow(path_2_icon)
+    win.show()
+    win.setFocus()
 
 sys.exit(app.exec())
