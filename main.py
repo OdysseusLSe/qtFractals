@@ -30,7 +30,7 @@ import numpy as np
 import pprint as pp
 
 from pathlib import Path
-from platformdirs import user_cache_dir
+from platformdirs import user_cache_path, user_log_path
 
 from PySide6.QtCore import (
     QCoreApplication,
@@ -371,8 +371,7 @@ class MainWindow(QMainWindow):
 
         # Create cache directory for video
         dir_time = time.time()
-        dir_name = f"{self.cache_dir}/{APP_NAME}.video-{dir_time}"
-        dir_path = Path(dir_name)
+        dir_path = f"{self.cache_dir}/{APP_NAME}.video-{dir_time}"
         try:
             dir_path.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
@@ -1174,7 +1173,7 @@ class MainWindow(QMainWindow):
     def set_default_values(self):
         self.log.entry("set_default_values()")
 
-        self.cache_dir = user_cache_dir(APP_NAME, "OdysseusLSe")
+        self.cache_dir = user_cache_path(APP_NAME, "OdysseusLSe")
 
         self.is_new_cp           = False
         self.fractal_calculation = False
@@ -1657,17 +1656,16 @@ if __name__ == "__main__":
 
     else:
 
-        log_dir = user_cache_dir(APP_NAME, "OdysseusLSe")
+        log_dir = user_log_path(APP_NAME, "OdysseusLSe")
         print(f"Directory for log: {log_dir}")
 
-        dir_path = Path(log_dir)
         try:
-            dir_path.mkdir(exist_ok=True, parents=True)
+            log_dir.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
             print(f"Directory for log: ({error})!")
 
         log_file = f"{APP_NAME}-{APP_VERSION}.log"
-        log_full_path = dir_path.joinpath(log_file)
+        log_full_path = log_dir.joinpath(log_file)
 
         print(f"Debug information is written in '{log_file}'")
         pylog.basicConfig(
@@ -1675,7 +1673,7 @@ if __name__ == "__main__":
             filemode="w",
             level=pylog.DEBUG,
             style="{",
-            format="{asctime} [{levelname:8}] {message}"
+            format="{asctime} [{levelname:5}] {message}"
         )
 
     app = QtWidgets.QApplication([])

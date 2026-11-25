@@ -22,7 +22,7 @@ import time
 import pprint as pp
 
 from pathlib import Path
-from platformdirs import user_data_dir, user_config_dir, user_cache_dir
+from platformdirs import user_data_path
 
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QIcon
@@ -48,22 +48,12 @@ class FractalHistory():
 
     def __init__(self, app_name, file_name):
         super().__init__()
-
         self.log = Logging("FractalHistory")
-        self.log.entry("__init__")
+        self.log.entry(f"__init__({app_name},{file_name})")
 
-        # 1. Für Benutzerdaten (z. B. Datenbanken, Speicherstände)
-        data_dir = user_data_dir(app_name, "OdysseusLSe")
-
-        # 2. Für Konfigurationsdateien (z. B. settings.json, config.ini)
-        config_dir = user_config_dir(app_name, "OdysseusLSe")
-
-        # 3. Für temporäre Caches
-        cache_dir = user_cache_dir(app_name, "OdysseusLSe")
-
-        self.dir = Path(f"{data_dir}/{app_name}.history")
+        data_dir = user_data_path(app_name, "OdysseusLSe")
+        self.dir = data_dir.joinpath(f"{app_name}.history")
         self.file_name = self.dir.joinpath(file_name)
-        self.log.write(f"file_name={self.file_name}")
 
         try:
             self.dir.mkdir(exist_ok=True, parents=True)
