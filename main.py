@@ -422,14 +422,14 @@ class MainWindow(QMainWindow):
                 'imagHeight': current_height
             }
 
-            status = f"Creating video (frame: {step+1}/{num_of_frames})"
+            status = f"Creating frame: {step+1}/{num_of_frames}"
             status = status + f"  |  Iteration limit: {current_il}"
             self.status_lbl.setText(status)
 
             loop = QEventLoop()
             computed_image = None
 
-# ------------------------------------------------------------------------------
+        # ----------------------------------------------------------------------
 
             def on_frame_calculated(img):
                 # When thread has finished get result (calculated image) back.
@@ -437,7 +437,7 @@ class MainWindow(QMainWindow):
                 computed_image = img
                 loop.quit()
 
-# ------------------------------------------------------------------------------
+        # ----------------------------------------------------------------------
 
             runnable = FractalRunnable(
                 self.ff, frac_area, current_il, dd_width, dd_height, cp, self
