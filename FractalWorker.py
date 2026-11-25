@@ -20,6 +20,7 @@ import copy
 import math
 import time
 
+import numpy as np
 
 from PySide6.QtCore import (
     QObject,
@@ -27,8 +28,7 @@ from PySide6.QtCore import (
     Slot
 )
 from PySide6.QtGui import (
-    QImage,
-    QColor
+    QImage
 )
 
 from Logging import Logging
@@ -78,6 +78,31 @@ class FractalWorker(QObject):
 
         self.log.exit("__init__")
 
+    def _colorize_escaped(self, pixels, escaped, escape_iterations, escape_values):
+        if not escaped.any():
+            return
+
+        values = np.sqrt(escape_values[escaped])
+        smoothed = (
+            escape_iterations[escaped] + 1
+            - np.log(np.log(values)) / math.log(2.0)
+        )
+        velocity = smoothed / 40.0
+
+        for pixel_channel, channel in enumerate(('R', 'G', 'B')):
+            brightness = self.cp[f'brightness{channel}']
+            contrast = self.cp[f'contrast{channel}']
+            frequency = self.cp[f'frequency{channel}']
+            phase = self.cp[f'phase{channel}']
+            raw_values = 255 * (
+                brightness
+                + contrast * np.cos(
+                    2.0 * math.pi * (frequency * velocity + phase)
+                )
+            )
+            colors = np.clip(np.trunc(raw_values), 0, 255).astype(np.uint8)
+            pixels[escaped, pixel_channel] = colors
+
     #
     # -----------------------------------------------
     # Calculate Julia set
@@ -89,111 +114,85 @@ class FractalWorker(QObject):
 
         self.log.entry("calculate_julia")
 
-        image = QImage(
-            self.draw_dim['width'],
-            self.draw_dim['height'],
-            QImage.Format.Format_RGB32
-        )
-        color = QColor()
+        width = self.draw_dim['width']
+        height = self.draw_dim['height']
+        pixels = np.empty((height, width, 4), dtype=np.uint8)
+        pixels[:, :, 0] = self.cp['bg_R']
+        pixels[:, :, 1] = self.cp['bg_G']
+        pixels[:, :, 2] = self.cp['bg_B']
+        pixels[:, :, 3] = 255
 
-        # Fill background with background color
-        image.fill(QColor(self.cp['bg_R'], self.cp['bg_G'], self.cp['bg_B']))
-
-        x = y = 0
-
-        x_step = self.frac_area['realWidth'] / self.draw_dim['width']
-        y_step = self.frac_area['imagHeight'] / self.draw_dim['height']
-
+        x_step = self.frac_area['realWidth'] / width
+        y_step = self.frac_area['imagHeight'] / height
         real_origin = self.frac_area['realOrigin']
         imag_origin = self.frac_area['imagOrigin']
-
-        val_lim_squared = 4.0
-
-        log_2  = math.log(2.0)
-        pi_x_2 = math.pi * 2
-
-        # Build local lookups
-        local_cos  = math.cos
-        local_log  = math.log
-        local_sqrt = math.sqrt
+        real_parts = real_origin + np.arange(width) * x_step
+        julia_real = self.julia_c.real
+        julia_imag = self.julia_c.imag
 
         calc_time = 0.0
 
-        for y in range(self.draw_dim['height']):
+        image = QImage(
+            pixels.data,
+            width,
+            height,
+            pixels.strides[0],
+            QImage.Format.Format_RGBA8888
+        )
+
+        for y in range(height):
 
             start_time = time.process_time()
 
             if not self.is_running:
-                # Boolean flag to stop the thread (initiated by the user)
                 self.log.write("Thread stopped by user.")
-                self.progress.emit(self.draw_dim['height'])
+                self.progress.emit(height)
                 self.log.exit("calculate_julia")
                 break
 
             imag_part = imag_origin + y * y_step
-
             self.line = []
+            z_real = real_parts.copy()
+            z_imag = np.full(width, imag_part, dtype=np.float64)
+            active = np.ones(width, dtype=bool)
+            escape_iterations = np.zeros(width, dtype=np.int32)
+            escape_values = np.zeros(width, dtype=np.float64)
 
-            for x in range(self.draw_dim['width']):
+            for iteration in range(self.iter_lim):
+                real_squared = z_real * z_real
+                imag_squared = z_imag * z_imag
+                next_real = real_squared - imag_squared + julia_real
+                next_imag = 2.0 * z_real * z_imag + julia_imag
+                magnitude_squared = next_real * next_real + next_imag * next_imag
 
-                real_part = real_origin + x * x_step
+                escaped = active & (magnitude_squared > 4.0)
+                escape_iterations[escaped] = iteration
+                escape_values[escaped] = magnitude_squared[escaped]
 
-                z = complex(real_part, imag_part)
-                loop = 0
-                value_squared = 0.0
+                np.copyto(z_real, next_real, where=active)
+                np.copyto(z_imag, next_imag, where=active)
+                active &= ~escaped
+                if not active.any():
+                    break
 
-                while loop < self.iter_lim:
-                    z = z * z + self.julia_c
-                    value_squared = z.real * z.real + z.imag * z.imag
-                    if value_squared > val_lim_squared:
-
-                        # Calculate color and smoothed color transfers.
-
-                        value = local_sqrt(value_squared)
-
-                        # Calculate smoothed iteration value
-                        try:
-                            smoothed = loop + 1 - local_log(local_log(value)) / log_2
-                        except ValueError:
-                            self.log.error(f"ValueError: loop,value={loop},{value}")
-                            smoothed = loop
-
-                        # Normed value between 0.0 and 1.0 (the higher value the
-                        # higher frequency of color change)
-                        velocity = smoothed / 40.0
-
-                        # Cosine Palette-Method
-                        rgb = {}
-                        for channel in ['R', 'G', 'B']:
-                            b = self.cp[f'brightness{channel}']
-                            c = self.cp[f'contrast{channel}']
-                            f = self.cp[f'frequency{channel}']
-                            p = self.cp[f'phase{channel}']
-
-                            # Calculate raw color value based on cosine palette
-                            # method.
-                            raw_val = int(255 * (b + c * local_cos(pi_x_2 * (f * velocity + p))))
-
-                            # Implement safeguard to ensure that the color value
-                            # is within the valid range of 0-255.
-                            clipped_val  = max(0, min(255, raw_val))
-                            rgb[channel] = clipped_val
-
-                        color.setRgb(rgb['R'], rgb['G'], rgb['B'])
-                        image.setPixelColor(x, y, color)
-
-                        break
-
-                    loop += 1
+            self._colorize_escaped(
+                pixels[y],
+                escape_values > 0.0,
+                escape_iterations,
+                escape_values
+            )
 
             calc_time = calc_time + time.process_time() - start_time
             self.progress.emit(y+1)
-            self.drawing.emit(image)
+            self.drawing.emit(image.copy())
 
         calc_time = calc_time + time.process_time() - start_time
 
         self.log.exit("calculate_julia")
-        self.finished.emit(image, calc_time)
+        self.finished.emit(
+            image.convertToFormat(QImage.Format.Format_RGB32),
+            calc_time
+        )
 
     #
     # -----------------------------------------------
@@ -205,113 +204,83 @@ class FractalWorker(QObject):
     def calculate_mandelbrot(self):
         self.log.entry("calculate_mandelbrot")
 
-        image = QImage(
-            self.draw_dim['width'],
-            self.draw_dim['height'],
-            QImage.Format.Format_RGB32
-        )
-        color = QColor()
+        width = self.draw_dim['width']
+        height = self.draw_dim['height']
+        pixels = np.empty((height, width, 4), dtype=np.uint8)
+        pixels[:, :, 0] = self.cp['bg_R']
+        pixels[:, :, 1] = self.cp['bg_G']
+        pixels[:, :, 2] = self.cp['bg_B']
+        pixels[:, :, 3] = 255
 
-        # Fill background with background color
-        image.fill(QColor(self.cp['bg_R'], self.cp['bg_G'], self.cp['bg_B']))
-
-        x = y = 0
-
-        x_step = self.frac_area['realWidth'] / self.draw_dim['width']
-        y_step = self.frac_area['imagHeight'] / self.draw_dim['height']
-
+        x_step = self.frac_area['realWidth'] / width
+        y_step = self.frac_area['imagHeight'] / height
         real_origin = self.frac_area['realOrigin']
         imag_origin = self.frac_area['imagOrigin']
-
-        val_lim_squared = 4.0
-
-        log_2  = math.log(2.0)
-        pi_x_2 = math.pi * 2
-
-        # Build local lookups
-        local_cos  = math.cos
-        local_log  = math.log
-        local_sqrt = math.sqrt
+        real_parts = real_origin + np.arange(width) * x_step
 
         calc_time = 0.0
 
-        for y in range(self.draw_dim['height']):
+        image = QImage(
+            pixels.data,
+            width,
+            height,
+            pixels.strides[0],
+            QImage.Format.Format_RGBA8888
+        )
 
+        for y in range(height):
             start_time = time.process_time()
 
             if not self.is_running:
-                # Boolean flag to stop the thread (initiated by the user)
                 self.log.write("Thread stopped by user.")
-                self.progress.emit(self.draw_dim['height'])
+                self.progress.emit(height)
                 self.log.exit("calculate_mandelbrot")
                 break
 
             imag_part = imag_origin + y * y_step
-
             self.line = []
+            z_real = np.zeros(width, dtype=np.float64)
+            z_imag = np.zeros(width, dtype=np.float64)
+            active = np.ones(width, dtype=bool)
+            escape_iterations = np.zeros(width, dtype=np.int32)
+            escape_values = np.zeros(width, dtype=np.float64)
 
-            for x in range(self.draw_dim['width']):
+            for iteration in range(self.iter_lim):
+                real_squared = z_real * z_real
+                imag_squared = z_imag * z_imag
+                next_real = real_squared - imag_squared + real_parts
+                next_imag = 2.0 * z_real * z_imag + imag_part
+                magnitude_squared = next_real * next_real + next_imag * next_imag
 
-                real_part = real_origin + x * x_step
+                escaped = active & (magnitude_squared > 4.0)
+                escape_iterations[escaped] = iteration
+                escape_values[escaped] = magnitude_squared[escaped]
 
-                c = complex(real_part, imag_part)
-                z = complex(0.0, 0.0)
-                loop = 0
-                value_squared = 0.0
+                np.copyto(z_real, next_real, where=active)
+                np.copyto(z_imag, next_imag, where=active)
+                active &= ~escaped
+                if not active.any():
+                    break
 
-                while loop < self.iter_lim:
-                    z = z * z + c
-                    value_squared = z.real * z.real + z.imag * z.imag
-                    if value_squared > val_lim_squared:
-
-                        # Calculate color and smoothed color transfers.
-
-                        value = local_sqrt(value_squared)
-
-                        # Calculate smoothed iteration value
-                        try:
-                            smoothed = loop + 1 - local_log(local_log(value)) / log_2
-                        except ValueError:
-                            self.log.error(f"ValueError: loop,value={loop},{value}")
-                            smoothed = loop
-
-                        # Normed value between 0.0 and 1.0 (the higher value the
-                        # higher frequency of color change)
-                        velocity = smoothed / 40.0
-
-                        # Cosine Palette-Method
-                        rgb = {}
-                        for channel in ['R', 'G', 'B']:
-                            b = self.cp[f'brightness{channel}']
-                            c = self.cp[f'contrast{channel}']
-                            f = self.cp[f'frequency{channel}']
-                            p = self.cp[f'phase{channel}']
-
-                            # Calculate raw color value based on cosine palette
-                            # method.
-                            raw_val = int(255 * (b + c * local_cos(pi_x_2 * (f * velocity + p))))
-
-                            # Implement safeguard to ensure that the color value
-                            # is within the valid range of 0-255.
-                            clipped_val  = max(0, min(255, raw_val))
-                            rgb[channel] = clipped_val
-
-                        color.setRgb(rgb['R'], rgb['G'], rgb['B'])
-                        image.setPixelColor(x, y, color)
-
-                        break
-
-                    loop += 1
+            self._colorize_escaped(
+                pixels[y],
+                escape_values > 0.0,
+                escape_iterations,
+                escape_values
+            )
 
             calc_time = calc_time + time.process_time() - start_time
             self.progress.emit(y+1)
-            self.drawing.emit(image)
+            self.drawing.emit(image.copy())
 
         calc_time = calc_time + time.process_time() - start_time
 
-        self.log.exit("calculate_julia")
+        self.log.exit("calculate_mandelbrot")
 
-        self.finished.emit(image, calc_time)
+        self.finished.emit(
+            image.convertToFormat(QImage.Format.Format_RGB32),
+            calc_time
+        )
     #
     # -----------------------------------------------
     # Super widget informs the worker that calculation has to be stopped

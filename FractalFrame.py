@@ -19,8 +19,10 @@
 import copy
 import math
 
+import numpy as np
+
 from PySide6.QtCore import QObject
-from PySide6.QtGui import QImage, QColor
+from PySide6.QtGui import QImage
 
 from Logging import Logging
 
@@ -52,98 +54,88 @@ class FractalFrame(QObject):
 
         frac_area = copy.copy(frac_area)
 
-        image = QImage(dd_width, dd_height, QImage.Format.Format_RGB32)
-        color = QColor()
-
-        # Fill background with background color
-        image.fill(QColor(cp['bg_R'], cp['bg_G'], cp['bg_B']))
-
-        x = y = 0
-
         x_step = frac_area['realWidth'] / dd_width
         y_step = frac_area['imagHeight'] / dd_height
-
         real_origin = frac_area['realOrigin']
         imag_origin = frac_area['imagOrigin']
 
-        val_lim_squared = 4.0
+        pixels = np.empty((dd_height, dd_width, 4), dtype=np.uint8)
+        pixels[:, :, 0] = cp['bg_R']
+        pixels[:, :, 1] = cp['bg_G']
+        pixels[:, :, 2] = cp['bg_B']
+        pixels[:, :, 3] = 255
 
-        log_2  = math.log(2.0)
-        pi_x_2 = math.pi * 2
+        real_parts = real_origin + np.arange(dd_width) * x_step
+        rows_per_chunk = min(16, dd_height)
 
-        # Build local lookups
-        local_cos  = math.cos
-        local_log  = math.log
-        local_sqrt = math.sqrt
-
-        for y in range(dd_height):
-
+        for row_start in range(0, dd_height, rows_per_chunk):
             if not self.is_running:
-                # Boolean flag to stop the thread (initiated by the user)
                 self.log.write("Thread stopped by user.")
-                self.progress.emit(self.draw_dim['height'])
-                self.log.exit("calculate_mandelbrot")
                 break
 
-            imag_part = imag_origin + y * y_step
+            row_end = min(row_start + rows_per_chunk, dd_height)
+            imag_parts = (
+                imag_origin + np.arange(row_start, row_end) * y_step
+            )[:, np.newaxis]
+            shape = (row_end - row_start, dd_width)
 
-            for x in range(dd_width):
+            z_real = np.zeros(shape, dtype=np.float64)
+            z_imag = np.zeros(shape, dtype=np.float64)
+            active = np.ones(shape, dtype=bool)
+            escape_iterations = np.zeros(shape, dtype=np.int32)
+            escape_values = np.zeros(shape, dtype=np.float64)
 
-                real_part = real_origin + x * x_step
+            for iteration in range(iter_lim):
+                real_squared = z_real * z_real
+                imag_squared = z_imag * z_imag
+                next_real = real_squared - imag_squared + real_parts
+                next_imag = 2.0 * z_real * z_imag + imag_parts
+                magnitude_squared = next_real * next_real + next_imag * next_imag
 
-                c = complex(real_part, imag_part)
-                z = complex(0.0, 0.0)
+                escaped = active & (magnitude_squared > 4.0)
+                escape_iterations[escaped] = iteration
+                escape_values[escaped] = magnitude_squared[escaped]
 
-                loop = 0
-                value_squared = 0.0
+                np.copyto(z_real, next_real, where=active)
+                np.copyto(z_imag, next_imag, where=active)
+                active &= ~escaped
+                if not active.any():
+                    break
 
-                while loop < iter_lim:
-                    z = z * z + c
-                    value_squared = z.real * z.real + z.imag * z.imag
-                    if value_squared > val_lim_squared:
+            escaped = escape_values > 0.0
+            if escaped.any():
+                values = np.sqrt(escape_values[escaped])
+                smoothed = (
+                    escape_iterations[escaped] + 1
+                    - np.log(np.log(values)) / math.log(2.0)
+                )
+                velocity = smoothed / 40.0
 
-                        # Calculate color and smoothed color transfers.
-
-                        value = local_sqrt(value_squared)
-
-                        # Calculate smoothed iteration value
-                        try:
-                            smoothed = loop + 1 - local_log(local_log(value)) / log_2
-                        except ValueError:
-                            self.log.error(f"ValueError: loop,value={loop},{value}")
-                            smoothed = loop
-
-                        # Normed value between 0.0 and 1.0 (the higher value the
-                        # higher frequency of color change)
-                        velocity = smoothed / 40.0
-
-                        # Cosine Palette-Method
-                        rgb = {}
-                        for channel in ['R', 'G', 'B']:
-                            b = cp[f'brightness{channel}']
-                            c = cp[f'contrast{channel}']
-                            f = cp[f'frequency{channel}']
-                            p = cp[f'phase{channel}']
-
-                            # Calculate raw color value based on cosine palette
-                            # method.
-                            raw_val = int(255 * (b + c * local_cos(pi_x_2 * (f * velocity + p))))
-
-                            # Implement safeguard to ensure that the color value
-                            # is within the valid range of 0-255.
-                            clipped_val  = max(0, min(255, raw_val))
-                            rgb[channel] = clipped_val
-
-                        color.setRgb(rgb['R'], rgb['G'], rgb['B'])
-                        image.setPixelColor(x, y, color)
-
-                        break
-
-                    loop += 1
+                for channel, pixel_channel in zip(('R', 'G', 'B'), range(3)):
+                    brightness = cp[f'brightness{channel}']
+                    contrast = cp[f'contrast{channel}']
+                    frequency = cp[f'frequency{channel}']
+                    phase = cp[f'phase{channel}']
+                    raw_values = 255 * (
+                        brightness
+                        + contrast * np.cos(
+                            2.0 * math.pi * (frequency * velocity + phase)
+                        )
+                    )
+                    colors = np.clip(np.trunc(raw_values), 0, 255).astype(np.uint8)
+                    chunk = pixels[row_start:row_end, :, pixel_channel]
+                    chunk[escaped] = colors
 
         self.log.exit("mandelbrot_frame")
 
-        return image
+        image = QImage(
+            pixels.data,
+            dd_width,
+            dd_height,
+            pixels.strides[0],
+            QImage.Format.Format_RGBA8888
+        )
+        return image.convertToFormat(QImage.Format.Format_RGB32)
 
     #
     # -----------------------------------------------

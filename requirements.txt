@@ -1,3 +1,4 @@
 opencv-python
+numpy
 platformdirs
 PySide6
