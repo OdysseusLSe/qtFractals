@@ -361,8 +361,7 @@ class MainWindow(QMainWindow):
         ci_start = imag_part[0] + height[0] / 2
         ci_end   = imag_part[1] + height[1] / 2
 
-        # calculate steps between pics
-
+        # Calculate steps between pics
         zoom_in = width[0] > width[1]
         num_of_frames = fps * sec
         ease_data = []
@@ -1654,12 +1653,28 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.debug == 0:
+
         print("No debug information!")
         pylog.basicConfig(level=pylog.ERROR)
+
     else:
-        print(f"Debug information is written in '{APP_NAME}-{APP_VERSION}.log'")
+
+        log_dir = user_cache_dir(APP_NAME, "OdysseusLSe")
+        print(f"Directory for log: {log_dir}")
+
+        dir_path = Path(log_dir)
+        try:
+            dir_path.mkdir(exist_ok=True, parents=True)
+        except BaseException as error:
+            print(f"Directory for log: ({error})!")
+
+        # Define compression and file name for rendering
+        log_file = f"{APP_NAME}-{APP_VERSION}.log"
+        log_full_path = dir_path.joinpath(log_file)
+
+        print(f"Debug information is written in '{log_file}'")
         pylog.basicConfig(
-            filename=f"{APP_NAME}-{APP_VERSION}.log",
+            filename=log_full_path,
             filemode="w",
             level=pylog.DEBUG,
             style="{",
