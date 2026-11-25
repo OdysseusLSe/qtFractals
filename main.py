@@ -22,12 +22,12 @@ import argparse
 import cv2
 import copy
 import platform
-import pprint
 import sys
 import time
 
 import logging as pylog
 import numpy as np
+import pprint as pp
 
 from pathlib import Path
 from platformdirs import user_cache_dir
@@ -87,7 +87,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.2"
+APP_VERSION = "1.3"
 APP_L_ICON  = ""
 APP_M_ICON  = ":/ui/icon.icns"
 APP_W_ICON  = ":/ui/icon.ico"
@@ -148,8 +148,7 @@ class MainWindow(QMainWindow):
         self.history_list = []
         self.fh = FractalHistory(APP_NAME, "history.json")
         self.history_list = self.fh.load_history()
-        log_string = pprint.pformat(self.history_list)
-        self.log.write(f"self.history_list=\n{log_string}")
+        self.log.write(f"self.history_list=\n{pp.pformat(self.history_list)}")
 
         user_cp_list = []
         for item in self.history_list:
@@ -159,7 +158,7 @@ class MainWindow(QMainWindow):
                 if cp_name not in user_cp_list:
                     self.cp_list.append(item['col_pal'])
                     user_cp_list.append(cp_name)
-                    log_string = pprint.pformat(self.cp_list)
+                    log_string = pp.pformat(self.cp_list)
                     self.log.write(f"self.cp_list=\n{log_string}")
                     self.cp_combo.addItem(cp_name)
 
@@ -260,11 +259,11 @@ class MainWindow(QMainWindow):
         thumbnail_name = f"{time.time()}.png"
 
         new_history_element = self.fw.build_history_element(thumbnail_name, calc_time)
-        log_string = pprint.pformat(new_history_element)
+        log_string = pp.pformat(new_history_element)
         self.log.write(f"new_history_element=\n{log_string}")
 
         self.history_list.append(new_history_element)
-        log_string = pprint.pformat(self.history_list)
+        log_string = pp.pformat(self.history_list)
         self.log.write(f"self.history_list=\n{log_string}")
         self.fh.save_history(self.history_list, thumbnail, thumbnail_name)
 
@@ -290,7 +289,7 @@ class MainWindow(QMainWindow):
             for element in self.cp_list:
                 if text == element['name']:
                     self.cp = element
-            self.log.write(f"self.cp={self.cp}")
+            self.log.write(f"self.cp=\n{pp.pformat(self.cp)}")
             self.fw.set_parameters(
                 self.frac_area,
                 self.draw_dim,
@@ -635,7 +634,7 @@ class MainWindow(QMainWindow):
     #
 
     def load_color_palettes(self):
-        self.log.entry("load_color_palettes")
+        self.log.entry("load_color_palettes()")
 
         self.cp_list = []
         file = QFile(":/ui/color_palettes.json")
@@ -650,16 +649,16 @@ class MainWindow(QMainWindow):
                 f"Loading color palettes: {file.errorString()}!",
                 True
             )
-            self.log.write("load_color_palettes")
+            self.log.exit("load_color_palettes")
             return None
 
         # Filter default color palette
         for cp in self.cp_list:
             if cp['name'] == "Fire & Ice":
-                self.log.write("load_color_palettes")
+                self.log.exit("load_color_palettes")
                 return cp
 
-        self.log.write("load_color_palettes")
+        self.log.exit("load_color_palettes")
         return None
 
     #
@@ -791,8 +790,7 @@ class MainWindow(QMainWindow):
             self.cp['bg_G'] = G
             self.cp['bg_B'] = B
             self.cp_list.append(self.cp)
-            log_string = pprint.pformat(self.cp_list)
-            self.log.write(f"self.cp_list=\n{log_string}")
+            self.log.write(f"self.cp_list=\n{pp.pformat(self.cp_list)}")
             self.cp_combo.addItem(self.cp['name'])
             self.is_new_cp = True
             self.cp_combo.setCurrentText(self.cp['name'])
@@ -1174,7 +1172,7 @@ class MainWindow(QMainWindow):
     #
 
     def set_default_values(self):
-        self.log.entry("set_default_values")
+        self.log.entry("set_default_values()")
 
         self.cache_dir = user_cache_dir(APP_NAME, "OdysseusLSe")
 
@@ -1218,9 +1216,9 @@ class MainWindow(QMainWindow):
 
         # Default color palette
         self.cp = copy.copy(self.load_color_palettes())
-        self.log.write(f"self.cp={self.cp}")
+        self.log.write(f"self.cp=\n{pp.pformat(self.cp)}")
 
-        self.log.write("set_default_values")
+        self.log.exit("set_default_values")
 
     #
     # -----------------------------------------------
@@ -1668,7 +1666,6 @@ if __name__ == "__main__":
         except BaseException as error:
             print(f"Directory for log: ({error})!")
 
-        # Define compression and file name for rendering
         log_file = f"{APP_NAME}-{APP_VERSION}.log"
         log_full_path = dir_path.joinpath(log_file)
 

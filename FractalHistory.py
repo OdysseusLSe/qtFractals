@@ -17,8 +17,9 @@
 #
 
 import json
-import pprint
 import time
+
+import pprint as pp
 
 from pathlib import Path
 from platformdirs import user_data_dir, user_config_dir, user_cache_dir
@@ -169,6 +170,8 @@ class FractalHistory():
         except BaseException as error:
             self.log.warning(f"Warning ({error}) with reading history!")
 
+        self.log.write(f"history_data=\n{pp.pformat(history_data)}")
+
         self.log.exit("load_history")
         return history_data
 
@@ -186,7 +189,7 @@ class FractalHistory():
     def save_history(self, history_data, thumbnail=None, thumbnail_name=None):
         self.log.entry("save_history(history_data, thumbnail=None, thumbnail_name=None)")
 
-        self.log.write(f"history_data={history_data}")
+        self.log.write(f"history_data=\n{pp.pformat(history_data)}")
 
         if thumbnail is not None:
             tn_path_name = self.dir.joinpath(thumbnail_name)
@@ -215,8 +218,7 @@ class FractalHistory():
     def show_history_list(self, history_data):
         self.log.entry("show_history_list(history_data)")
 
-        log_string = pprint.pformat(history_data)
-        self.log.write(f"history_data=\n{log_string}")
+        self.log.write(f"history_data=\n{pp.pformat(history_data)}")
 
         self.repeat_item = False
         self.item_to_repeat = -1

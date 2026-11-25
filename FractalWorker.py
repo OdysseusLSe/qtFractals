@@ -21,6 +21,7 @@ import math
 import time
 
 import numpy as np
+import pprint as pp
 
 from PySide6.QtCore import (
     QObject,
@@ -69,7 +70,7 @@ class FractalWorker(QObject):
         self.log.write("self.frac_area=" + str(self.frac_area))
         self.log.write("self.draw_dim=" + str(self.draw_dim))
         self.log.write("self.iter_lim=" + str(self.iter_lim))
-        self.log.write("self.cp=" + str(self.cp))
+        self.log.write(f"self.cp=\n{pp.pformat(self.cp)}")
         self.log.write("self.julia_c=" + str(self.julia_c))
 
         self.is_running = True
@@ -78,16 +79,17 @@ class FractalWorker(QObject):
 
         self.log.exit("__init__")
 
-    def _colorize_escaped(self, pixels, escaped, escape_iterations, escape_values):
-        self.log.entry("_colorize_escaped(pixels, escaped, escape_iterations, escape_values)")
+    def _colorize_escaped(self, pixels, escaped, esc_iter, esc_val):
+        self.log.entry("_colorize_escaped(pixels, escaped, esc_iter, esc_val)")
 
         if not escaped.any():
+            self.log.write("not escaped.any()")
             self.log.exit("_colorize_escaped")
             return
 
-        values = np.sqrt(escape_values[escaped])
+        values = np.sqrt(esc_val[escaped])
         smoothed = (
-            escape_iterations[escaped] + 1
+            esc_iter[escaped] + 1
             - np.log(np.log(values)) / math.log(2.0)
         )
         velocity = smoothed / 40.0

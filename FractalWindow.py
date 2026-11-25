@@ -19,6 +19,8 @@
 import copy
 import random
 
+import pprint as pp
+
 from PySide6.QtCore import (
     QPoint,
     QRect,
@@ -625,8 +627,10 @@ class FractalWindow(QMainWindow):
     #
 
     def start_calculation(self):
-        self.log.entry("start_calculation")
-        self.log.write(str(self.frac_area)+","+str(self.draw_dim))
+        self.log.entry("start_calculation()")
+
+        self.log.write(f"self.frac_area={pp.pformat(self.frac_area)}")
+        self.log.write(f"self.draw_dim={pp.pformat(self.draw_dim)}")
 
         # Check if a thread is already running
         if hasattr(self, 'thread') and self.thread is not None and self.thread.isRunning():
@@ -668,6 +672,7 @@ class FractalWindow(QMainWindow):
 
         log_string = f"self.thread.isRunning()={self.thread.isRunning()}"
         self.log.write(log_string)
+
         self.log.exit("start_calculation")
 
     #
