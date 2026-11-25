@@ -79,7 +79,10 @@ class FractalWorker(QObject):
         self.log.exit("__init__")
 
     def _colorize_escaped(self, pixels, escaped, escape_iterations, escape_values):
+        self.log.entry("_colorize_escaped(pixels, escaped, escape_iterations, escape_values)")
+
         if not escaped.any():
+            self.log.exit("_colorize_escaped")
             return
 
         values = np.sqrt(escape_values[escaped])
@@ -103,6 +106,8 @@ class FractalWorker(QObject):
             colors = np.clip(np.trunc(raw_values), 0, 255).astype(np.uint8)
             pixels[escaped, pixel_channel] = colors
 
+        self.log.exit("_colorize_escaped")
+
     #
     # -----------------------------------------------
     # Calculate Julia set
@@ -111,10 +116,9 @@ class FractalWorker(QObject):
 
     @Slot()
     def calculate_julia(self):
+        self.log.entry("calculate_julia()")
 
-        self.log.entry("calculate_julia")
-
-        width = self.draw_dim['width']
+        width  = self.draw_dim['width']
         height = self.draw_dim['height']
         pixels = np.empty((height, width, 4), dtype=np.uint8)
         pixels[:, :, 0] = self.cp['bg_R']
@@ -122,13 +126,13 @@ class FractalWorker(QObject):
         pixels[:, :, 2] = self.cp['bg_B']
         pixels[:, :, 3] = 255
 
-        x_step = self.frac_area['realWidth'] / width
-        y_step = self.frac_area['imagHeight'] / height
+        x_step      = self.frac_area['realWidth']  / width
+        y_step      = self.frac_area['imagHeight'] / height
         real_origin = self.frac_area['realOrigin']
         imag_origin = self.frac_area['imagOrigin']
-        real_parts = real_origin + np.arange(width) * x_step
-        julia_real = self.julia_c.real
-        julia_imag = self.julia_c.imag
+        real_parts  = real_origin + np.arange(width) * x_step
+        julia_real  = self.julia_c.real
+        julia_imag  = self.julia_c.imag
 
         calc_time = 0.0
 
@@ -184,15 +188,12 @@ class FractalWorker(QObject):
 
             calc_time = calc_time + time.process_time() - start_time
             self.progress.emit(y+1)
-            self.drawing.emit(image.copy())
+            self.drawing.emit(image)
 
         calc_time = calc_time + time.process_time() - start_time
 
         self.log.exit("calculate_julia")
-        self.finished.emit(
-            image.convertToFormat(QImage.Format.Format_RGB32),
-            calc_time
-        )
+        self.finished.emit(image, calc_time)
 
     #
     # -----------------------------------------------
@@ -202,9 +203,9 @@ class FractalWorker(QObject):
 
     @Slot()
     def calculate_mandelbrot(self):
-        self.log.entry("calculate_mandelbrot")
+        self.log.entry("calculate_mandelbrot()")
 
-        width = self.draw_dim['width']
+        width  = self.draw_dim['width']
         height = self.draw_dim['height']
         pixels = np.empty((height, width, 4), dtype=np.uint8)
         pixels[:, :, 0] = self.cp['bg_R']
@@ -212,11 +213,11 @@ class FractalWorker(QObject):
         pixels[:, :, 2] = self.cp['bg_B']
         pixels[:, :, 3] = 255
 
-        x_step = self.frac_area['realWidth'] / width
-        y_step = self.frac_area['imagHeight'] / height
+        x_step      = self.frac_area['realWidth']  / width
+        y_step      = self.frac_area['imagHeight'] / height
         real_origin = self.frac_area['realOrigin']
         imag_origin = self.frac_area['imagOrigin']
-        real_parts = real_origin + np.arange(width) * x_step
+        real_parts  = real_origin + np.arange(width) * x_step
 
         calc_time = 0.0
 
@@ -271,16 +272,12 @@ class FractalWorker(QObject):
 
             calc_time = calc_time + time.process_time() - start_time
             self.progress.emit(y+1)
-            self.drawing.emit(image.copy())
+            self.drawing.emit(image)
 
         calc_time = calc_time + time.process_time() - start_time
 
         self.log.exit("calculate_mandelbrot")
-
-        self.finished.emit(
-            image.convertToFormat(QImage.Format.Format_RGB32),
-            calc_time
-        )
+        self.finished.emit(image, calc_time)
     #
     # -----------------------------------------------
     # Super widget informs the worker that calculation has to be stopped

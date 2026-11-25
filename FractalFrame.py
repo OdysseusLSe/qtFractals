@@ -135,7 +135,7 @@ class FractalFrame(QObject):
             pixels.strides[0],
             QImage.Format.Format_RGBA8888
         )
-        return image.convertToFormat(QImage.Format.Format_RGB32)
+        return image
 
     #
     # -----------------------------------------------

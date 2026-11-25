@@ -188,7 +188,7 @@ class FractalWindow(QMainWindow):
     #
 
     def calculation_finished(self, image, calc_time):
-        self.log.entry("calculation_finished")
+        self.log.entry(f"calculation_finished({image},{calc_time})")
 
         if image.isNull():
             self.log.error("Missing image!")
@@ -208,7 +208,7 @@ class FractalWindow(QMainWindow):
                 sw,
                 sh,
                 Qt.KeepAspectRatio,
-                Qt.TransformationMode.FastTransformation
+                Qt.TransformationMode.SmoothTransformation
             )
         else:
             self.image = image
@@ -536,7 +536,7 @@ class FractalWindow(QMainWindow):
     #
 
     def realtime_update(self, image):
-        self.log.entry("realtime_update")
+        self.log.entry(f"realtime_update(image={image})")
 
         if image.isNull():
             self.log.error("Missing image!")
@@ -554,7 +554,7 @@ class FractalWindow(QMainWindow):
                 sw,
                 sh,
                 Qt.KeepAspectRatio,
-                Qt.TransformationMode.FastTransformation
+                Qt.TransformationMode.SmoothTransformation
             )
         else:
             self.image = image
@@ -568,7 +568,7 @@ class FractalWindow(QMainWindow):
     #
 
     def resizeEvent(self, event: QResizeEvent):
-        self.log.entry("resizeEvent")
+        self.log.entry("resizeEvent(event: QResizeEvent)")
 
         super().resizeEvent(event)
 
