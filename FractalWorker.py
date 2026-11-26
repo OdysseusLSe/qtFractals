@@ -153,6 +153,7 @@ class FractalWorker(QObject):
             pixels.strides[0],
             QImage.Format.Format_RGBA8888
         )
+        last_percent = -1
 
         for y in range(height):
 
@@ -197,8 +198,12 @@ class FractalWorker(QObject):
             )
 
             calc_time = calc_time + time.process_time() - start_time
-            self.progress.emit(y+1)
-            self.drawing.emit(image.copy)
+
+            percent = int((y + 1) / height * 100)
+            if percent != last_percent:
+                last_percent = percent
+                self.progress.emit(y + 1)
+                self.drawing.emit(image.copy())
 
         calc_time = calc_time + time.process_time() - start_time
 
@@ -283,8 +288,12 @@ class FractalWorker(QObject):
             )
 
             calc_time = calc_time + time.process_time() - start_time
-            self.progress.emit(y+1)
-            self.drawing.emit(image.copy)
+
+            percent = int((y + 1) / height * 100)
+            if percent != last_percent:
+                last_percent = percent
+                self.progress.emit(y + 1)
+                self.drawing.emit(image.copy())
 
         calc_time = calc_time + time.process_time() - start_time
 
