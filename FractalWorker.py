@@ -87,6 +87,8 @@ class FractalWorker(QObject):
             self.log.exit("_colorize_escaped")
             return
 
+        # Normed value between 0.0 and 1.0
+        # (the higher value = the higher frequency of color change)
         values = np.sqrt(esc_val[escaped])
         smoothed = (
             esc_iter[escaped] + 1
@@ -94,16 +96,22 @@ class FractalWorker(QObject):
         )
         velocity = smoothed / 40.0
 
+        #
+        # Cosine Palette-Method
+        # (based on Inigo Quilez, phase value defines time shifted increase
+        # of r,g,b):
+        # color = brightness + contrast
+        #         * math.cos(2 * math.pi * (frequency * velocity + phase))
+        #
+
         for pixel_channel, channel in enumerate(('R', 'G', 'B')):
             brightness = self.cp[f'brightness{channel}']
-            contrast = self.cp[f'contrast{channel}']
-            frequency = self.cp[f'frequency{channel}']
-            phase = self.cp[f'phase{channel}']
+            contrast   = self.cp[f'contrast{channel}']
+            frequency  = self.cp[f'frequency{channel}']
+            phase      = self.cp[f'phase{channel}']
             raw_values = 255 * (
-                brightness
-                + contrast * np.cos(
-                    2.0 * math.pi * (frequency * velocity + phase)
-                )
+                brightness + contrast
+                * np.cos(2.0 * math.pi * (frequency * velocity + phase))
             )
             colors = np.clip(np.trunc(raw_values), 0, 255).astype(np.uint8)
             pixels[escaped, pixel_channel] = colors
@@ -190,7 +198,7 @@ class FractalWorker(QObject):
 
             calc_time = calc_time + time.process_time() - start_time
             self.progress.emit(y+1)
-            self.drawing.emit(image)
+            self.drawing.emit(image.copy)
 
         calc_time = calc_time + time.process_time() - start_time
 
@@ -274,12 +282,13 @@ class FractalWorker(QObject):
 
             calc_time = calc_time + time.process_time() - start_time
             self.progress.emit(y+1)
-            self.drawing.emit(image)
+            self.drawing.emit(image.copy)
 
         calc_time = calc_time + time.process_time() - start_time
 
         self.log.exit("calculate_mandelbrot")
         self.finished.emit(image, calc_time)
+
     #
     # -----------------------------------------------
     # Super widget informs the worker that calculation has to be stopped

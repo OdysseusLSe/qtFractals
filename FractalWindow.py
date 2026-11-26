@@ -83,6 +83,8 @@ class FractalWindow(QMainWindow):
         # Scaling factor in case calculated image is bigger than the window.
         self.scaling_factor = 1.00
 
+        self.update_window_title()
+
         # First resize event should be ignored.
         self.starting = True
 
@@ -128,7 +130,8 @@ class FractalWindow(QMainWindow):
     #
 
     def build_history_element(self, thumbnail_name, calc_time):
-        self.log.entry("build_history_element")
+        params = f"thumbnail_name={thumbnail_name},calc_time={calc_time}"
+        self.log.entry(f"build_history_element({params})")
 
         history_element = {
             'frac_area'    : self.frac_area,
@@ -152,15 +155,14 @@ class FractalWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    # Calculate selection on fractal base
-
     def calculate_selected_area(self, rect):
-        self.log.entry("calculate_selected_area")
-        self.log.write("frac_area=" + str(self.frac_area))
+        self.log.entry(f"calculate_selected_area(rect={rect})")
 
         # Check if selected area is to small
         if rect.width() < 5 or rect.height() < 5:
             return False
+
+        self.log.write(f"frac_area={self.frac_area}")
 
         # Size of the pixel in the complex plane
         xStep = self.frac_area['realWidth'] / self.draw_dim['width']
@@ -180,7 +182,7 @@ class FractalWindow(QMainWindow):
             'realWidth'  : real_width,
             'imagHeight' : imag_height
         }
-        self.log.write("self.calc_area=" + str(self.calc_area))
+        self.log.write(f"self.calc_area={self.calc_area}")
 
         self.log.exit("calculate_selected_area")
         return True
@@ -190,7 +192,7 @@ class FractalWindow(QMainWindow):
     #
 
     def calculation_finished(self, image, calc_time):
-        self.log.entry(f"calculation_finished({image},{calc_time})")
+        self.log.entry(f"calculation_finished(image,{calc_time})")
 
         if image.isNull():
             self.log.error("Missing image!")
@@ -205,19 +207,17 @@ class FractalWindow(QMainWindow):
         sh = self.height()
         self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}")
 
-        if iw > sw or ih > sh:
-            self.image = image.scaled(
-                sw,
-                sh,
-                Qt.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation
-            )
-        else:
-            self.image = image
+        self.image = image.scaled(
+            sw,
+            sh,
+            Qt.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
 
         self.scaling_factor = self.image_2_save.width() / self.image.width()
         self.log.write(f"self.scaling_factor={self.scaling_factor}")
 
+        self.update_window_title()
         self.update()
 
         # Create thumbnail of the image for history
@@ -234,16 +234,16 @@ class FractalWindow(QMainWindow):
     #
 
     def define_julia_parameter(self):
-        self.log.entry("define_julia_parameter")
+        self.log.entry("define_julia_parameter()")
 
         x = self.sel_point.x()
         y = self.sel_point.y()
-        self.log.write("x=" + str(x) + " / y=" + str(y))
+        self.log.write(f"x,y={x},{y}")
 
         x = self.frac_area['realOrigin'] + x * self.frac_area['realWidth'] / self.draw_dim['width']
         y = self.frac_area['imagOrigin'] + y * self.frac_area['imagHeight'] / self.draw_dim['height']
         self.julia_c = complex(x, y)
-        self.log.write("self.julia_c=(" + str(x) + "," + str(y) + ")")
+        self.log.write(f"self.julia_c={self.julia_c}")
 
         self.log.exit("define_julia_parameter")
 
@@ -252,7 +252,7 @@ class FractalWindow(QMainWindow):
     #
 
     def get_image(self):
-        self.log.entry("get_image")
+        self.log.entry("get_image()")
 
         if self.image_2_save.isNull():
             self.log.error("Missing image!")
@@ -267,10 +267,9 @@ class FractalWindow(QMainWindow):
     #
 
     def get_parameters(self):
-        self.log.entry("get_parameters")
+        self.log.entry("get_parameters()")
 
         self.log.exit("get_parameters")
-
         return self.frac_area, self.draw_dim, self.iter_lim, self.frac_set, self.julia_c
 
     #
@@ -280,7 +279,7 @@ class FractalWindow(QMainWindow):
     # Auswahlquadrat erzeugen
 
     def get_selection_rect(self):
-        self.log.entry("get_selection_rect")
+        self.log.entry("get_selection_rect()")
 
         x1, y1 = self.sel_start.x(), self.sel_start.y()
         x2, y2 = self.sel_end.x(), self.sel_end.y()
@@ -463,11 +462,13 @@ class FractalWindow(QMainWindow):
         self.log.exit("mouseReleaseEvent")
 
     #
+    # -----------------------------------------------
     # Paint calculated image (called by default)
+    # -----------------------------------------------
     #
 
     def paintEvent(self, event):
-        self.log.entry("paintEvent")
+        self.log.entry(f"paintEvent(event={event})")
 
         if self.image.isNull():
             self.log.error("Missing image!")
@@ -520,6 +521,7 @@ class FractalWindow(QMainWindow):
             self.coord_label.setText(
                 f"Real: {ro}, Imag: {io}<br>Width: {rw}, Height: {ih}"
             )
+            self.log.write(f"ro,io,rw,ih={ro},{io},{rw},{ih}")
             self.coord_label.adjustSize()
             lbl_x = rect.x()
             lbl_y = rect.y() - self.coord_label.height() - 5
@@ -538,12 +540,14 @@ class FractalWindow(QMainWindow):
     #
 
     def realtime_update(self, image):
-        self.log.entry(f"realtime_update(image={image})")
+        self.log.entry("realtime_update(image)")
 
         if image.isNull():
             self.log.error("Missing image!")
             self.log.exit("realtime_update")
             return
+
+        self.image_2_save = image
 
         iw = image.width()
         ih = image.height()
@@ -551,16 +555,17 @@ class FractalWindow(QMainWindow):
         sh = self.height()
         self.log.write(f"iw,ih,ww,wh={iw},{ih},{sw},{sh}")
 
-        if iw > sw or ih > sh:
-            self.image = image.scaled(
-                sw,
-                sh,
-                Qt.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation
-            )
-        else:
-            self.image = image
+        self.image = image.scaled(
+            sw,
+            sh,
+            Qt.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
 
+        self.scaling_factor = self.image_2_save.width() / self.image.width()
+        self.log.write(f"self.scaling_factor={self.scaling_factor}")
+
+        self.update_window_title()
         self.update()
 
         self.log.exit("realtime_update")
@@ -585,22 +590,19 @@ class FractalWindow(QMainWindow):
         ih = image.height()
         sw = self.width()
         sh = self.height()
-        sh = self.height()
         self.log.write(f"iw,ih,sw,sh={iw},{ih},{sw},{sh}")
 
-        if iw > sw or ih > sh:
-            self.image = image.scaled(
-                sw,
-                sh,
-                Qt.KeepAspectRatio,
-                Qt.TransformationMode.FastTransformation
-            )
-        else:
-            self.image = image
+        self.image = image.scaled(
+            sw,
+            sh,
+            Qt.KeepAspectRatio,
+            Qt.TransformationMode.FastTransformation
+        )
 
         self.scaling_factor = self.image_2_save.width() / self.image.width()
         self.log.write(f"self.scaling_factor={self.scaling_factor}")
 
+        self.update_window_title()
         self.update()
 
         self.log.exit("resizeEvent")
@@ -663,6 +665,7 @@ class FractalWindow(QMainWindow):
         self.thread.finished.connect(self.thread_finished)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.progress.connect(self.progress.emit)
+        self.worker.progress.connect(self.update_progress)
         self.worker.drawing.connect(self.realtime_update)
         self.worker.finished.connect(self.calculation_finished)
         self.worker.finished.connect(self.thread.quit)
@@ -701,3 +704,39 @@ class FractalWindow(QMainWindow):
         self.thread = None
 
         self.log.exit("thread_finished")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def update_progress(self, value):
+        self.log.entry(f"update_progress(value={value})")
+
+        percent = int(value / self.draw_dim['height'] * 100)
+        self.update_window_title(percent)
+
+        self.log.exit("update_progress")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def update_window_title(self, value=100):
+        self.log.entry(f"update_window_title(value={value})")
+
+        ro = self.frac_area['realOrigin']
+        io = self.frac_area['imagOrigin']
+        rw = self.frac_area['realWidth']
+        ih = self.frac_area['imagHeight']
+
+        w = self.draw_dim['width']
+        h = self.draw_dim['height']
+
+        window_title = "qtFractals"
+        area = f"Origin: {ro},{io} || Size: {rw}x{ih}"
+        area += f" || Resolution: {w}x{h}"
+        area += f" || Scaling: 1:{self.scaling_factor:.2f}"
+        area += f" || Progress: {value}%"
+        self.window().setWindowTitle(f"{window_title} [{area}]")
+
+        self.log.exit("update_window_title")

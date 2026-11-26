@@ -251,7 +251,7 @@ class MainWindow(QMainWindow):
     #
 
     def calculation_closing(self, thumbnail, calc_time):
-        self.log.entry("calculation_closing")
+        self.log.entry(f"calculation_closing(thumbnail,calc_time={calc_time})")
 
         status = f"Process time: {calc_time} seconds"
         self.status_lbl.setText(status)
@@ -644,12 +644,11 @@ class MainWindow(QMainWindow):
             json_doc = QJsonDocument.fromJson(cp_file_data)
             self.cp_list = json_doc.toVariant()
         else:
-            self.log.error(
-                f"Loading color palettes: {file.errorString()}!",
-                True
-            )
+            self.log.error(f"Loading color palettes: {file.errorString()}!")
             self.log.exit("load_color_palettes")
             return None
+
+        self.log.write(f"self.cp_list=\n{pp.pformat(self.cp_list)}")
 
         # Filter default color palette
         for cp in self.cp_list:
@@ -830,7 +829,7 @@ class MainWindow(QMainWindow):
     #
 
     def parameter_window(self):
-        self.log.entry("parameter_window")
+        self.log.entry("parameter_window()")
 
         # Title of the main window
         self.setWindowTitle(APP_NAME + " " + APP_VERSION)
@@ -1077,7 +1076,7 @@ class MainWindow(QMainWindow):
         self.adjustSize()
         self.setMaximumSize(self.sizeHint())
 
-        self.log.write("parameter_window")
+        self.log.exit("parameter_window")
 
     #
     # -----------------------------------------------
@@ -1369,7 +1368,7 @@ class MainWindow(QMainWindow):
     #
 
     def update_progress(self, value):
-        self.log.entry("update_progress")
+        self.log.entry(f"update_progress(value={value})")
 
         if value == 1:
 
@@ -1411,7 +1410,7 @@ class MainWindow(QMainWindow):
             self.mandel_btn.update()
             self.julia_btn.update()
 
-        self.log.write(f"value={value} / {self.draw_dim['height']}")
+        self.log.write(f"value={value}/{self.draw_dim['height']}")
 
         percent = int((value / self.progress_bar.maximum()) * 100)
         self.status_lbl.setText(f"Progress: {percent}%")
