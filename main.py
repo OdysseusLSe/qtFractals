@@ -87,7 +87,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.3"
+APP_VERSION = "1.3.1"
 APP_L_ICON  = ""
 APP_M_ICON  = ":/ui/icon.icns"
 APP_W_ICON  = ":/ui/icon.ico"

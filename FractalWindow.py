@@ -108,21 +108,6 @@ class FractalWindow(QMainWindow):
         self.thread = None
         self.worker = None
 
-        self.coord_label = QLabel(self)
-        self.coord_label.setStyleSheet(
-            """
-            background-color: rgba(0, 0, 0, 180);
-            color: white;
-            border: 1px solid #ffffff;
-            border-radius: 3px;
-            padding: 2px 6px;
-            font-size: 11px;
-        """
-        )
-        # Wichtig: Klicks durch das Label hindurchlassen, damit die Selektion nicht unterbrochen wird
-        self.coord_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.coord_label.hide()
-
         self.start_calculation()
 
         self.log.exit("__init__")
@@ -448,14 +433,13 @@ class FractalWindow(QMainWindow):
         if event.button() == Qt.MouseButton.LeftButton:
             if self.selecting:
                 self.sel_end = event.position().toPoint()
-                self.coord_label.hide()
                 rect = self.get_selection_rect()
                 self.selecting = False
                 self.update()
                 # Calculate new fractal area
                 if self.calculate_selected_area(rect):
                     # Selected area is not to small
-                    self.log.write("frac_area=" + str(self.frac_area))
+                    self.log.write(f"frac_area={self.frac_area}")
                     self.frac_area = copy.copy(self.calc_area)
                     self.start_calculation()
 
@@ -470,7 +454,7 @@ class FractalWindow(QMainWindow):
     #
 
     def paintEvent(self, event):
-        self.log.entry(f"paintEvent(event={event})")
+        self.log.entry("paintEvent(event)")
 
         if self.image.isNull():
             self.log.error("Missing image!")
@@ -494,6 +478,7 @@ class FractalWindow(QMainWindow):
             and self.sel_start is not None
             and self.sel_end is not None
         ):
+
             rect = self.get_selection_rect()
 
             self.selection_color = QColor(
@@ -520,20 +505,11 @@ class FractalWindow(QMainWindow):
             io = self.calc_area['imagOrigin']
             rw = self.calc_area['realWidth']
             ih = self.calc_area['imagHeight']
-            self.coord_label.setText(
-                f"Real: {ro}, Imag: {io}<br>Width: {rw}, Height: {ih}"
-            )
             self.log.write(f"ro,io,rw,ih={ro},{io},{rw},{ih}")
-            self.coord_label.adjustSize()
-            lbl_x = rect.x()
-            lbl_y = rect.y() - self.coord_label.height() - 5
-            if lbl_y < 0:
-                lbl_y = rect.y() + 5
-            self.coord_label.move(lbl_x, lbl_y)
-            self.coord_label.show()
-        else:
-            if hasattr(self, "coord_label"):
-                self.coord_label.hide()
+
+            window_title = "Selected coordinates: "
+            window_title += f"Origin: {ro} , {io} || Size: {rw} x {ih}"
+            self.setWindowTitle(window_title)
 
         self.log.exit("paintEvent")
 
@@ -741,6 +717,6 @@ class FractalWindow(QMainWindow):
         area += f" || Resolution: {w}x{h}"
         area += f" || Scaling: 1:{self.scaling_factor:.2f}"
         area += f" || Progress: {self.progress_in_percent}%"
-        self.window().setWindowTitle(f"{window_title} [{area}]")
+        self.setWindowTitle(f"{window_title} [{area}]")
 
         self.log.exit("update_window_title")
