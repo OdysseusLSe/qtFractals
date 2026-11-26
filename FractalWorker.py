@@ -239,6 +239,8 @@ class FractalWorker(QObject):
             QImage.Format.Format_RGBA8888
         )
 
+        last_percent = -1
+
         for y in range(height):
             start_time = time.process_time()
 

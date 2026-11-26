@@ -83,6 +83,8 @@ class FractalWindow(QMainWindow):
         # Scaling factor in case calculated image is bigger than the window.
         self.scaling_factor = 1.00
 
+        self.progress_in_percent = 0
+
         self.update_window_title()
 
         # First resize event should be ignored.
@@ -651,6 +653,8 @@ class FractalWindow(QMainWindow):
             self.julia_c
         )
 
+        self.progress_in_percent = 0
+
         self.worker.moveToThread(self.thread)
 
         #
@@ -712,8 +716,8 @@ class FractalWindow(QMainWindow):
     def update_progress(self, value):
         self.log.entry(f"update_progress(value={value})")
 
-        percent = int(value / self.draw_dim['height'] * 100)
-        self.update_window_title(percent)
+        self.progress_in_percent = int(value / self.draw_dim['height'] * 100)
+        self.update_window_title()
 
         self.log.exit("update_progress")
 
@@ -721,8 +725,8 @@ class FractalWindow(QMainWindow):
     # -----------------------------------------------
     #
 
-    def update_window_title(self, value=100):
-        self.log.entry(f"update_window_title(value={value})")
+    def update_window_title(self):
+        self.log.entry("update_window_title()")
 
         ro = self.frac_area['realOrigin']
         io = self.frac_area['imagOrigin']
@@ -736,7 +740,7 @@ class FractalWindow(QMainWindow):
         area = f"Origin: {ro},{io} || Size: {rw}x{ih}"
         area += f" || Resolution: {w}x{h}"
         area += f" || Scaling: 1:{self.scaling_factor:.2f}"
-        area += f" || Progress: {value}%"
+        area += f" || Progress: {self.progress_in_percent}%"
         self.window().setWindowTitle(f"{window_title} [{area}]")
 
         self.log.exit("update_window_title")
