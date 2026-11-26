@@ -21,13 +21,7 @@ import random
 
 import pprint as pp
 
-from PySide6.QtCore import (
-    QPoint,
-    QRect,
-    Qt,
-    QThread,
-    Signal
-)
+from PySide6.QtCore import QPoint,QRect,Qt,QThread,Signal
 from PySide6.QtGui import (
     QBrush,
     QImage,
@@ -38,7 +32,7 @@ from PySide6.QtGui import (
     QResizeEvent,
     QShortcut
 )
-from PySide6.QtWidgets import QLabel, QMainWindow
+from PySide6.QtWidgets import QMainWindow
 
 from FractalWorker import FractalWorker
 from Logging import Logging

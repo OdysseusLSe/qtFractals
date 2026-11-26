@@ -23,14 +23,8 @@ import time
 import numpy as np
 import pprint as pp
 
-from PySide6.QtCore import (
-    QObject,
-    Signal,
-    Slot
-)
-from PySide6.QtGui import (
-    QImage
-)
+from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtGui import QImage
 
 from Logging import Logging
 
