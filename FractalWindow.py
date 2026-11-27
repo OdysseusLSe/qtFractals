@@ -21,7 +21,7 @@ import random
 
 import pprint as pp
 
-from PySide6.QtCore import QPoint,QRect,Qt,QThread,Signal
+from PySide6.QtCore import QPoint, QRect, Qt, QThread, Signal
 from PySide6.QtGui import (
     QBrush,
     QImage,
