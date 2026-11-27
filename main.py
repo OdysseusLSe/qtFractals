@@ -87,7 +87,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.3.1"
+APP_VERSION = "1.3.2"
 APP_L_ICON  = ""
 APP_M_ICON  = ":/ui/icon.icns"
 APP_W_ICON  = ":/ui/icon.ico"
@@ -125,6 +125,10 @@ class MainWindow(QMainWindow):
         else:
             self.log.error('Stylesheet ":/ui/style.css" not found!')
 
+        # Flags for ending apppliication and if fractal window is visible
+        self.end_application = False
+        self.is_fw_visible   = False
+
         # Initiate status bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
@@ -142,8 +146,6 @@ class MainWindow(QMainWindow):
         # Build the main window with all the widgets
         self.parameter_window()
         self.fractal_window()
-
-        #self.start_time = time.process_time()
 
         self.history_list = []
         self.fh = FractalHistory(APP_NAME, "history.json")
@@ -271,6 +273,19 @@ class MainWindow(QMainWindow):
         self.enable_widgets()
 
         self.log.exit("calculation_closing")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def closeEvent(self, event):
+        self.log.entry("closeEvent(event)")
+
+        self.end_app()
+        if not self.end_application:
+            event.ignore()
+
+        self.log.exit("closeEvent")
 
     #
     # -----------------------------------------------
@@ -582,19 +597,25 @@ class MainWindow(QMainWindow):
     #
 
     def end_app(self):
-        self.log.entry("end_app")
+        self.log.entry("end_app()")
 
-        end_app_dlg = QMessageBox(self)
-        end_app_dlg.setWindowTitle("Quit the application")
-        end_app_dlg.setText("Quit the application?")
-        end_app_dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        end_app_dlg.setIcon(QMessageBox.Question)
-        button = end_app_dlg.exec()
+        if not self.end_application:
 
-        if button == QMessageBox.No:
-            self.log.write("end_app")
-            return
+            end_app_dlg = QMessageBox(self)
+            end_app_dlg.setWindowTitle("Quit the application")
+            end_app_dlg.setText("Quit the application?")
+            end_app_dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            end_app_dlg.setIcon(QMessageBox.Question)
+            button = end_app_dlg.exec()
 
+            if button == QMessageBox.No:
+                self.end_application = False
+                self.log.exit("end_app")
+                return False
+
+        self.end_application = True
+
+        self.log.exit("end_app")
         app.quit()
 
     #
@@ -623,6 +644,7 @@ class MainWindow(QMainWindow):
         self.fw.progress.connect(self.update_progress)
 
         self.fw.show()
+        self.is_fw_visible = True
 
         self.log.exit("fractal_window")
 
@@ -933,16 +955,16 @@ class MainWindow(QMainWindow):
         self.x_dim_edit.setText(str(self.const_draw_dim['width']))
         self.x_dim_edit.setValidator(QIntValidator(500, 10000))
         self.x_dim_edit.setFixedWidth(75)
-        grid_layout.addWidget(self.x_dim_edit, row, 1)
+        grid_layout.addWidget(self.x_dim_edit, row, 1, Qt.AlignmentFlag.AlignHCenter)
 
         label = QLabel("<b>y-Dim</b>:", self)
-        grid_layout.addWidget(label, row, 2)
+        grid_layout.addWidget(label, row, 2, Qt.AlignmentFlag.AlignRight)
 
         self.y_dim_edit = QLineEdit(self)
         self.y_dim_edit.setText(str(self.const_draw_dim['height']))
         self.y_dim_edit.setValidator(QIntValidator(500, 10000))
         self.y_dim_edit.setFixedWidth(75)
-        grid_layout.addWidget(self.y_dim_edit, row, 3)
+        grid_layout.addWidget(self.y_dim_edit, row, 3, Qt.AlignmentFlag.AlignHCenter)
 
         row = row + 1
 
@@ -982,9 +1004,7 @@ class MainWindow(QMainWindow):
                 self.cp_combo.setCurrentText(element['name'])
         self.cp_combo.currentTextChanged.connect(self.cp_text_changed)
         grid_layout.addWidget(
-            self.cp_combo, row, 2, 1, 2,
-            Qt.AlignmentFlag.AlignHCenter
-        )
+            self.cp_combo, row, 2, 1, 2)
 
         row = row + 1
 
@@ -1052,6 +1072,26 @@ class MainWindow(QMainWindow):
         self.start_btn.setFixedWidth(btn_width)
 
         grid_layout.addLayout(btn_layout, row, 0, 1, grid_layout.columnCount())
+
+        row = row + 1
+
+        grid_layout.addWidget(create_line(), row, 0, 1, 4)
+
+        row = row + 1
+
+        toggle_layout = QHBoxLayout()
+
+        # "Show/Hide fractal window" button
+        self.toggle_btn = QPushButton("Show/Hide fractal window")
+        self.toggle_btn.clicked.connect(self.toggle_fractal_window)
+        toggle_layout.addWidget(self.toggle_btn)
+
+        # "Quit" button
+        self.quit_btn = QPushButton("Quit application")
+        self.quit_btn.clicked.connect(self.end_app)
+        toggle_layout.addWidget(self.quit_btn)
+
+        grid_layout.addLayout(toggle_layout, row, 0, 1, grid_layout.columnCount())
 
         row = row + 1
 
@@ -1290,8 +1330,34 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def toggle_fractal_window(self):
+        self.log.entry("toggle_fractal_window()")
+
+        self.is_fw_visible = not self.is_fw_visible
+
+        if not hasattr(self, 'fw'):
+            self.status_lbl.setText("Error: fractal window not available!")
+            self.log.error("Error: fractal window not available!")
+            self.log.exit("toggle_fractal_window")
+            return
+
+        if self.fw is not None and self.is_fw_visible:
+            if not self.fw.isVisible():
+                self.fw.show()
+            else:
+                self.fw.raise_()
+            self.fw.activateWindow()
+        else:
+            self.fw.hide()
+
+        self.log.exit("toggle_fractal_window")
+
+    #
+    # -----------------------------------------------
+    #
+
     def toggle_theme(self):
-        self.log.entry("toggle_theme")
+        self.log.entry("toggle_theme()")
 
         current_theme = app.styleHints().colorScheme()
 
@@ -1307,7 +1373,7 @@ class MainWindow(QMainWindow):
     #
 
     def trigger_calculation(self):
-        self.log.entry("trigger_calculation")
+        self.log.entry("trigger_calculation()")
 
         self.fractal_calculation = True
         self.enable_widgets(False)

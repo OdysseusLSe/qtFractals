@@ -59,6 +59,9 @@ class FractalWindow(QMainWindow):
         self.log = Logging("FractalWindow")
         self.log.entry("__init__")
 
+        # Disable/hide the close button
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+
         self.calc_area = copy.copy(frac_area)
         self.frac_area = copy.copy(frac_area)
         self.draw_dim  = copy.copy(draw_dim)
@@ -209,6 +212,13 @@ class FractalWindow(QMainWindow):
         self.closing.emit(self.thumbnail, calc_time)
 
         self.log.exit("calculation_finished")
+
+    #
+    # -----------------------------------------------
+    #
+
+    def closeEvent(self, event):
+        event.ignore()
 
     #
     # -----------------------------------------------
