@@ -290,3 +290,4 @@ temp/*
 temp*.py
 test.jpg
 test.txt
+requirements_backup.txt
