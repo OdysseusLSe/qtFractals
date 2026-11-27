@@ -87,7 +87,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.3.2"
+APP_VERSION = "1.3.3"
 APP_L_ICON  = ""
 APP_M_ICON  = ":/ui/icon.icns"
 APP_W_ICON  = ":/ui/icon.ico"
@@ -640,8 +640,12 @@ class MainWindow(QMainWindow):
         self.fw.closing.connect(self.calculation_closing)
 
         # Connect the progress signal from the FractalWindow to the
-        # update_progress method.
+        # 'update_progress()' method.
         self.fw.progress.connect(self.update_progress)
+
+        # Connect the hidden signal from the FractalWindow to the
+        # 'set_hidden()' method.
+        self.fw.hidden.connect(self.set_hidden)
 
         self.fw.show()
         self.is_fw_visible = True
@@ -686,7 +690,7 @@ class MainWindow(QMainWindow):
     #
 
     def new_color_palette(self):
-        self.log.entry("new_color_palette")
+        self.log.entry("new_color_palette()")
 
         self.ncop_dialog = QDialog(self)
         self.ncop_dialog.setWindowTitle("New color palette")
@@ -787,11 +791,9 @@ class MainWindow(QMainWindow):
             orig_image = ff.mandelbrot_frame(frac_area, 100, 250, 250, self.cp)
             image = orig_image.scaledToWidth(
                 360,
-                Qt.TransformationMode.SmoothTransformation
+                Qt.TransformationMode.FastTransformation
             )
             pixmap = QPixmap.fromImage(image)
-            preview_label.setStyleSheet("")
-            preview_label.setText("")
             preview_label.setPixmap(pixmap)
 
         def select_color():
@@ -801,6 +803,8 @@ class MainWindow(QMainWindow):
             )
             if new_bg_color.isValid():
                 self.bg_color = new_bg_color
+                preview_label.setStyleSheet("")
+                preview_label.setText("")
                 preview_cp()
 
         def save_cp():
@@ -814,7 +818,6 @@ class MainWindow(QMainWindow):
             self.cp_combo.addItem(self.cp['name'])
             self.is_new_cp = True
             self.cp_combo.setCurrentText(self.cp['name'])
-            self.log.write("calling self.reset()")
 
         def button_clicked(button):
             role = button_box.buttonRole(button)
@@ -844,7 +847,7 @@ class MainWindow(QMainWindow):
         self.ncop_dialog.setFixedSize(self.ncop_dialog.sizeHint())
         self.ncop_dialog.exec()
 
-        self.log.write("new_color_palette")
+        self.log.exit("new_color_palette")
 
     #
     # -----------------------------------------------
@@ -1262,6 +1265,17 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def set_hidden(self):
+        self.log.exit("set_hidden()")
+
+        self.is_fw_visible = False
+
+        self.log.exit("set_hidden")
+
+    #
+    # -----------------------------------------------
+    #
+
     def show_history(self):
         self.log.entry("show_history")
 
@@ -1336,8 +1350,8 @@ class MainWindow(QMainWindow):
         self.is_fw_visible = not self.is_fw_visible
 
         if not hasattr(self, 'fw'):
-            self.status_lbl.setText("Error: fractal window not available!")
-            self.log.error("Error: fractal window not available!")
+            self.status_lbl.setText("Error: Fractal window not available!")
+            self.log.error("Error: Fractal window not available!")
             self.log.exit("toggle_fractal_window")
             return
 
@@ -1346,7 +1360,7 @@ class MainWindow(QMainWindow):
                 self.fw.show()
             else:
                 self.fw.raise_()
-            self.fw.activateWindow()
+            #self.fw.activateWindow()
         else:
             self.fw.hide()
 

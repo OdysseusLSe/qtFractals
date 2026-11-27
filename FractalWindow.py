@@ -50,6 +50,9 @@ class FractalWindow(QMainWindow):
     # Signal finished calculation
     closing = Signal(QImage, float)
 
+    # Signal this window is hidden
+    hidden = Signal()
+
     #
     # -----------------------------------------------
     #
@@ -61,6 +64,7 @@ class FractalWindow(QMainWindow):
 
         # Disable/hide the close button
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.hidden.connect(self.hidden.emit)
 
         self.calc_area = copy.copy(frac_area)
         self.frac_area = copy.copy(frac_area)
@@ -218,7 +222,12 @@ class FractalWindow(QMainWindow):
     #
 
     def closeEvent(self, event):
-        event.ignore()
+        self.log.entry("closeEvent(event)")
+
+        # Inform parent window about closed/hidden window.
+        self.hidden.emit()
+
+        self.log.exit("closeEvent")
 
     #
     # -----------------------------------------------
