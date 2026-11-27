@@ -574,7 +574,7 @@ class MainWindow(QMainWindow):
             self.x_dim_edit.setText("7680")
             self.y_dim_edit.setText("4320")
 
-        self.trigger_calculation()
+        self.start()
 
         self.log.exit("dd_text_changed")
 
@@ -1023,7 +1023,7 @@ class MainWindow(QMainWindow):
             "Mandelbrot"
         )
         self.mandel_btn.setIconSize(QSize(16, 16))
-        self.mandel_btn.setObjectName("mandelJuliaButton")
+        #self.mandel_btn.setObjectName("mandelJuliaButton")
         self.mandel_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
         grid_layout.addWidget(
             self.mandel_btn, row, 0, 1, 2,
@@ -1035,7 +1035,7 @@ class MainWindow(QMainWindow):
             "Julia"
         )
         self.julia_btn.setIconSize(QSize(16, 16))
-        self.julia_btn.setObjectName("mandelJuliaButton")
+        #self.julia_btn.setObjectName("mandelJuliaButton")
         self.julia_btn.setAttribute(Qt.WA_TransparentForMouseEvents)
         grid_layout.addWidget(
             self.julia_btn, row, 2, 1, 2,
@@ -1065,7 +1065,7 @@ class MainWindow(QMainWindow):
         # "Start" button
         self.start_btn = QPushButton(QIcon(":/ui/start.png"), "Start")
         self.start_btn.setEnabled(False)
-        self.start_btn.clicked.connect(self.trigger_calculation)
+        self.start_btn.clicked.connect(self.start)
         btn_layout.addWidget(self.start_btn, alignment=Qt.AlignRight)
 
         # All three buttons have the same width
@@ -1166,7 +1166,7 @@ class MainWindow(QMainWindow):
         self.current_frac_set = self.default_frac_set
         self.julia_c = complex(10.0, 10.0)
 
-        self.trigger_calculation()
+        self.start()
 
         self.log.write("reset")
 
@@ -1329,8 +1329,66 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------
     #
 
+    def start(self):
+        self.log.entry("start()")
+
+        differ = False
+
+        self.frac_area = {
+            'realOrigin': float(self.rp_edit.text()),
+            'imagOrigin': float(self.ip_edit.text()),
+            'realWidth' : float(self.width_edit.text()),
+            'imagHeight': float(self.height_edit.text())
+        }
+        self.log.write(f"self.frac_area={self.frac_area}")
+
+        self.draw_dim = {
+            'width' : int(self.x_dim_edit.text()),
+            'height': int(self.y_dim_edit.text())
+        }
+        self.log.write(f"self.draw_dim={self.draw_dim}")
+
+        area_ratio = self.frac_area['realWidth'] / self.frac_area['imagHeight']
+        draw_ratio = self.draw_dim['width'] / self.draw_dim['height']
+        self.log.write(f"area_ratio,draw_ratio={area_ratio},{draw_ratio}")
+
+        if round(area_ratio, 1) != round(draw_ratio, 1):
+            differ = True
+            differ_text = "<br>differs significantly from<br>"
+            self.log.write("Ratios differ signifiicantly!")
+        elif round(area_ratio, 2) != round(draw_ratio, 2):
+            differ = True
+            differ_text = "<br>differs from<br>"
+            self.log.write("Ratios differ!")
+
+        if differ:
+
+            ratio_text = f"Ratio of complex area ({round(area_ratio, 2)})"
+            ratio_text += differ_text
+            ratio_text += f"ratio of draw area ({round(draw_ratio, 2)})!"
+            ratio_text += "<br><br>Do you want to continue?"
+
+            ratio_dlg = QMessageBox(self)
+            ratio_dlg.setWindowTitle("Ratios are different!")
+            ratio_dlg.setText(ratio_text)
+
+            ratio_dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            ratio_dlg.setIcon(QMessageBox.Question)
+            button = ratio_dlg.exec()
+
+            if button == QMessageBox.No:
+                self.log.exit("start")
+                return
+
+        self.trigger_calculation()
+        self.log.exit("start")
+
+    #
+    # -----------------------------------------------
+    #
+
     def stop_calculation(self):
-        self.log.entry("stop_calculation")
+        self.log.entry("stop_calculation()")
 
         if self.fractal_calculation:
             self.fw.stop_calculation()
@@ -1391,7 +1449,7 @@ class MainWindow(QMainWindow):
 
         self.fractal_calculation = True
         self.enable_widgets(False)
-
+        """
         layout_rect = self.main_layout.geometry()
         lw          = layout_rect.width()
         lh          = layout_rect.height()
@@ -1411,7 +1469,7 @@ class MainWindow(QMainWindow):
             'height': int(self.y_dim_edit.text())
         }
         self.log.write("self.draw_dim=" + str(self.draw_dim))
-
+        """
         self.iter_lim = int(self.iter_lim_edit.text())
         self.log.write("self.iter_lim=" + str(self.iter_lim))
 
