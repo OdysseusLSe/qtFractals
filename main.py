@@ -386,7 +386,7 @@ class MainWindow(QMainWindow):
 
         # Create cache directory for video
         dir_time = time.time()
-        dir_path = f"{self.cache_dir}/{APP_NAME}.video-{dir_time}"
+        dir_path = self.cache_dir.joinpath(f"{APP_NAME}.video-{dir_time}")
         try:
             dir_path.mkdir(exist_ok=True, parents=True)
         except BaseException as error:
@@ -499,7 +499,7 @@ class MainWindow(QMainWindow):
             video.release()
             cv2.destroyAllWindows()
 
-            msg = f"Aborted Video\n {video_name}\n in cache\n {dir_name}"
+            msg = f"Aborted Video\n {video_name}\n in cache\n {dir_path}"
             QMessageBox.warning(self, "Video in cache", msg)
 
             self.enable_widgets(True)
