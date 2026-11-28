@@ -892,47 +892,37 @@ class MainWindow(QMainWindow):
             validator.setNotation(QDoubleValidator.Notation.StandardNotation)
             return validator
 
-        def on_height_changed(text):
-            height = float(text)
-            width  = float(self.width_edit.text())
-            new_ratio = f"1:{(width/height):.2f}"
-            new_text = f"Ratio (Width:Height) of complex area is {new_ratio}"
-            self.complex_ratio.setText(new_text)
+        def update_complex_ratio(text):
+            try:
+                width  = float(self.width_edit.text().strip())
+                height = float(self.height_edit.text().strip())
 
-        def on_width_changed(text):
-            width   = float(text)
-            height  = float(self.height_edit.text())
-            new_ratio = f"1:{(width/height):.2f}"
-            new_text = f"Ratio (Width:Height) of complex area is {new_ratio}"
-            self.complex_ratio.setText(new_text)
+                if width <= 0 or height <= 0:
+                    return
 
-        def on_x_dim_changed(text):
-            self.user_x_dim = text
+                new_ratio = f"1:{(width/height):.2f}"
+                new_text  = f"Ratio of complex area is {new_ratio}"
+                self.complex_ratio.setText(new_text)
+            except ValueError:
+                return
+
+        def update_draw_ratio(text):
             count = self.dd_combo.count()
 
-            a = int(self.user_x_dim)
-            b = int(self.user_y_dim)
-            gcd_value = math.gcd(a, b)
-            self.user_ratio = f"[{int(a/gcd_value)}:{int(b/gcd_value)}]"
+            try:
+                x_dim = int(self.x_dim_edit.text().strip())
+                y_dim = int(self.y_dim_edit.text().strip())
+                ratio = f"[1:{(x_dim/y_dim):.2f}]"
 
-            self.sel_draw_dim['User'] = f"{self.user_x_dim} x {self.user_y_dim}"
-            self.sel_draw_dim['User'] += f" {self.user_ratio} (User specific)"
-            self.dd_combo.setItemText(count-1, self.sel_draw_dim['User'])
-            self.dd_combo.setCurrentIndex(count-1)
+                if x_dim <= 0 or y_dim <= 0:
+                    return
 
-        def on_y_dim_changed(text):
-            self.user_y_dim = text
-            count = self.dd_combo.count()
-
-            a = int(self.user_x_dim)
-            b = int(self.user_y_dim)
-            gcd_value = math.gcd(a, b)
-            self.user_ratio = f"[{int(a/gcd_value)}:{int(b/gcd_value)}]"
-
-            self.sel_draw_dim['User'] = f"{self.user_x_dim} x {self.user_y_dim}"
-            self.sel_draw_dim['User'] += f" {self.user_ratio} (User specific)"
-            self.dd_combo.setItemText(count-1, self.sel_draw_dim['User'])
-            self.dd_combo.setCurrentIndex(count-1)
+                self.sel_draw_dim['User'] = f"{x_dim} x {y_dim}"
+                self.sel_draw_dim['User'] += f" {ratio} (User specific)"
+                self.dd_combo.setItemText(count-1, self.sel_draw_dim['User'])
+                self.dd_combo.setCurrentIndex(count-1)
+            except ValueError:
+                return
 
         # ----------------------------------------------------------------------
 
@@ -979,7 +969,7 @@ class MainWindow(QMainWindow):
         self.width_edit.setText(str(self.const_frac_area['realWidth']))
         self.width_edit.setValidator(double_validator(bottom, top, 15))
         self.width_edit.setFixedWidth(160)
-        self.width_edit.textChanged.connect(on_width_changed)
+        self.width_edit.textChanged.connect(update_complex_ratio)
         grid_layout.addWidget(self.width_edit, row, 2, 1, 2)
 
         row = row + 1
@@ -993,7 +983,7 @@ class MainWindow(QMainWindow):
         self.height_edit.setText(str(self.const_frac_area['imagHeight']))
         self.height_edit.setValidator(double_validator(bottom, top, 15))
         self.height_edit.setFixedWidth(160)
-        self.height_edit.textChanged.connect(on_height_changed)
+        self.height_edit.textChanged.connect(update_complex_ratio)
         grid_layout.addWidget(self.height_edit, row, 2, 1, 2)
 
         row = row + 1
@@ -1023,7 +1013,7 @@ class MainWindow(QMainWindow):
         self.x_dim_edit.setText(str(self.const_draw_dim['width']))
         self.x_dim_edit.setValidator(QIntValidator(500, 10000))
         self.x_dim_edit.setFixedWidth(75)
-        self.x_dim_edit.textChanged.connect(on_x_dim_changed)
+        self.x_dim_edit.textChanged.connect(update_draw_ratio)
         grid_layout.addWidget(self.x_dim_edit, row, 1, Qt.AlignmentFlag.AlignHCenter)
 
         label = QLabel("<b>y-Dim</b>:", self)
@@ -1033,7 +1023,7 @@ class MainWindow(QMainWindow):
         self.y_dim_edit.setText(str(self.const_draw_dim['height']))
         self.y_dim_edit.setValidator(QIntValidator(500, 10000))
         self.y_dim_edit.setFixedWidth(75)
-        self.y_dim_edit.textChanged.connect(on_y_dim_changed)
+        self.y_dim_edit.textChanged.connect(update_draw_ratio)
         grid_layout.addWidget(self.y_dim_edit, row, 3, Qt.AlignmentFlag.AlignHCenter)
 
         row = row + 1
@@ -1408,17 +1398,31 @@ class MainWindow(QMainWindow):
 
         differ = False
 
+        try:
+            ro = float(self.rp_edit.text().strip())
+            io = float(self.ip_edit.text().strip())
+            rw = float(self.width_edit.text().strip())
+            ih = float(self.height_edit.text().strip())
+
+            xd = int(self.x_dim_edit.text().strip())
+            yd = int(self.y_dim_edit.text().strip())
+        except ValueError:
+            self.status_lbl.setText("Invalid input!")
+            self.log.warning("Invalid input!")
+            self.log.exit("start")
+            return
+
         self.frac_area = {
-            'realOrigin': float(self.rp_edit.text()),
-            'imagOrigin': float(self.ip_edit.text()),
-            'realWidth' : float(self.width_edit.text()),
-            'imagHeight': float(self.height_edit.text())
+            'realOrigin': ro,
+            'imagOrigin': io,
+            'realWidth' : rw,
+            'imagHeight': ih
         }
         self.log.write(f"self.frac_area={self.frac_area}")
 
         self.draw_dim = {
-            'width' : int(self.x_dim_edit.text()),
-            'height': int(self.y_dim_edit.text())
+            'width' : xd,
+            'height': yd
         }
         self.log.write(f"self.draw_dim={self.draw_dim}")
 
