@@ -900,17 +900,20 @@ class MainWindow(QMainWindow):
                 height = float(self.height_edit.text().strip())
 
                 if width <= 0 or height <= 0:
+                    self.start_btn.setEnabled(False)
                     self.status_lbl.setText("Invalid area dimensions!")
                     self.log.warning("Invalid area dimensions!")
                     self.log.exit("update_complex_ratio")
                     return
 
+                self.start_btn.setEnabled(True)
                 ratio = f"{(width/height):.2f}:1"
                 new_text  = f"Ratio (Width,Height) of complex area is {ratio}"
                 self.complex_ratio.setText(new_text)
                 self.status_lbl.setText("Ratio of complex area is valid")
 
             except ValueError:
+                self.start_btn.setEnabled(False)
                 self.status_lbl.setText("Invalid area dimensions!")
                 self.log.warning("Invalid area dimensions!")
                 self.log.exit("update_complex_ratio")
@@ -928,11 +931,13 @@ class MainWindow(QMainWindow):
                 ratio = f"[{(x_dim/y_dim):.2f}:1]"
 
                 if x_dim <= 0 or y_dim <= 0:
+                    self.start_btn.setEnabled(False)
                     self.status_lbl.setText("Invalid area dimensions!")
                     self.log.warning("Invalid area dimensions!")
                     self.log.exit("update_draw_ratio")
                     return
 
+                self.start_btn.setEnabled(True)
                 self.sel_draw_dim['User'] = f"{x_dim} x {y_dim}"
                 self.sel_draw_dim['User'] += f" {ratio} (User specific)"
                 self.dd_combo.setItemText(count-1, self.sel_draw_dim['User'])
@@ -940,6 +945,7 @@ class MainWindow(QMainWindow):
                 self.status_lbl.setText("Ratio of draw dimensions is valid")
 
             except ValueError:
+                self.start_btn.setEnabled(False)
                 self.status_lbl.setText("Invalid area dimensions!")
                 self.log.warning("Invalid area dimensions!")
                 self.log.exit("update_draw_ratio")
@@ -1240,6 +1246,7 @@ class MainWindow(QMainWindow):
 
         self.x_dim_edit.setText(str(self.const_draw_dim['width']))
         self.y_dim_edit.setText(str(self.const_draw_dim['height']))
+        self.dd_combo.setCurrentIndex(0)
 
         self.iter_lim_edit.setText(str(self.const_iter_lim))
 
