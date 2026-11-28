@@ -30,6 +30,7 @@ import logging as pylog
 import numpy as np
 import pprint as pp
 
+from decimal import Decimal
 from pathlib import Path
 from platformdirs import user_cache_path, user_log_path
 
@@ -39,6 +40,7 @@ from PySide6.QtCore import (
     QFile,
     QIODevice,
     QJsonDocument,
+    QLocale,
     QSize,
     Qt,
     QTextStream,
@@ -88,7 +90,7 @@ from Logging import Logging
 import resources_rc
 
 APP_NAME    = "qtFractals"
-APP_VERSION = "1.3.3"
+APP_VERSION = "1.3.5"
 APP_L_ICON  = ""
 APP_M_ICON  = ":/ui/icon.icns"
 APP_W_ICON  = ":/ui/icon.ico"
@@ -882,6 +884,41 @@ class MainWindow(QMainWindow):
             line.setStyleSheet(" QFrame { height: 1px; } ")
             return line
 
+        def double_validator(bottom, top, decimals=15, parent=None):
+            validator = QDoubleValidator(bottom, top, decimals, parent)
+            # Enforces dot (.) not comma (,)
+            validator.setLocale(QLocale.c())
+            # Prevent 4,0E+00
+            validator.setNotation(QDoubleValidator.Notation.StandardNotation)
+            return validator
+
+        def gcd_float(a, b):
+            d_a = abs(Decimal(str(a)))
+            d_b = abs(Decimal(str(b)))
+            while d_b != 0:
+                d_a, d_b = d_b, d_a % d_b
+            return d_a
+
+        def on_height_changed(text):
+            height = float(text)
+            width  = float(self.width_edit.text())
+
+            gcd_value = float(gcd_float(width, height))
+            new_ratio = f"[{(width/gcd_value):.1f}:{(height/gcd_value):.1f}]"
+
+            new_text = f"Ratio of complex area is {new_ratio}"
+            self.complex_ratio.setText(new_text)
+
+        def on_width_changed(text):
+            width   = float(text)
+            height  = float(self.height_edit.text())
+
+            gcd_value = float(gcd_float(width, height))
+            new_ratio = f"[{(width/gcd_value):.1f}:{(height/gcd_value):.1f}]"
+
+            new_text = f"Ratio of complex area is {new_ratio}"
+            self.complex_ratio.setText(new_text)
+
         def on_x_dim_changed(text):
             self.user_x_dim = text
             count = self.dd_combo.count()
@@ -927,7 +964,7 @@ class MainWindow(QMainWindow):
         top    = self.frac_area['realOrigin'] + self.frac_area['realWidth']
         self.rp_edit = QLineEdit(self)
         self.rp_edit.setText(str(self.const_frac_area['realOrigin']))
-        self.rp_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.rp_edit.setValidator(double_validator(bottom, top, 15))
         self.rp_edit.setFixedWidth(160)
         grid_layout.addWidget(self.rp_edit, row, 2, 1, 2)
 
@@ -940,7 +977,7 @@ class MainWindow(QMainWindow):
         top    = self.frac_area['imagOrigin'] + self.frac_area['imagHeight']
         self.ip_edit = QLineEdit(self)
         self.ip_edit.setText(str(self.const_frac_area['imagOrigin']))
-        self.ip_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.ip_edit.setValidator(double_validator(bottom, top, 15))
         self.ip_edit.setFixedWidth(160)
         grid_layout.addWidget(self.ip_edit, row, 2, 1, 2)
 
@@ -953,8 +990,9 @@ class MainWindow(QMainWindow):
         top    = self.frac_area['realWidth']
         self.width_edit = QLineEdit(self)
         self.width_edit.setText(str(self.const_frac_area['realWidth']))
-        self.width_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.width_edit.setValidator(double_validator(bottom, top, 15))
         self.width_edit.setFixedWidth(160)
+        self.width_edit.textChanged.connect(on_width_changed)
         grid_layout.addWidget(self.width_edit, row, 2, 1, 2)
 
         row = row + 1
@@ -966,9 +1004,16 @@ class MainWindow(QMainWindow):
         top    = self.frac_area['imagHeight']
         self.height_edit = QLineEdit(self)
         self.height_edit.setText(str(self.const_frac_area['imagHeight']))
-        self.height_edit.setValidator(QDoubleValidator(bottom, top, 15))
+        self.height_edit.setValidator(double_validator(bottom, top, 15))
         self.height_edit.setFixedWidth(160)
+        self.height_edit.textChanged.connect(on_height_changed)
         grid_layout.addWidget(self.height_edit, row, 2, 1, 2)
+
+        row = row + 1
+
+        text = "Ratio of complex area is 16:9"
+        self.complex_ratio = QLabel(text, self)
+        grid_layout.addWidget(self.complex_ratio, row, 0, 1, 4, Qt.AlignHCenter)
 
         row = row + 1
 
