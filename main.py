@@ -893,36 +893,59 @@ class MainWindow(QMainWindow):
             return validator
 
         def update_complex_ratio(text):
+            self.log.entry(f"update_complex_ratio(text={text})")
+
             try:
                 width  = float(self.width_edit.text().strip())
                 height = float(self.height_edit.text().strip())
 
                 if width <= 0 or height <= 0:
+                    self.status_lbl.setText("Invalid area dimensions!")
+                    self.log.warning("Invalid area dimensions!")
+                    self.log.exit("update_complex_ratio")
                     return
 
-                new_ratio = f"1:{(width/height):.2f}"
-                new_text  = f"Ratio of complex area is {new_ratio}"
+                ratio = f"{(width/height):.2f}:1"
+                new_text  = f"Ratio (Width,Height) of complex area is {ratio}"
                 self.complex_ratio.setText(new_text)
+                self.status_lbl.setText("Ratio of complex area is valid")
+
             except ValueError:
+                self.status_lbl.setText("Invalid area dimensions!")
+                self.log.warning("Invalid area dimensions!")
+                self.log.exit("update_complex_ratio")
                 return
 
+            self.log.exit("update_complex_ratio")
+
         def update_draw_ratio(text):
+            self.log.entry(f"update_draw_ratio(text={text})")
             count = self.dd_combo.count()
 
             try:
                 x_dim = int(self.x_dim_edit.text().strip())
                 y_dim = int(self.y_dim_edit.text().strip())
-                ratio = f"[1:{(x_dim/y_dim):.2f}]"
+                ratio = f"[{(x_dim/y_dim):.2f}:1]"
 
                 if x_dim <= 0 or y_dim <= 0:
+                    self.status_lbl.setText("Invalid area dimensions!")
+                    self.log.warning("Invalid area dimensions!")
+                    self.log.exit("update_draw_ratio")
                     return
 
                 self.sel_draw_dim['User'] = f"{x_dim} x {y_dim}"
                 self.sel_draw_dim['User'] += f" {ratio} (User specific)"
                 self.dd_combo.setItemText(count-1, self.sel_draw_dim['User'])
                 self.dd_combo.setCurrentIndex(count-1)
+                self.status_lbl.setText("Ratio of draw dimensions is valid")
+
             except ValueError:
+                self.status_lbl.setText("Invalid area dimensions!")
+                self.log.warning("Invalid area dimensions!")
+                self.log.exit("update_draw_ratio")
                 return
+
+            self.log.exit("update_draw_ratio")
 
         # ----------------------------------------------------------------------
 
@@ -988,7 +1011,7 @@ class MainWindow(QMainWindow):
 
         row = row + 1
 
-        text = "Ratio (Width:Height) of complex area is 1:1.78"
+        text = "Ratio (Width,Height) of complex area is 1:1.78"
         self.complex_ratio = QLabel(text, self)
         grid_layout.addWidget(self.complex_ratio, row, 0, 1, 4, Qt.AlignHCenter)
 
@@ -1306,13 +1329,13 @@ class MainWindow(QMainWindow):
         self.user_ratio = f"[{1280/gcd_value}:{729/gcd_value}]"
 
         self.sel_draw_dim = {
-            'HD'              : "1280 x  720 [16:9] (HD)",
-            'Full HD'         : "1920 x 1080 [16:9] (Full HD)",
-            'Full QHD'        : "2560 × 1440 [16:9] (Full QHD)",
-            'Ultra-Wide WQHD' : "3440 x 1440 [21:9] (UWQHD / CinemaScope)",
-            '4K Ultra HD'     : "3840 × 2160 [16:9] (4K Ultra HD)",
-            '8K Ultra HD'     : "7680 × 4320 [16:9] (8K Ultra HD)",
-            'User'            : f"{self.user_x_dim} x {self.user_y_dim} [16:9]"
+            'HD'              : "1280 x  720 [1.78:1] (HD)",
+            'Full HD'         : "1920 x 1080 [1.78:1] (Full HD)",
+            'Full QHD'        : "2560 × 1440 [1.78:1] (Full QHD)",
+            'Ultra-Wide WQHD' : "3440 x 1440 [2.33:1] (UWQHD / CinemaScope)",
+            '4K Ultra HD'     : "3840 × 2160 [1.78:1] (4K Ultra HD)",
+            '8K Ultra HD'     : "7680 × 4320 [1.78:1] (8K Ultra HD)",
+            'User'            : f"{self.user_x_dim} x {self.user_y_dim} [1.78:1]"
         }
 
         # Default fractal set to calculate
@@ -1406,6 +1429,13 @@ class MainWindow(QMainWindow):
 
             xd = int(self.x_dim_edit.text().strip())
             yd = int(self.y_dim_edit.text().strip())
+
+            if rw <= 0 or ih <= 0 or xd <= 0 or yd <= 0:
+                self.status_lbl.setText("Negative or zero dimensions!")
+                self.log.warning("Negative or zero dimensions!")
+                self.log.exit("szart")
+                return
+
         except ValueError:
             self.status_lbl.setText("Invalid input!")
             self.log.warning("Invalid input!")
@@ -1441,9 +1471,9 @@ class MainWindow(QMainWindow):
 
         if differ:
 
-            ratio_text = f"Ratio of complex area ({round(area_ratio, 2)})"
+            ratio_text = f"Ratio of complex area ({round(area_ratio, 2)}:1)"
             ratio_text += differ_text
-            ratio_text += f"ratio of draw area ({round(draw_ratio, 2)})!"
+            ratio_text += f"ratio of draw area ({round(draw_ratio, 2)}:1)!"
             ratio_text += "<br><br>Do you want to continue?"
 
             ratio_dlg = QMessageBox(self)
