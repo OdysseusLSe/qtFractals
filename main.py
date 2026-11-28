@@ -21,6 +21,7 @@ from pickle import TRUE
 import argparse
 import cv2
 import copy
+import math
 import platform
 import sys
 import time
@@ -555,6 +556,10 @@ class MainWindow(QMainWindow):
     def dd_text_changed(self, text):
         self.log.entry(f"dd_text_changed(text='{text}')")
 
+        if text == self.sel_draw_dim['User']:
+            self.log.exit("dd_text_changed")
+            return
+
         if text == self.sel_draw_dim['HD']:
             self.x_dim_edit.setText("1280")
             self.y_dim_edit.setText("720")
@@ -877,6 +882,34 @@ class MainWindow(QMainWindow):
             line.setStyleSheet(" QFrame { height: 1px; } ")
             return line
 
+        def on_x_dim_changed(text):
+            self.user_x_dim = text
+            count = self.dd_combo.count()
+
+            a = int(self.user_x_dim)
+            b = int(self.user_y_dim)
+            gcd_value = math.gcd(a, b)
+            self.user_ratio = f"[{int(a/gcd_value)}:{int(b/gcd_value)}]"
+
+            self.sel_draw_dim['User'] = f"{self.user_x_dim} x {self.user_y_dim}"
+            self.sel_draw_dim['User'] += f" {self.user_ratio} (User specific)"
+            self.dd_combo.setItemText(count-1, self.sel_draw_dim['User'])
+            self.dd_combo.setCurrentIndex(count-1)
+
+        def on_y_dim_changed(text):
+            self.user_y_dim = text
+            count = self.dd_combo.count()
+
+            a = int(self.user_x_dim)
+            b = int(self.user_y_dim)
+            gcd_value = math.gcd(a, b)
+            self.user_ratio = f"[{int(a/gcd_value)}:{int(b/gcd_value)}]"
+
+            self.sel_draw_dim['User'] = f"{self.user_x_dim} x {self.user_y_dim}"
+            self.sel_draw_dim['User'] += f" {self.user_ratio} (User specific)"
+            self.dd_combo.setItemText(count-1, self.sel_draw_dim['User'])
+            self.dd_combo.setCurrentIndex(count-1)
+
         # ----------------------------------------------------------------------
 
         label = QLabel("<b>Complex parameters</b>:", self)
@@ -958,6 +991,7 @@ class MainWindow(QMainWindow):
         self.x_dim_edit.setText(str(self.const_draw_dim['width']))
         self.x_dim_edit.setValidator(QIntValidator(500, 10000))
         self.x_dim_edit.setFixedWidth(75)
+        self.x_dim_edit.textChanged.connect(on_x_dim_changed)
         grid_layout.addWidget(self.x_dim_edit, row, 1, Qt.AlignmentFlag.AlignHCenter)
 
         label = QLabel("<b>y-Dim</b>:", self)
@@ -967,6 +1001,7 @@ class MainWindow(QMainWindow):
         self.y_dim_edit.setText(str(self.const_draw_dim['height']))
         self.y_dim_edit.setValidator(QIntValidator(500, 10000))
         self.y_dim_edit.setFixedWidth(75)
+        self.y_dim_edit.textChanged.connect(on_y_dim_changed)
         grid_layout.addWidget(self.y_dim_edit, row, 3, Qt.AlignmentFlag.AlignHCenter)
 
         row = row + 1
@@ -1242,13 +1277,20 @@ class MainWindow(QMainWindow):
         self.const_iter_lim = self.iter_lim
 
         # Default drawing dimensions to select
+
+        self.user_x_dim = "1280"
+        self.user_y_dim = "720"
+        gcd_value = math.gcd(1280, 720)
+        self.user_ratio = f"[{1280/gcd_value}:{729/gcd_value}]"
+
         self.sel_draw_dim = {
-            'HD'              : "1280 x  720 (HD)",
-            'Full HD'         : "1920 x 1080 (Full HD)",
-            'Full QHD'        : "2560 × 1440 (Full QHD)",
-            'Ultra-Wide WQHD' : "3440 x 1440 (Ultra-Wide WQHD)",
-            '4K Ultra HD'     : "3840 × 2160 (4K Ultra HD)",
-            '8K Ultra HD'     : "7680 × 4320 (8K Ultra HD)"
+            'HD'              : "1280 x  720 [16:9] (HD)",
+            'Full HD'         : "1920 x 1080 [16:9] (Full HD)",
+            'Full QHD'        : "2560 × 1440 [16:9] (Full QHD)",
+            'Ultra-Wide WQHD' : "3440 x 1440 [21:9] (UWQHD / CinemaScope)",
+            '4K Ultra HD'     : "3840 × 2160 [16:9] (4K Ultra HD)",
+            '8K Ultra HD'     : "7680 × 4320 [16:9] (8K Ultra HD)",
+            'User'            : f"{self.user_x_dim} x {self.user_y_dim} [16:9]"
         }
 
         # Default fractal set to calculate

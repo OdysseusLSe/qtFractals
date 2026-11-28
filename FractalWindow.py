@@ -725,10 +725,12 @@ class FractalWindow(QMainWindow):
         w = self.draw_dim['width']
         h = self.draw_dim['height']
 
+        scaling_in_percent = (1.0 / self.scaling_factor) * 100.0
+
         window_title = "qtFractals"
         area = f"Origin: {ro},{io} || Size: {rw}x{ih}"
         area += f" || Resolution: {w}x{h}"
-        area += f" || Scaling: 1:{self.scaling_factor:.2f}"
+        area += f" || Scaling: {int(scaling_in_percent)}%"
         area += f" || Progress: {self.progress_in_percent}%"
         self.setWindowTitle(f"{window_title} [{area}]")
 
