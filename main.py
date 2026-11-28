@@ -892,31 +892,18 @@ class MainWindow(QMainWindow):
             validator.setNotation(QDoubleValidator.Notation.StandardNotation)
             return validator
 
-        def gcd_float(a, b):
-            d_a = abs(Decimal(str(a)))
-            d_b = abs(Decimal(str(b)))
-            while d_b != 0:
-                d_a, d_b = d_b, d_a % d_b
-            return d_a
-
         def on_height_changed(text):
             height = float(text)
             width  = float(self.width_edit.text())
-
-            gcd_value = float(gcd_float(width, height))
-            new_ratio = f"[{(width/gcd_value):.1f}:{(height/gcd_value):.1f}]"
-
-            new_text = f"Ratio of complex area is {new_ratio}"
+            new_ratio = f"1:{(width/height):.2f}"
+            new_text = f"Ratio (Width:Height) of complex area is {new_ratio}"
             self.complex_ratio.setText(new_text)
 
         def on_width_changed(text):
             width   = float(text)
             height  = float(self.height_edit.text())
-
-            gcd_value = float(gcd_float(width, height))
-            new_ratio = f"[{(width/gcd_value):.1f}:{(height/gcd_value):.1f}]"
-
-            new_text = f"Ratio of complex area is {new_ratio}"
+            new_ratio = f"1:{(width/height):.2f}"
+            new_text = f"Ratio (Width:Height) of complex area is {new_ratio}"
             self.complex_ratio.setText(new_text)
 
         def on_x_dim_changed(text):
@@ -1011,7 +998,7 @@ class MainWindow(QMainWindow):
 
         row = row + 1
 
-        text = "Ratio of complex area is 16:9"
+        text = "Ratio (Width:Height) of complex area is 1:1.78"
         self.complex_ratio = QLabel(text, self)
         grid_layout.addWidget(self.complex_ratio, row, 0, 1, 4, Qt.AlignHCenter)
 
